@@ -10,62 +10,61 @@ CREATE TABLE import_users (
 );
 
 COPY import_users (email, username, first_names, last_name, group1, costs_day, costs_hour) from stdin;
-program_director@champ.areo	    PM3		 SP	    Program Director   Skill Profile	1400.00	175.00
 project_manager@champ.areo	PM2	SP	Project Manager	Skill Profile	1200,00	150,00
 project_leader@champ.areo	PM1	SP	Project Leader	Skill Profile	900,00	112,50
 project_administrator@champ.areo	PM1	SP	Project Administrator	Skill Profile	500,00	62,50
-solution_architect@champ.areo		SOLA	SP	Solution Architect	Skill Profile	1200,00	150,00
-technical_architect@champ.areo		TECA	SP	Technical Architect	Skill Profile	1000,00	125,00
-senior_implementation_consultant@champ.areo	IMPC3	SP	  Senior Implementation Consultant 	Skill Profile	1200,00 150,00
-implementation_consultant@champ.areo		IMPC2	SP	  Implementation Consultant 		Skill Profile	900,00	112,50
-junior_implementation_consultant@champ.areo	IMPC1	SP	  Junior Implementation Consultant	Skill Profile	500,00	62,50
-senior_cutover_consultant@champ.areo		CUTC3	SP	  Senior Cutover Consultant		Skill Profile	1200,00	150,00
-cutover_consultant@champ.areo			CUTC2	SP	  Cutover Consultant 			Skill Profile	900,00	112,50
-support_leader@champ.areo			SUP2	SP	  Support Leader			Skill Profile	800,00	100,00
-support_@champ.areo				SUP1	SP	  Support 				Skill Profile	600,00	75,00
-quallity_manager@champ.areo			QM	SP	  Quallity Manager 			Skill Profile	800,00	100,00
-lead_analyst_onshore@champ.areo			BUSA2	SP	  Lead Analyst (onshore)		Skill Profile	1000,00	125,00
-analyst_onshore@champ.areo			BUSA1	SP	  Analyst (onshore)			Skill Profile	850,00	106,25
-lead_developer_onshore@champ.areo		DEV3	SP	  Lead Developer (onshore)		Skill Profile	750,00	93,75
-developer_onshore@champ.areo			DEV2	SP	  Developer (onshore)			Skill Profile	700,00	87,50
-analyst_offshore@champ.areo			BUSA1 O/S	  SP	    Analyst (offshore)		Skill Profile	650,00	81,25
-lead_developer_offshore@champ.areo		DEV3 O/S	  SP	    Lead Developer (offshore)	Skill Profile	350,00	43,75
-developer_offshore@champ.areo			DEV2 O/S	  SP	    Developer (offshore)	Skill Profile	200,00	25,00
-junior_developer_offshore@champ.areo		DEV1 O/S	  SP	    Junior Developer (offshore)	Skill Profile	150,00	18,75
-lead_tester_onshore@champ.areo			TEST2		  SP	    Lead Tester (onshore)	Skill Profile	600,00	75,00
-tester_onshore@champ.areo			TEST1		  SP	    Tester (onshore)		Skill Profile	500,00	62,50
-lead_tester_offshore@champ.areo			TEST2 O/S	  SP	    Lead Tester (offshore)	Skill Profile	150,00	18,75
-tester_offshore@champ.areo			TEST1 O/S	  SP	    Tester (offshore)		Skill Profile	350,00	43,75
-principal_consultant_external@champ.areo	PCON2 SP	  Principal Consultant External		Skill Profile	1500,00	187,50
-principal_consultant_internal@champ.areo	PCON1 SP	  Principal Consultant - Internal	Skill Profile	1350,00	168,75
-lead_consultant@champ.areo			LCON  SP	  Lead Consultant      Skill Profile	1250,00		156,25
-business_consultant@champ.areo			BCON  SP	  Business Consultant  Skill Profile	1100,00		137,50
-consultant@champ.areo				CONS  SP	  Consultant	       Skill Profile	900,00		112,50
-business_process_modeller/manager_senior@champ.areo   BPM2	  SP		       Business Process Modeller/Manager Senior Skill Profile 1200,00 150,00
-business_process_modeller@champ.areo		      BPM1	  SP		       Business Process Modeller	 Skill Profile	      950,00  118,75
-functional_sap_business_consultant_senior@champ.areo  SAPC2	  SP		       Functional SAP Business Consultant Senior	      Skill Profile 1200,00 150,00
-functional_sap_consultant@champ.areo		      SAPC1	  SP		       Functional SAP Consultant	  Skill Profile	      950,00	    118,75
-technical_sap_consultant_senior@champ.areo	      SAPT2	  SP		       Technical SAP Consultant Senior	  Skill Profile	      1200,00	    150,00
-technical_sap_consultant@champ.areo		      SAPT1	  SP		       Technical SAP Consultant	Skill Profile	950,00	      118,75
-lead_bi_consultant@champ.areo			      BICON2	  SP		       Lead BI Consultant	Skill Profile	1000,00	      125,00
-bi_consultant@champ.areo			      BICON1	  SP		       BI Consultant		Skill Profile	800,00	      100,00
-training_consultant_generic_product@champ.areo	      TCON	  SP		       Training Consultant (generic product)	Skill Profile 1000,00 125,00
-sap_trainer@champ.areo				      SAPC1	  SP		       SAP Trainer	   Skill Profile	900,00	      112,50
-bi_trainer@champ.areo				      BICON1	  SP		       BI Trainer	   Skill Profile	950,00	      118,75
-cargospot_trainer_lead@champ.areo		      TRNR2	  SP		       Cargospot Trainer (Lead)	 Skill Profile	800,00	      100,00
-cargospot_trainer@champ.areo			      TRNR1	  SP		       Cargospot Trainer Skill Profile 700,00	87,50
-manage_infrastructure_services@champ.areo	      MGRIS	  SP		       Manage Infrastructure Services  Skill Profile 1000,00 125,00
-lead_systems_engineer@champ.areo		      SYSENG2	  SP		       Lead Systems Engineer Skill Profile   850,00  106,25
-systems_engineer@champ.areo			      SYSENG1	  SP		       Systems Engineer	     Skill Profile   700,00  87,50
-lead_network_engineer@champ.areo		      NETENG2	  SP		       Lead Network Engineer Skill Profile   850,00  106,25
-network_engineer@champ.areo			      NETENG1	  SP		       Network Engineer	     Skill Profile   700,00  87,50
-team_leader_infrastructure_services@champ.areo	      TLDRIS	  SP		       Team Leader Infrastructure Services   Skill Profile 850,00 106,25
-service_desk@champ.areo				      SDAGT	  SP		       Service Desk		  Skill Profile	   650,00  81,25
-administrator@champ.areo			      ADMIN	  SP		       Administrator		  Skill Profile	   400,00  50,00
-director@champ.areo				      BDIR	  SP		       Director			  Skill Profile	   1200,00 150,00
-regional_service_head@champ.areo		      HRSM	  SP		       Regional Service Head	  Skill Profile	   1200,00 150,00
-regional_service_manager@champ.areo		      RSM	  SP		       Regional Service Manager	  Skill Profile	   1200,00 150,00
-service_manager@champ.areo			      SM	  SP		       Service Manager	Skill Profile	800,00	   100,00
+solution_architect@champ.areo	SOLA	SP	Solution Architect	Skill Profile	1200,00	150,00
+technical_architect@champ.areo	TECA	SP	Technical Architect	Skill Profile	1000,00	125,00
+senior_implementation_consultant@champ.areo	IMPC3	SP	Senior Implementation Consultant 	Skill Profile	1200,00	150,00
+implementation_consultant@champ.areo	IMPC2	SP	Implementation Consultant 	Skill Profile	900,00	112,50
+junior_implementation_consultant@champ.areo	IMPC1	SP	Junior Implementation Consultant	Skill Profile	500,00	62,50
+senior_cutover_consultant@champ.areo	CUTC3	SP	Senior Cutover Consultant	Skill Profile	1200,00	150,00
+cutover_consultant@champ.areo	CUTC2	SP	Cutover Consultant 	Skill Profile	900,00	112,50
+support_leader@champ.areo	SUP2	SP	Support Leader	Skill Profile	800,00	100,00
+support_@champ.areo	SUP1	SP	Support 	Skill Profile	600,00	75,00
+quallity_manager@champ.areo	QM	SP	Quallity Manager 	Skill Profile	800,00	100,00
+lead_analyst_onshore@champ.areo	BUSA2	SP	Lead Analyst (onshore)	Skill Profile	1000,00	125,00
+analyst_onshore@champ.areo	BUSA1	SP	Analyst (onshore)	Skill Profile	850,00	106,25
+lead_developer_onshore@champ.areo	DEV3	SP	Lead Developer (onshore)	Skill Profile	750,00	93,75
+developer_onshore@champ.areo	DEV2	SP	Developer (onshore)	Skill Profile	700,00	87,50
+analyst_offshore@champ.areo	BUSA1 O/S	SP	Analyst (offshore)	Skill Profile	650,00	81,25
+lead_developer_offshore@champ.areo	DEV3 O/S	SP	Lead Developer (offshore)	Skill Profile	350,00	43,75
+developer_offshore@champ.areo	DEV2 O/S	SP	Developer (offshore)	Skill Profile	200,00	25,00
+junior_developer_offshore@champ.areo	DEV1 O/S	SP	Junior Developer (offshore)	Skill Profile	150,00	18,75
+lead_tester_onshore@champ.areo	TEST2	SP	Lead Tester (onshore)	Skill Profile	600,00	75,00
+tester_onshore@champ.areo	TEST1	SP	Tester (onshore)	Skill Profile	500,00	62,50
+lead_tester_offshore@champ.areo	TEST2 O/S	SP	Lead Tester (offshore)	Skill Profile	150,00	18,75
+tester_offshore@champ.areo	TEST1 O/S	SP	Tester (offshore)	Skill Profile	350,00	43,75
+principal_consultant_external@champ.areo	PCON2	SP	Principal Consultant External	Skill Profile	1500,00	187,50
+principal_consultant_internal@champ.areo	PCON1	SP	Principal Consultant - Internal	Skill Profile	1350,00	168,75
+lead_consultant@champ.areo	LCON	SP	Lead Consultant	Skill Profile	1250,00	156,25
+business_consultant@champ.areo	BCON	SP	Business Consultant	Skill Profile	1100,00	137,50
+consultant@champ.areo	CONS	SP	Consultant	Skill Profile	900,00	112,50
+business_process_modeller/manager_senior@champ.areo	BPM2	SP	Business Process Modeller/Manager Senior	Skill Profile	1200,00	150,00
+business_process_modeller@champ.areo	BPM1	SP	Business Process Modeller	Skill Profile	950,00	118,75
+functional_sap_business_consultant_senior@champ.areo	SAPC2	SP	Functional SAP Business Consultant Senior	Skill Profile	1200,00	150,00
+functional_sap_consultant@champ.areo	SAPC1	SP	Functional SAP Consultant	Skill Profile	950,00	118,75
+technical_sap_consultant_senior@champ.areo	SAPT2	SP	Technical SAP Consultant Senior	Skill Profile	1200,00	150,00
+technical_sap_consultant@champ.areo	SAPT1	SP	Technical SAP Consultant	Skill Profile	950,00	118,75
+lead_bi_consultant@champ.areo	BICON2	SP	Lead BI Consultant	Skill Profile	1000,00	125,00
+bi_consultant@champ.areo	BICON1	SP	BI Consultant	Skill Profile	800,00	100,00
+training_consultant_generic_product@champ.areo	TCON	SP	Training Consultant (generic product)	Skill Profile	1000,00	125,00
+sap_trainer@champ.areo	SAPC1	SP	SAP Trainer	Skill Profile	900,00	112,50
+bi_trainer@champ.areo	BICON1	SP	BI Trainer	Skill Profile	950,00	118,75
+cargospot_trainer_lead@champ.areo	TRNR2	SP	Cargospot Trainer (Lead)	Skill Profile	800,00	100,00
+cargospot_trainer@champ.areo	TRNR1	SP	Cargospot Trainer	Skill Profile	700,00	87,50
+manage_infrastructure_services@champ.areo	MGRIS	SP	Manage Infrastructure Services	Skill Profile	1000,00	125,00
+lead_systems_engineer@champ.areo	SYSENG2	SP	Lead Systems Engineer	Skill Profile	850,00	106,25
+systems_engineer@champ.areo	SYSENG1	SP	Systems Engineer	Skill Profile	700,00	87,50
+lead_network_engineer@champ.areo	NETENG2	SP	Lead Network Engineer	Skill Profile	850,00	106,25
+network_engineer@champ.areo	NETENG1	SP	Network Engineer	Skill Profile	700,00	87,50
+team_leader_infrastructure_services@champ.areo	TLDRIS	SP	Team Leader Infrastructure Services	Skill Profile	850,00	106,25
+service_desk@champ.areo	SDAGT	SP	Service Desk	Skill Profile	650,00	81,25
+administrator@champ.areo	ADMIN	SP	Administrator	Skill Profile	400,00	50,00
+director@champ.areo	BDIR	SP	Director	Skill Profile	1200,00	150,00
+regional_service_head@champ.areo	HRSM	SP	Regional Service Head	Skill Profile	1200,00	150,00
+regional_service_manager@champ.areo	RSM	SP	Regional Service Manager	Skill Profile	1200,00	150,00
+service_manager@champ.areo	SM	SP	Service Manager	Skill Profile	800,00	100,00
 \.
 
 create or replace function lookup_user (varchar, varchar)
