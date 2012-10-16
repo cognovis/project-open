@@ -9,8 +9,8 @@
 ad_page_contract {
     Cost Cube
 } {
-    { start_date "" }
-    { end_date "" }
+    { start_date "2000-01-01" }
+    { end_date "2099-12-31" }
     { top_vars "year quarter_of_year" }
     { top_scale1 "" }
     { top_scale2 "" }

@@ -439,10 +439,22 @@ set quote_total 0
 set bill_total 0
 set po_total 0
 
+set invoice_total 0
+set quote_total 0
+set bill_total 0
+set po_total 0
+
+set invoice_total_rounded 0
+set quote_total_rounded 0
+set bill_total_rounded 0
+set po_total_rounded 0
+
 set invoice_subtotal 0
 set quote_subtotal 0
 set bill_subtotal 0
 set po_subtotal 0
+
+
 
 # ---------------------------------------------------
 # Global header

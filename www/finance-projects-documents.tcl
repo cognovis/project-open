@@ -803,6 +803,14 @@ set po_total 0
 set timesheet_total 0
 set expense_total 0
 
+set invoice_total_rounded 0
+set delnote_total_rounded 0
+set quote_total_rounded 0
+set bill_total_rounded 0
+set po_total_rounded 0
+set timesheet_total_rounded 0
+set expense_total_rounded 0
+
 set invoice_subtotal 0
 set delnote_subtotal 0
 set quote_subtotal 0
