@@ -162,39 +162,52 @@ select import_users ();
 
 
 -- ***************************************************************************************
--- ***************************************************************************************
 
 create or replace function im_update_hourly_costs_based_on_skill_profiles ()
 returns integer as '
 DECLARE
         row             RECORD;
-        v_user_id       integer;
-        v_exists_p      integer;
-        v_authority_id  integer;
-        v_group_id      integer;
-BEGIN
-    FOR row IN
-        select * from im_employees
+      v_hourly_cost   numeric;
+    
+   BEGIN
+   FOR row IN
+        select
+                u.party_id,
+              u.first_names,
+              u.last_name,
+              (select im_category_from_id(e.skill_role_id)) as category_name, 
+              e.role_function_id
+        from
+                persons p,
+                cc_users u
+                LEFT JOIN im_employees e ON (u.party_id = e.employee_id)
+                LEFT JOIN users_contact c ON (u.party_id = c.user_id),
+                (select member_id from group_distinct_member_map m where group_id = ''463'') m
+        where
+                p.person_id = u.party_id
+                and u.party_id = m.member_id
+                and u.member_state = ''approved''
     LOOP
 
-        -- update im_employees set
-        --                 hourly_cost = row.costs_hour::numeric
-        -- where employee_id = v_user_id;
-	      
+        RAISE NOTICE ''Updating user_id / first name / last_name: %,%,%'', row.party_id, row.first_names, row.last_name;
+        RAISE NOTICE ''Updating role_function_id /category_name: %,%'', row.role_function_id, row.category_name;
+
+        select  ee.hourly_cost 
+        into        v_hourly_cost
+        from        users uu
+                LEFT JOIN im_employees ee ON (uu.user_id = ee.employee_id) 
+        where   uu.username = row.category_name;
+
+        RAISE NOTICE ''Found hourly_cost: %'', v_hourly_cost;
+        
+            update im_employees set
+                         hourly_cost = v_hourly_cost::numeric
+            where employee_id = row.party_id;
     END LOOP;
     RETURN 0;
 END;' language 'plpgsql';
 
-select import_users ();
+select im_update_hourly_costs_based_on_skill_profiles(); 
 
--- insert into im_freelance_skills (
---         user_id,
---        skill_id,
---        skill_type_id,
---        confirmed_experience_id
--- ) values (
---        :user_id,
---        :add_skill_id,
---        :skill_type_id,
---        :unconfirmed_experience
--- )
+
+
