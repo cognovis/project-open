@@ -62,7 +62,7 @@ ad_proc im_employee_info_component { employee_id return_url {view_name ""} } {
     if {![im_permission $current_user_id view_hr]} { return "" }
 
     # Finally: Show this component only for employees
-    if {![im_user_is_employee_p $employee_id]} { 
+    if {![im_user_is_employee_p $employee_id] && ![im_profile::member_p -profile_id [im_profile_skill_profile] -user_id $employee_id]} { 
 	ns_log Notice "im_employee_info_component: user is not an employee..."
 	return "" 
     }
