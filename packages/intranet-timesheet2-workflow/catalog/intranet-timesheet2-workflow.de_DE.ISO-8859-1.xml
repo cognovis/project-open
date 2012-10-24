@@ -28,7 +28,7 @@
   <msg key="Timesheet_Conf_Object">Geloggte Stunden bestätigen</msg>
   <msg key="Timesheet_Not_OK">Zeiterfassung nicht OK</msg>
   <msg key="Timesheet_OK">Zeiterfassung OK</msg>
-  <msg key="Notification_Body_Notify_Applicant_TS_Approved">Ihre Stunden wurden nicht bestätigt:</msg>
+  <msg key="Notification_Body_Notify_Applicant_TS_Approved">Ihre Stunden wurden bestätigt:</msg>
   <msg key="Notification_Body_Notify_Applicant_TS_Not_Approved">Ihre Stunden wurden nicht bestätigt</msg>
   <msg key="Notification_Subject_Notify_Applicant_TS_Approved">Zeiterfassung</msg>
   <msg key="Notification_Subject_Notify_Applicant_TS_Not_Approved">Zeiterfassung</msg>

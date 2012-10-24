@@ -411,3 +411,5 @@
 </div>
 </div>
 </if>
+
+<%=[im_component_insert "Filestorage Financial Document"]%>

@@ -10,7 +10,7 @@
     <inherit-templates-p>t</inherit-templates-p>
     <auto-mount>intranet-ganttproject</auto-mount>
 
-    <version name="4.0.3.2.0" url="http://www.project-open.org/download/apm/intranet-ganttproject-4.0.3.2.0.apm">
+    <version name="4.0.3.3.0" url="http://www.project-open.org/download/apm/intranet-ganttproject-4.0.3.3.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Integration with GanttProject</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
@@ -31,6 +31,7 @@
             <parameter scope="instance" datatype="string"  min_n_values="1"  max_n_values="1"  name="GanttProjectPreviewFilename"  default="ganttproject.preview" description="Default file to look for in the project folder for a GanttProject icon"/>
             <parameter scope="instance" datatype="number"  min_n_values="1"  max_n_values="1"  name="GanttProjectThumbnailSize"  default="360x360" description="Default size for GanttProject thumbnails. A typical value for a 1024x768 screen resolution is 360x360"/>
             <parameter scope="instance" datatype="number"  min_n_values="1"  max_n_values="1"  name="GanttProjectType"  default="Consulting Project" description="Gantt components only appear in projects of a particular type, because the Gantt diagram doesn't make much sense in translation projects, for example. This parameter refers to the root category of projects where the GanttComponent should appear."/>
+            <parameter scope="instance" datatype="number"  min_n_values="1"  max_n_values="1"  name="UpdatePercentCompletedP"  default="0" description="Should imports from MS-Project overwrite the im_projects.percent_completed field? Ususally the project advance is determined by users in ]po[, so the default value is '0'."/>
         </parameters>
 
     </version>

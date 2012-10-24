@@ -1297,10 +1297,10 @@
 "intranet-core";"parameter";"EnableProjectProgramPathP";"0";
 "intranet-core";"parameter";"EnableUsersAuthorityP";"1";
 "intranet-core";"parameter";"EnableUsersUsernameP";"1";
-"intranet-core";"parameter";"ErrorReportURL";"http://www.project-open.org/intranet-forum/new-system-incident";
+"intranet-core";"parameter";"ErrorReportURL";"http://www.project-open.net/intranet-forum/new-system-incident";
 "intranet-core";"parameter";"FindCmd";"/usr/bin/find";
 "intranet-core";"parameter";"GzipCmd";"/usr/bin/gzip";
-"intranet-core";"parameter";"HomeNewsComponentUrl";"http://www.project-open.org/intranet-rss-reader/index?format=iframe300";
+"intranet-core";"parameter";"HomeNewsComponentUrl";"http://www.project-open.net/intranet-rss-reader/index?format=iframe300";
 "intranet-core";"parameter";"HomeProjectListSortClause";"project_nr";
 "intranet-core";"parameter";"MainProjectSelectMaxdepth";"1";
 "intranet-core";"parameter";"MaintenanceMessage";"";
@@ -1529,7 +1529,7 @@
 "intranet-dynfield";"parameter";"relative_template";"default-absolute";
 "intranet-exchange-rate";"menu";"admin_exchange_rates";"t";
 "intranet-exchange-rate";"menu";"finance_exchange_rates";"t";
-"intranet-exchange-rate";"parameter";"ExchangeRateUpdateUrl";"http://www.project-open.org/intranet-asus-server/exchange-rates.xml";
+"intranet-exchange-rate";"parameter";"ExchangeRateUpdateUrl";"http://www.project-open.net/intranet-asus-server/exchange-rates.xml";
 "intranet-exchange-rate";"parameter";"ExchangeRateUrlXRates";"http://www.x-rates.com/d/USD/table.html";
 "intranet-exchange-rate";"parameter";"MaxDaysOutdated";"365";
 "intranet-expenses";"menu";"expenses";"t";
@@ -1777,7 +1777,7 @@
 "intranet-security-update-client";"menu";"software_updates";"t";
 "intranet-security-update-client";"parameter";"ExchangeRateDaysBeforeUpdate";"1";
 "intranet-security-update-client";"parameter";"ExchangeRateSweeperEnabledP";"0";
-"intranet-security-update-client";"parameter";"SecurityUpdateServerUrl";"http://www.project-open.org/intranet-asus-server/update-information";
+"intranet-security-update-client";"parameter";"SecurityUpdateServerUrl";"http://www.project-open.net/intranet-asus-server/update-information";
 "intranet-security-update-client";"parameter";"SecurityUpdateVerboseP";"1";
 "intranet-security-update-client";"portlet";"Exchange Rates ASUS";"t";
 "intranet-security-update-client";"portlet";"Security Update Client Component";"t";
@@ -1887,7 +1887,7 @@
 "intranet-translation";"portlet";"Timesheet Task Component (AJAXed)";"t";
 "intranet-trans-quality";"portlet";"Project Quality Component";"t";
 "intranet-update-client";"parameter";"CvsPath";"/bin/cvs";
-"intranet-update-client";"parameter";"UpdateServerURL";"http://www.project-open.org/intranet-update-server/update";
+"intranet-update-client";"parameter";"UpdateServerURL";"http://www.project-open.net/intranet-update-server/update";
 "intranet-wiki";"portlet";"Company Wiki Component";"f";
 "intranet-wiki";"portlet";"Home Wiki Component";"f";
 "intranet-wiki";"portlet";"Office Wiki Component";"f";

@@ -20,7 +20,7 @@ SELECT im_component_plugin__new (
 	null,					-- creation_ip
 	null,					-- context_id
 	'Project Translation Wizard',		-- plugin_name
-	'intranet-intranet-trans-project-wizard',  -- package_name
+	'intranet-trans-project-wizard',	-- package_name
 	'left',					-- location
 	'/intranet/projects/view',		-- page_url
 	null,					-- view_name
