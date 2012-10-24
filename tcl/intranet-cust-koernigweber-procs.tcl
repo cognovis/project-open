@@ -207,12 +207,14 @@ ad_proc -public im_price_list {
 
     # ------------------ DEFAULTS ------------------------
     set current_user_id [ad_maybe_redirect_for_registration]
-    set admin_p 0
     set object_type [util_memoize "db_string otype \"select object_type from acs_objects where object_id=$object_id\" -default \"\""]
     set name_order [parameter::get -package_id [apm_package_id_from_key intranet-core] -parameter "NameOrder" -default 1]
     set portlet_allocation_costs_p 0
 
     # ------------------ PERMISSIONS ------------------------
+    set admin_p 0
+    if { [im_permission $current_user_id "admin_project_price_list"]} { set admin_p 1 }
+
     if { ![im_is_user_site_wide_or_intranet_admin $user_id] && "im_project" == $object_type } {
 	# Show price list in projects only when user is a Project Manager of the project or member of Technisches Sekretariat
 	if { ![im_biz_object_admin_p $user_id $object_id] && ![im_profile::member_p -profile_id 55437 -user_id $user_id] } {
@@ -250,15 +252,6 @@ ad_proc -public im_price_list {
 	    set err_mess  [lang::message::lookup "" intranet-cust-koernigweber.CostObjectMissing "No Cost Object found, please contact your System Administrator."]
 	    ad_return_complaint 1 $err_mess
 	}
-
-	if { [im_permission $current_user_id "admin_project_price_list"]} {
-		set admin_p 1  		
-	}
-	
-    } elseif { "user" == $object_type } {
-        if { [im_permission $current_user_id "admin_employee_price_list"]} {
-                set admin_p 1
-        }
     } 
 
     # ------------------ Format the table header ------------------------
@@ -339,7 +332,6 @@ ad_proc -public im_price_list {
 	    lappend person_list $user_id
 	}
 
-	set show_delete_checkbox_p 0
 	foreach project_member_id $person_list {
 	    switch $object_type {
 		"im_company" {
@@ -542,7 +534,7 @@ ad_proc -public im_price_list {
 	    default { ad_return_complaint 1 "No object type found, wrong configuration, please contact your System Adminsitrator" }
 	   } ;# switch object_type 
 
-	   set show_delete_checkbox_p 0 
+	
 
 	db_foreach records_to_list $inner_sql {
 		set show_currency_p 1
@@ -613,7 +605,6 @@ ad_proc -public im_price_list {
 		append body_html "<td align=right>$start_date_loc</td>"
 
 		if { (("user" == $object_type) || ("" == $cost_object_category_id && "im_project" == $object_type )) && $admin_p } {
-		    set show_delete_checkbox_p 1
 		    set var_delete_price "delete_price.$id_price_table"
 		    append body_html "
 			  <td align=right>
@@ -633,7 +624,6 @@ ad_proc -public im_price_list {
 
 		# To be improved: 
 		# column cost_object_category_id will be used to store the CC  
-
 
 		# Define inner_sql for "Allocation Costs Portlet" 	
         	set filter_records [ns_queryget filter_records]
@@ -876,7 +866,6 @@ ad_proc -public im_price_list {
     	}
     } else {
 	# Add new price for Portlet Allocation Costs 
-	set show_delete_checkbox_p 1
              append body_html "
                 <tr $td_class([expr $count % 2])>
                         <td>
@@ -911,9 +900,9 @@ ad_proc -public im_price_list {
                 "
     }; # end add new price 
 
-    # ------------------ Format the table footer with buttons ------------
+    # ------------------ Format the table footer with button ------------
     set footer_html ""
-    if { $show_delete_checkbox_p } {
+    if { ("user" == $object_type || $portlet_allocation_costs_p) && $admin_p } {
 	append footer_html "
 	    <tr>
 	      <td align=left colspan=$colspan>
