@@ -144,6 +144,11 @@ if {$reports_exist_p && $user_admin_p} {
 # ---------------------------------------------------
 # 
 
+# Hide the REST reports for non-administrators.
+# A bit dirty like this, though...
+set hide_rest_reports_sql ""
+if {!$user_admin_p} { set hide_rest_reports_sql "and m.name not like 'REST%'" }
+
 set top_menu_sortkey [db_string top_menu_sortkey "
 	select tree_sortkey 
 	from im_menus 
@@ -174,6 +179,7 @@ db_multirow -extend {indent_spaces edit_html} reports get_reports "
 	        tree_sortkey like '$top_menu_sortkey%'
 		and 't' = im_object_permission_p(m.menu_id, :current_user_id, 'read')
 		and m.label != 'reporting'
+		$hide_rest_reports_sql
 	order by tree_sortkey
 " {
     # Pass the report name though the localization system
