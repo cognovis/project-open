@@ -310,10 +310,23 @@ ad_proc im_indicator_horizontal_bar {
 # ---------------------------------------------------------------------
 
 ad_proc -public im_indicator_evaluation_sweeper { 
+    {-day ""}
 } {
     Periodically runs and pre-calculates the values for the indicators
 } {
     ns_log Notice "im_indicator_evaluation_sweeper: starting"
+
+    # Special logic if we are called from intranet-demo-data.
+    # In this case we need to backdate the indicator results.
+    set substitute_now_with_day_p 1
+    
+    # Check if there is a parameter from intranet-demo-data about the last day.
+    if {"" == $day} { set day [parameter::get_from_package_key -package_key "intranet-demo-data" -parameter "DemoDataDay" -default ""] }
+    # Just take today.
+    if {"" == $day} { 
+	set day [db_string day "select now() from dual"]
+	set substitute_now_with_day_p 0
+    }
 
     # The first user in the system is the System Administrator...
     set current_user_id [db_string default_user "
@@ -348,7 +361,7 @@ ad_proc -public im_indicator_evaluation_sweeper {
 			select	avg(result) as result,
 				result_indicator_id
 			from	im_indicator_results
-			where	result_date >= now() - '$eval_interval_hours hours'::interval
+			where	result_date >= :day::timestamptz - '$eval_interval_hours hours'::interval
 			group by result_indicator_id
 		) ir ON (i.indicator_id = ir.result_indicator_id)
 	where
@@ -363,6 +376,11 @@ ad_proc -public im_indicator_evaluation_sweeper {
     db_foreach indicator_values $sql {
 	ns_log Notice "im_indicator_evaluation_sweeper: indicator=$report_name"
 
+	# Back-date the results by replacing "now()" in the SQL by :day::timestamptz
+	if {$substitute_now_with_day_p} {
+	    regsub -all {now\(\)} $report_sql ":day::timestamptz" report_sql
+	    ad_return_complaint 1 $report_sql
+	}
 	# Check if there was no result for the last x hours
 	if {"" == $result} {
 	    set result "error"
@@ -375,9 +393,9 @@ ad_proc -public im_indicator_evaluation_sweeper {
 		    ns_log Notice "im_indicator_evaluation_sweeper: insert value=$result"
 		    db_dml insert "
 			insert into im_indicator_results (
-				result_id,result_indicator_id,result_date,result
+				result_id, result_indicator_id, result_date, result
 			) values (
-				nextval('im_indicator_results_seq'),:report_id,now(),:result
+				nextval('im_indicator_results_seq'), :report_id, :day::timestamptz, :result
 			)
 	        "
 		}
