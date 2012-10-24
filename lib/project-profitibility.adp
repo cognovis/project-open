@@ -74,7 +74,7 @@
 		<li><b>Selbstkosten (VSI+Umlage): </b>VSI + Anzahl der geloggten Stunden * Umlage (Umlagekosten der 'Internal Company')</li>
 	    </if>
 		<li><b>Abrechenbar lt. E/C Preisliste: </b> Anzahl der geloggten Stunden * VK der Preisliste</li>
-		<li><b>Sonstige Kosten: </b> Spesen und Ausgaben f&uuml;r Projekte </li>
+		<li><b>Sonstige Kosten: </b> Abrechenbare Spesen und Ausgaben f&uuml;r Projekte. (Nicht abrechenbare Kosten in Klammern) </li>
                 <li><b>Lieferantenrechnungen: </b> Summe der im System eingestellter Lieferantenrechnungen</li>
 		<li><b>Anspruch: </b> Abrechenbar lt. E/C Preisliste +  Sonstige Kosten (Materialkosten) + Lieferantenrechnungen</li>
 		<li><b>Abgrechnet:</b> Summer gestellten Rechnungen</li>
@@ -185,16 +185,15 @@
 	GuV Projekt - 268,33 EUR (Zeile fett)
 	-->
 
-        <h1><%=[_ intranet-cust-koernigweber.Project_Profitibility]%></h1>
-        <table cellspacing='5' cellpadding='5'>
-          <!-- Abrechenbar --> 
-	        <tr valign=top><td><!-- Abrechenbar lt. Preismatrix -->@label_fin_sum_target_benefit;noquote@</td><td align='right'>@total__target_benefit@</td></tr>
-		<tr valign=top><td><!-- Sonstige Kosten-->@label_fin_sum_costs_material;noquote@ </td><td align='right'>@total__total_expenses_billable@</td></tr>
-		<tr valign=top><td><!-- Zulieferrechnungen-->@label_fin_sum_provider_bills;noquote@</td><td align='right'>@total__total_provider_bills@</td></tr>
-		<tr valign=top><td><!-- Anspruch-->@label_fin_sum_invoiceable_total;noquote@</td><td align='right'>@total__invoiceable_total_var@</td></tr>
+        <table cellspacing='0' cellpadding='0'>
+		<tr><td colspan="2"><h1><%=[_ intranet-cust-koernigweber.Project_Profitibility]%></h1></td></tr>
+	        <tr valign=top><td><!-- Abrechenbar lt. Preismatrix -->@label_costs_based_on_matrix;noquote@</td><td align='right'>@total__amount_invoicable_matrix@&nbsp;&euro;</td></tr>
+		<tr valign=top><td><!-- Sonstige Kosten-->@label_fin_sum_costs_material;noquote@ </td><td align='right'>@total__total_expenses_billable@&nbsp;&euro;</td></tr>
+		<tr valign=top><td><!-- Zulieferrechnungen-->@label_fin_sum_provider_bills;noquote@</td><td align='right'>@total__total_provider_bills@&nbsp;&euro;</td></tr>
+		<tr valign=top><td><!-- Anspruch-->@label_fin_sum_invoiceable_total;noquote@</td><td align='right'>@total__invoiceable_total_var@&nbsp;&euro;</td></tr>
 		<tr valign=top><td><!-- Leerzeile--></td><td>&nbsp;</td></tr>
-		<tr valign=top><td><!-- Abgerechnet-->@label_fin_sum_invoiced;noquote@</td><td align='right'>@total__sum_invoices_value@</td></tr>
-		<tr valign=top><td><!-- GuV Projekt-->@label_fin_sum_profit_and_loss_project;noquote@</td><td align='right'><strong>@total__profit_and_loss_project_var@</strong></td></tr>
+		<tr valign=top><td><!-- Abgerechnet-->@label_fin_sum_invoiced;noquote@</td><td align='right'>@total__sum_invoices_value@&nbsp;&euro;</td></tr>
+		<tr valign=top><td><!-- GuV Projekt-->@label_fin_sum_profit_and_loss_project;noquote@</td><td align='right'><strong>@total__profit_and_loss_project_var@&nbsp;&euro;</strong></td></tr>
         </table>
 </if>
 
