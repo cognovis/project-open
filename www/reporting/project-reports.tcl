@@ -355,9 +355,11 @@ if {"" == $html} {
 
 set survey_options [db_list_of_lists survey_options "
 	select	ss.name,
-		ss.survey_id
+		ss.survey_id,
+		(select count(*) from survsimp_responses where survey_id = ss.survey_id) as response_count
 	from	survsimp_surveys ss
 	where	ss.enabled_p = 't'
+	order by response_count DESC
 "]
 
 #set survey_options [linsert $survey_options 0 [list "" ""]]
