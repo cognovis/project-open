@@ -1,12 +1,64 @@
 # /packages/intranet-cust-koernigweber/tcl/intranet-cust-koernigweber-procs.tcl
 #
 # Copyright (C) 1998-2011 
-
+ 
 ad_library {
     
     Customizations implementation KoernigWeber 
     @author klaus.hofeditz@project-open.com
 }
+
+
+# ----------------------------------------------------------------------
+# Portlet
+# ----------------------------------------------------------------------
+
+ad_proc -public im_project_profitibility_component_weber {
+    -user_id 
+    -project_id
+    -view_name
+} {
+    Shows WEBER specific Financial Summary
+} {
+    
+    # Show only on finance 
+    if { "finance" != $view_name  } { return "" }
+    ns_log NOTICE "im_project_profitibility_component_weber::entering"
+
+    # Make sure project_id is an integer...
+    im_security_alert_check_integer -location "im_project_profitibility_component_weber" -value $project_id
+
+    # Show only on main project level 
+    set parent_id [db_string get_data "select parent_id from im_projects where project_id = :project_id" -default 0]
+    if { "" != $parent_id  } {
+	ns_log NOTICE "im_project_profitibility_component_weber::not a parent project:  parent_id found: $parent_id"
+	return ""
+    }
+
+    # If user is only employee, he needs to be the PM of the project  
+    if { 
+   	 [im_profile::member_p -profile_id [im_employee_group_id] -user_id $user_id] && \
+	 !(
+		[im_profile::member_p -profile_id [im_admin_group_id] -user_id $user_id] || \
+		[im_profile::member_p -profile_id [db_string get_data "select group_id from groups where group_name='Senior Managers'" -default 0] -user_id $user_id] || \
+		[im_profile::member_p -profile_id [db_string get_data "select group_id from groups where group_name='Technical Office'" -default 0] -user_id $user_id] \
+	  )
+    } {
+	if { $user_id != [db_string get_data "select project_lead_id from im_projects where project_id = :project_id" -default 0] } {
+	    ns_log NOTICE "im_project_profitibility_component_weber::returning empty string"
+	    return ""
+	}
+    }
+
+    ns_log NOTICE "im_project_profitibility_component_weber::parsing template"
+    set params [list \
+                    [list project_id_from_filter $project_id] \
+                    [list output_format "component_html"] \
+                    ]
+    set result [ad_parse_template -params $params "/packages/intranet-cust-koernigweber/lib/project-profitibility"]
+    return [string trim $result]
+}
+
 
 # ---------------------------------------------------------------------
 # Show the members of the Admin Group of the current Business Object.
@@ -224,7 +276,6 @@ ad_proc -public im_price_list {
     }    
 
     # ------------------ Allocation costs ------------------------
-
     set company_type_id [db_string get_data "select company_type_id from im_companies where company_id = :object_id" -default 0]
     set internal_company_id [im_company_internal]
     if { ("im_company" == $object_type && $internal_company_id != $object_id) || ("im_company" == $object_type && 0 == [im_permission $current_user_id "admin_allocation_costs"]) } {
