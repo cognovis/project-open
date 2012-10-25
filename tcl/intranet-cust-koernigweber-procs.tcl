@@ -20,8 +20,8 @@ ad_proc -public im_project_profitibility_component_weber {
 } {
     Shows WEBER specific Financial Summary
 } {
-    
-    # Show only on finance 
+
+      # Show only on finance 
     if { "finance" != $view_name  } { return "" }
     ns_log NOTICE "im_project_profitibility_component_weber::entering"
 
@@ -52,7 +52,7 @@ ad_proc -public im_project_profitibility_component_weber {
 
     ns_log NOTICE "im_project_profitibility_component_weber::parsing template"
     set params [list \
-                    [list project_id_from_filter $project_id] \
+                    [list project_id $project_id] \
                     [list output_format "component_html"] \
                     ]
     set result [ad_parse_template -params $params "/packages/intranet-cust-koernigweber/lib/project-profitibility"]
@@ -75,13 +75,8 @@ ad_proc find_sales_price {
     on an arbitrary project level above    
 } {
 
-    if { ""==$calendar_date } {
-	set calendar_date [db_string get_data "select CURRENT_TIMESTAMP" -default 0]
-    }
-
-    if { "" == $project_id  } {
-	set project_id 0 
-    }
+    if { ""==$calendar_date } {	set calendar_date [db_string get_data "select CURRENT_TIMESTAMP" -default 0] }
+    if { "" == $project_id  } { set project_id 0 }
 
     ns_log NOTICE "find_sales_price: Entr: user_id: $user_id, project_id: $project_id, company_id $company_id, cost_object_category_id: $cost_object_category_id"
     
