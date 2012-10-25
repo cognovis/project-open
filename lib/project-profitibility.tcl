@@ -48,7 +48,7 @@ if {![string equal "t" $read_p]} {
 # surpress columns "Staff Costs", "Target Benefit", "P&L1", "P&L2"
 # and show only projects where current_user_id = PM of project 
 set full_view_p 0 
-if {[im_profile::member_p -profile_id [im_accounting_group_id] -user_id $current_user_id] || [im_profile::member_p -profile_id 469 -user_id $current_user_id]  } {
+if {[im_profile::member_p -profile_id [im_accounting_group_id] -user_id $current_user_id] || [im_profile::member_p -profile_id 469 -user_id $current_user_id] || [acs_user::site_wide_admin_p] } {
     set full_view_p 1
 }
 
