@@ -22,6 +22,8 @@ if { ![info exists end_date] } { set end_date "" }
 if { ![info exists customer_id] } { set customer_id "" }
 if { ![info exists written_order_form_p] } { set written_order_form_p "" }
 
+set project_id_from_filter $project_id
+
 # ------------------------------------------------------------
 # Security
 
@@ -567,24 +569,36 @@ if { 0 != $user_id_from_search } {
                           and day <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
                 ) * (select hourly_cost from im_employees where employee_id = :user_id_from_search)::numeric as employee_hours_amount,
 
-		(select sum(c.amount) from im_costs c, im_expenses e where c.project_id in (
-                        select
-                                p_child.project_id
-                        from
-                                im_projects p_parent,
-                                im_projects p_child
-                        where
-                                p_child.tree_sortkey between p_parent.tree_sortkey and tree_right(p_parent.tree_sortkey)
-                                and p_parent.project_id = child.project_id
-                        ) and c.provider_id = :user_id_from_search
-	                  and c.effective_date >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
-                          and c.effective_date <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
-                          and c.cost_type_id = 3720 
-			  and e.expense_id = c.cost_id
-			  and e.billable_p = 't'
+		(select 
+			sum(c.amount * e.reimbursable / 100) 
+		 from 
+			im_costs c, 
+			im_expenses e 
+		 where 
+			c.project_id in (
+                        	select
+                                	p_child.project_id
+	                        from
+        	                        im_projects p_parent,
+                	                im_projects p_child
+                        	where
+                                	p_child.tree_sortkey between p_parent.tree_sortkey and tree_right(p_parent.tree_sortkey)
+	                                and p_parent.project_id = child.project_id
+                        ) 
+			and c.provider_id = :user_id_from_search
+	                and c.effective_date >= to_date(:start_date::timestamptz, 'YYYY-MM-DD')
+                        and c.effective_date <= to_date(:end_date::timestamptz, 'YYYY-MM-DD')
+                        and c.cost_type_id = 3720 
+			and e.expense_id = c.cost_id
+			and e.billable_p = 't'
                 ) as employee_costs_billable,
 
-		(select sum(amount) from im_costs c, im_expenses e where c.project_id in (
+		(select 
+			sum(c.amount * e.reimbursable / 100) 
+		 from 
+			im_costs c, 
+			im_expenses e 
+		 where c.project_id in (
                         select
                                 p_child.project_id
                         from
@@ -677,7 +691,7 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
                 LEFT OUTER JOIN (
                         select
                                 project_id,
-                                sum(amount) as amount
+                                sum(c.amount * e.reimbursable / 100) as amount
                         from
                                 im_costs c,
 				im_expenses e
@@ -693,7 +707,7 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
                 LEFT OUTER JOIN (
                         select
                                 project_id,
-                                sum(amount) as amount
+                                sum(c.amount * e.reimbursable / 100) as amount
                         from
                                 im_costs c,
 				im_expenses e
@@ -802,9 +816,9 @@ if { 0 != $user_id_from_search } { set inner_hours_where "and ho.user_id = $user
 
 template::multirow foreach project_list {    
 
-    	ds_comment "------------------------------------------------"
-    	ds_comment "child_id: $child_id, project_name: $project_name"
-    	ds_comment "------------------------------------------------"
+    	ds_comment "------------------------------------------------------------------------"
+    	ds_comment "child_id: $child_id, parent_id: $parent_id, project_name: $project_name"
+    	ds_comment "------------------------------------------------------------------------"
 
    	# Limit costs to employee cost 	
 	if { 0 != $user_id_from_search } { 
@@ -868,16 +882,17 @@ template::multirow foreach project_list {
 		# Calculate costs staff w/o compound costs
 		# Get rate from Project 9140_12_0000 - Unproduktive Std. der produktiven MA 
 	    	set costs_staff_rate [find_sales_price $user_id "" "" "10000111" $calendar_date]
+		ds_comment "Find rate for user_id: $user_id '' '' '10000111' calendar_date: $calendar_date :: $costs_staff_rate "
 		
                 if { "" == $costs_staff_rate || 0 == $costs_staff_rate } {
                         append err_mess [lang::message::lookup "" intranet-cust-koernigweber.MissingPrice "No price found for user/project:<br>"]
                         append err_mess "<a href='/intranet/users/view?user_id=$user_id'>[im_name_from_user_id $user_id]</a> / <a href='/intranet/projects/view?project_id=$project_id'>"
                         append err_mess [db_string get_data "select project_name from im_projects where project_id = $project_id" -default "$project_id"]
                         append err_mess "</a><br><br>"
-			ds_comment "Error: No price found for user/project"
+
 		        continue
 		} else {
-                        ds_comment "Found rate: $costs_staff_rate based on (user_id: $user_id, project_id: 71643, company_id: 65858)"
+                        ds_comment "Found rate: $costs_staff_rate for (user_id: $user_id, project_id: 71643, company_id: 65858)"
                         set amount_costs_staff [expr $amount_costs_staff + [expr $costs_staff_rate * $hours]]		
 		}
 
@@ -907,7 +922,7 @@ template::multirow foreach project_list {
 			append err_mess "</a><br><br>"
 			ad_return_complaint 1 $err_mess
 	    	} else {
-		        ds_comment "Found sales price $sales_price based on (user_id: $user_id, project_id: $project_id, company_id: $company_id)"
+		        ds_comment "Found sales price $sales_price for (user_id: $user_id, project_id: $project_id, company_id: $company_id)"
 			set amount_invoicable_matrix [expr $amount_invoicable_matrix + [expr $sales_price * $hours]]						
 		}
 	}
@@ -962,13 +977,16 @@ template::multirow foreach project_list {
 	set invoiceable_total_var [expr $total_expenses_billable + $amount_invoicable_matrix + $provider_bills]
 	set invoiceable_total_var_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $invoiceable_total_var+0] $rounding_precision] $format_string $locale]
         template::multirow set project_list $i invoiceable_total $invoiceable_total_var_pretty
+        ds_comment "Invoiceable / Anspruch: $amount_invoicable_matrix"
 
         # Costs Material (billable) 	
 	set total_expenses_billable_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $total_expenses_billable+0] $rounding_precision] $format_string $locale]
-	set total_expenses_not_billable_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $total_expenses_not_billable+0] $rounding_precision] $format_string $locale]
+        ds_comment "Expenses (billable): $total_expenses_billable"
 
         # Costs Material (not billable) 	
+	set total_expenses_not_billable_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $total_expenses_not_billable+0] $rounding_precision] $format_string $locale]
         template::multirow set project_list $i costs_material "$total_expenses_billable_pretty<br>($total_expenses_not_billable_pretty)"
+        ds_comment "Expenses (not billable): $total_expenses_not_billable"
 
 	# Invoices 
 	set sql_str "
