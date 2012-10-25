@@ -379,7 +379,6 @@ ad_proc -public im_indicator_evaluation_sweeper {
 	# Back-date the results by replacing "now()" in the SQL by :day::timestamptz
 	if {$substitute_now_with_day_p} {
 	    regsub -all {now\(\)} $report_sql ":day::timestamptz" report_sql
-	    ad_return_complaint 1 $report_sql
 	}
 	# Check if there was no result for the last x hours
 	if {"" == $result} {
@@ -432,6 +431,7 @@ ad_proc -public im_indicator_timeline_component {
 
     # Evaluate indicators every X hours:
     set eval_interval_hours [parameter::get_from_package_key -package_key "intranet-reporting-indicators" -parameter "IndicatorEvaluationIntervalHours" -default 24]
+    set day [parameter::get_from_package_key -package_key "intranet-demo-data" -parameter "DemoDataDay" -default ""]
 
     if {"" == $show_description_long_p && "" != $indicator_section_id} {
 	set show_description_long_p 0
