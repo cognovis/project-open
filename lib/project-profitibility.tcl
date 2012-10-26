@@ -44,8 +44,8 @@ if {![string equal "t" $read_p]} {
     ad_script_abort
 }
 
-# When user is not member of the groups Senior Managers or Accounting 
-# surpress columns "Staff Costs", "Target Benefit", "P&L1", "P&L2"
+# When user is not member of the groups Senior Managers (id=469), Accounting or 
+# Bereichsleitung (id=66359) surpress columns "Staff Costs", "Target Benefit", "P&L1", "P&L2"
 # and show only projects where current_user_id = PM of project 
 set full_view_p 0 
 if {
