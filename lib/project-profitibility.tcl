@@ -31,7 +31,7 @@ set project_id_from_filter $project_id
 # because it identifies unquely the report's Menu and
 # its permissions.
 
-set menu_label "reporting-project-profit-loss"
+set menu_label "project_finance"
 set current_user_id [ad_maybe_redirect_for_registration]
 set read_p [db_string report_perms "
         select  im_object_permission_p(m.menu_id, :current_user_id, 'read')
@@ -373,8 +373,8 @@ set label_project_status [lang::message::lookup "" intranet-core.Project_Status 
 set label_written_order [lang::message::lookup "" intranet-cust-koernigweber.Written_Order "Written Order?"]
 set label_staff_costs [lang::message::lookup "" intranet-cust-koernigweber.Emp_Cust_Staff_Costs "Staff<br>Costs"]
 set label_target_benefit [lang::message::lookup "" intranet-cust-koernigweber.Target_Benefits "Target<br>Benefits"]
-set label_costs_material [lang::message::lookup "" intranet-material.Costs_Material "Costs<br>Material"]
-set label_provider_bills [lang::message::lookup "" intranet-cost.ProviderBills "Provider<br>Bills"]
+set label_costs_material [lang::message::lookup "" intranet-cust-koernigweber.Costs_Material "Costs<br>Material"]
+set label_provider_bills [lang::message::lookup "" intranet-cust-koernigweber.ProviderBills "Provider<br>Bills"]
 set label_invoiceable_total [lang::message::lookup "" intranet-cust-koernigweber.Total_Invoiceable "Total<br>invoiceable"]; #erloesfaehig 
 set label_invoiced [lang::message::lookup "" intranet-core.Invoiced "Invoiced"]
 set label_costs_based_on_matrix [lang::message::lookup "" intranet-cust-koernigweber.Emp_Cust_Costs_Based_On_Price_Matrix "Invoicable<br>Price Matrix"]
