@@ -8,6 +8,7 @@
     <singleton-p>t</singleton-p>
     <implements-subsite-p>f</implements-subsite-p>
     <inherit-templates-p>f</inherit-templates-p>
+    <auto-mount>intranet-cust-nts</auto-mount>
     
     <version name="0.1d1" url="http://openacs.org/repository/download/apm/intranet-cust-nts-0.1d1.apm">
         <owner url="mailto:malte.sussdorff@cognovis.de">Malte Sussdorff</owner>
