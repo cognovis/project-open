@@ -41,7 +41,10 @@ if {!$user_is_admin_p} {
     return
 }
 
-if {"" == $return_url} { set return_url [ad_conn url] }
+# This is one of the few pages, where return_url does not make sense
+# at all....
+# if {"" == $return_url} { set return_url [ad_conn url] }
+set return_url [ad_return_url]
 
 set page_title "Menu Permissions"
 set context_bar [im_context_bar $page_title]
