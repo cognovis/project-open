@@ -1,6 +1,26 @@
--- upgrade-3.3.1.2.3-3.3.1.2.4.sql
+-- upgrade-4.0.3.3.0-4.0.3.3.1.sql
 
-SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-3.3.1.2.3-3.3.1.2.4.sql','');
+SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgrade-4.0.3.3.0-4.0.3.3.1.sql','');
+
+
+
+update im_menus set name = 'Finance Budged Check for Main Projects'
+where label = 'reporting-budget-main-projects';
+
+update im_menus set name = 'Finance Expense Reimbursement'
+where name = 'Expense Reimbursement';
+
+update im_menus set name = 'Finance Price Data-Warehouse Cube'
+where name = 'Price Data-Warehouse Cube';
+
+update im_menus set parent_menu_id = (select menu_id from im_menus where label = 'reporting-simple-survey')
+where name = 'Simple Survey Main List';
+
+update im_menus set parent_menu_id = (select menu_id from im_menus where label = 'reporting-other')
+where menu_id in (select report_menu_id from im_reports where report_code = 'salary_comparison');
+
+
+
 
 
 ---------------------------------------------------------
@@ -8,6 +28,7 @@ SELECT acs_log__debug('/packages/intranet-reporting/sql/postgresql/upgrade/upgra
 -- gets hours logged for user/project on particular day
 -- 
 
+drop function FUNCTION im_get_hours_logged( int4,  int4,  "varchar");
 CREATE OR REPLACE FUNCTION im_get_hours_logged( int4,  int4,  "varchar") RETURNS "numeric" AS '
 declare
 	v_user_id	ALIAS FOR $1;
@@ -30,6 +51,7 @@ LANGUAGE 'plpgsql';
 -- gets % of hours logged for user/project on particular day based on hours spend the month
 -- 
 
+drop function im_get_hours_percentage(int4, int4, "varchar");
 CREATE OR REPLACE FUNCTION im_get_hours_percentage(int4, int4, "varchar")
   RETURNS "numeric" AS '
     declare
@@ -56,3 +78,4 @@ CREATE OR REPLACE FUNCTION im_get_hours_percentage(int4, int4, "varchar")
        return v_result;
     END;'
 LANGUAGE 'plpgsql';
+

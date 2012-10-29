@@ -192,12 +192,17 @@ db_multirow -extend {indent_spaces edit_html} reports get_reports "
     }
 
     # Show an "edit" icon for dynamic reports
-    set edit_html "<a href='[export_vars -base "new" {report_id}]'>[im_gif "wrench"]</a>"
-    if {"" == $report_id} { 
-	set edit_html "" 
+    if {"" == $report_id} {
+	# TCL Report - edit the menu
+	set edit_html "<a href='[export_vars -base "/intranet/admin/menus/new" {menu_id return_url}]'>[im_gif "wrench"]</a>"
     } else {
+	# SQL report - edit the report itself
+	set edit_html "<a href='[export_vars -base "new" {report_id return_url}]'>[im_gif "wrench"]</a>"
 	set url [export_vars -base "view" {report_id}]
     }
+
+    # Skip the wrench for the headers
+    if {4 == $indent_level} { set edit_html "" }
 
     # Format the group permission display
     foreach gid $group_list {
@@ -206,7 +211,7 @@ db_multirow -extend {indent_spaces edit_html} reports get_reports "
 	set t_or_f [set $varname]
 	if {"t" == $t_or_f} {
 	    set toggle_url [export_vars -base "/intranet/admin/toggle" {{action remove_readable} {horiz_group_id $gid} {object_id $menu_id} return_url}]
-	    set p${gid}_read_p "<a href='$toggle_url'><b>R</b></a>\n"
+ 	    set p${gid}_read_p "<a href='$toggle_url'><b>R</b></a>\n"
 	} else {
 	    set toggle_url [export_vars -base "/intranet/admin/toggle" {{action add_readable} {horiz_group_id $gid} {object_id $menu_id} return_url}]
 	    set p${gid}_read_p "<a href='$toggle_url'>r</a>\n"
