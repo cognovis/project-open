@@ -703,14 +703,173 @@ ad_proc -public im_invoice_change_oo_content {
     return $new_file
 }
 
+# ---------------------------------------------------------------
+# Permissions
+# ---------------------------------------------------------------
+
+ad_proc -public im_invoice_permissions {
+    {-debug 0}
+    current_user_id
+    user_id
+    view_var
+    read_var
+    write_var
+    admin_var
+} {
+    Fill the "by-reference" variables read, write and admin
+    with the permissions of $current_user_id on $user_id
+} {
+    upvar $view_var view
+    upvar $read_var read
+    upvar $write_var write
+    upvar $admin_var admin
+
+    set view 0
+    set read 0
+    set write 0
+    set admin 0
+
+    if {"" == $user_id} { return }
+    if {"" == $current_user_id} { return }
+
+    # Admins and creators can do everything
+    set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
+    set creation_user_id [util_memoize "db_string creator {select creation_user from acs_objects where object_id = $user_id} -default 0"]
+    if {$user_is_admin_p || $current_user_id == $creation_user_id} {
+        set view 1
+        set read 1
+        set write 1
+        set admin 1
+        return
+    }
+
+    # Get the list of profiles of user_id (the one to be managed)
+    # together with the information if current_user_id can read/write
+    # it.
+    # m.group_id are all the groups to whom user_id belongs
+    set profile_perm_sql "
+                select
+                        m.group_id,
+                        im_object_permission_p(m.group_id, :current_user_id, 'view') as view_p,
+                        im_object_permission_p(m.group_id, :current_user_id, 'read') as read_p,
+                        im_object_permission_p(m.group_id, :current_user_id, 'write') as write_p,
+                        im_object_permission_p(m.group_id, :current_user_id, 'admin') as admin_p
+                from
+                        acs_objects o,
+                        group_distinct_member_map m
+                where
+                        m.member_id = :user_id
+                        and m.group_id = o.object_id
+                        and o.object_type = 'im_profile'
+    "
+    set first_loop 1
+    db_foreach profile_perm_check $profile_perm_sql {
+        if {$debug} { ns_log Notice "im_user_permissions: $group_id: view=$view_p read=$read_p write=$write_p admin=$admin_p" }
+        if {$first_loop} {
+            # set the variables to 1 if current_user_id is member of atleast
+            # one group. Otherwise, an unpriviliged user could read the data
+            # of another unpriv user
+            set view 1
+            set read 1
+            set write 1
+            set admin 1
+        }
+
+        if {[string equal f $view_p]} { set view 0 }
+        if {[string equal f $read_p]} { set read 0 }
+        if {[string equal f $write_p]} { set write 0 }
+        if {[string equal f $admin_p]} { set admin 0 }
+        set first_loop 0
+    }
+
+    # Myself - I can read and write its data
+    if { $user_id == $current_user_id } {
+                set read 1
+                set write 1
+                set admin 0
+    }
+    if {$admin} {
+                set read 1
+                set write 1
+    }
+    if {$read} { set view 1 }
+
+    if {$debug} { ns_log Notice "im_user_permissions: cur=$current_user_id, user=$user_id, view=$view, read=$read, write=$write, admin=$admin" }
+
+}
+
+
+## cognovis functions
+
+ad_proc -public im_invoice_generate_bills {
+    {-current_status_id "3804"}
+    {-new_status_id "3814"}
+} {
+    Generate all bills from purchase orders which are in a certain state (defaults to "Outstanding")
+
+    Checks if we have a finance document attached to it already (so we are not going to generate it)
+    Sets the purchase orders, once they are transferred into a provider bill, into the state "filed"
+} {
+    if {$current_status_id eq $new_status_id} {return}
+    set cost_types [im_sub_categories [im_cost_type_po]]
+    set purchase_order_ids [db_list purchase_orders "select cost_id from im_costs where cost_type_id in ([template::util::tcl_to_sql_list $cost_types]) and cost_status_id = :current_status_id"]
+    
+    if {"" != $purchase_order_ids} {
+	# check if we have a linked bill already.
+	# in this case, don't generate (?)
+	set existing_bill_ids [list]
+	db_foreach provider_bills "select object_id_one, object_id_two from acs_rels where object_id_one in ([template::util::tcl_to_sql_list $purchase_order_ids]) and rel_type = 'im_invoice_invoice_rel'" {
+	    lappend existing_bill_ids $object_id_one
+	}
+	
+	foreach purchase_order_id $purchase_order_ids {
+	    if {[lsearch $existing_bill_ids $purchase_order_id]<0} {
+		set new_invoice_id [im_invoice_copy_new -source_invoice_ids $purchase_order_id -target_cost_type_id 3704]
+		
+		# Update the status of the purchase orders
+		db_dml update_status "update im_costs set cost_status_id = :new_status_id where cost_id = :purchase_order_id"
+	    }
+	}
+    }
+    return 1
+}
+
+ad_proc -public im_invoice_send_invoice_mail {
+    -invoice_id
+    {-recipient_id ""}
+    {-from_addr ""}
+    {-cc_addr ""}
+} {
+    Send out an E-Mail to the recipient for with the invoice attached
+    
+    @param invoice_id cost_id of the invoice to be sent
+    @recipient_id Recipient of the invoice mail. Defaults to company_contact_id of the invoice
+    @from_addr Sender of the invoice mail. Defaults to current user mail
+    @cc_addr Optional cc email address. Useful for receiving copies.
+} {
+    set invoice_revision_id [intranet_openoffice::invoice_pdf -invoice_id $invoice_id]
+    set user_id [ad_conn user_id]
+    if {"" == $recipient_id} {
+	set recipient_id [db_string company_contact_id "select company_contact_id from im_invoices where invoice_id = :invoice_id" -default $user_id]
+    } 
+
+    db_1row get_recipient_info "select first_names, last_name, email as to_addr from cc_users where user_id = :recipient_id"
+
+    if {"" == $from_addr} {
+	set from_addr [party::email -party_id $user_id]
+    }
+    
+    # Get the type information so we can get the strings
+    set invoice_type_id [db_string type "select cost_type_id from im_costs where cost_id = :invoice_id"]
+    
+    set recipient_locale [lang::user::locale -user_id $recipient_id]
+    set subject [lang::util::localize "#intranet-invoices.invoice_email_subject_${invoice_type_id}#" $recipient_locale]
+    set body [lang::util::localize "#intranet-invoices.invoice_email_body_${invoice_type_id}#" $recipient_locale]
+    acs_mail_lite::send -send_immediately -to_addr $to_addr -from_addr $from_addr -cc_addr $cc_addr -subject $subject -body $body -file_ids $invoice_revision_id -use_sender
+}
 
 # Make sure that we only call im_invoice_copy_new for invoices of the
 # same type. Otherwise we can't guarantee correct work with Collmex
-
-# ---------------------------------------------------------------
-# Driver Function for Various Output formats
-# ---------------------------------------------------------------
-
 
 ad_proc -public im_invoice_copy_new {
     -source_invoice_ids
@@ -758,8 +917,7 @@ ad_proc -public im_invoice_copy_new {
 	ns_log Error "Tried to generate for $source_invoice_ids which are not of the same company or provider"
 	return
     }
-
-
+    
     # ---------------------------------------------------------------
     # Get everything about the original document
     # ---------------------------------------------------------------
@@ -812,7 +970,7 @@ LIMIT 1
 
     # Check if the cost item was changed via outside SQL
     im_audit -object_type "im_invoice" -object_id $invoice_id -action before_update
-
+    
     # Update the invoice itself
     db_dml update_invoice "
 update im_invoices 
@@ -949,72 +1107,4 @@ where
     im_audit -object_type "im_invoice" -object_id $invoice_id -action after_create -status_id $cost_status_id -type_id $cost_type_id
 
     return $invoice_id
-}
-
-
-ad_proc -public im_invoice_generate_bills {
-    {-current_status_id "3804"}
-    {-new_status_id "3814"}
-} {
-    Generate all bills from purchase orders which are in a certain state (defaults to "Outstanding")
-
-    Checks if we have a finance document attached to it already (so we are not going to generate it)
-    Sets the purchase orders, once they are transferred into a provider bill, into the state "filed"
-} {
-    if {$current_status_id eq $new_status_id} {return}
-    set cost_types [im_sub_categories [im_cost_type_po]]
-    set purchase_order_ids [db_list purchase_orders "select cost_id from im_costs where cost_type_id in ([template::util::tcl_to_sql_list $cost_types]) and cost_status_id = :current_status_id"]
-    
-    if {"" != $purchase_order_ids} {
-	# check if we have a linked bill already.
-	# in this case, don't generate (?)
-	set existing_bill_ids [list]
-	db_foreach provider_bills "select object_id_one, object_id_two from acs_rels where object_id_one in ([template::util::tcl_to_sql_list $purchase_order_ids]) and rel_type = 'im_invoice_invoice_rel'" {
-	    lappend existing_bill_ids $object_id_one
-	}
-	
-	foreach purchase_order_id $purchase_order_ids {
-	    if {[lsearch $existing_bill_ids $purchase_order_id]<0} {
-		set new_invoice_id [im_invoice_copy_new -source_invoice_ids $purchase_order_id -target_cost_type_id 3704]
-		
-		# Update the status of the purchase orders
-		db_dml update_status "update im_costs set cost_status_id = :new_status_id where cost_id = :purchase_order_id"
-	    }
-	}
-    }
-    return 1
-}
-
-ad_proc -public im_invoice_send_invoice_mail {
-    -invoice_id
-    {-recipient_id ""}
-    {-from_addr ""}
-    {-cc_addr ""}
-} {
-    Send out an E-Mail to the recipient for with the invoice attached
-    
-    @param invoice_id cost_id of the invoice to be sent
-    @recipient_id Recipient of the invoice mail. Defaults to company_contact_id of the invoice
-    @from_addr Sender of the invoice mail. Defaults to current user mail
-    @cc_addr Optional cc email address. Useful for receiving copies.
-} {
-    set invoice_revision_id [intranet_openoffice::invoice_pdf -invoice_id $invoice_id]
-    set user_id [ad_conn user_id]
-    if {"" == $recipient_id} {
-	set recipient_id [db_string company_contact_id "select company_contact_id from im_invoices where invoice_id = :invoice_id" -default $user_id]
-    } 
-
-    db_1row get_recipient_info "select first_names, last_name, email as to_addr from cc_users where user_id = :recipient_id"
-
-    if {"" == $from_addr} {
-	set from_addr [party::email -party_id $user_id]
-    }
-    
-    # Get the type information so we can get the strings
-    set invoice_type_id [db_string type "select cost_type_id from im_costs where cost_id = :invoice_id"]
-    
-    set recipient_locale [lang::user::locale -user_id $recipient_id]
-    set subject [lang::util::localize "#intranet-invoices.invoice_email_subject_${invoice_type_id}#" $recipient_locale]
-    set body [lang::util::localize "#intranet-invoices.invoice_email_body_${invoice_type_id}#" $recipient_locale]
-    acs_mail_lite::send -send_immediately -to_addr $to_addr -from_addr $from_addr -cc_addr $cc_addr -subject $subject -body $body -file_ids $invoice_revision_id -use_sender
 }

@@ -59,7 +59,7 @@ if {!$user_is_admin_p} {
 set page_title [lang::message::lookup "" intranet-sysconfig.Map_LDAP_Groups_to_PO "Map LDAP Groups to \]po\["]
 set context_bar [im_context_bar $page_title]
 
-set bg "/intranet/images/girlongrass.600x400.jpg"
+set bg ""
 set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>"
 
 

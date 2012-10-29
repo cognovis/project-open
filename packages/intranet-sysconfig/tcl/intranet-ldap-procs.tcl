@@ -75,6 +75,9 @@ ad_proc -public im_sysconfig_ldap_check_bind {
     array set hash {}
     
     set bind_perl "[acs_root_dir]/packages/intranet-sysconfig/perl/ldap-check-bind.perl"
+
+    # we need to escape certain characters in the password:
+    regsub -all {&} $ldap_system_bindpw {\\\\&} ldap_system_bindpw
     set cmd "perl $bind_perl $ldap_ip_address $ldap_port $ldap_type $ldap_domain $ldap_system_binddn $ldap_system_bindpw"
     ns_log Notice "im_sysconfig_ldap_check_bind: $cmd"
 

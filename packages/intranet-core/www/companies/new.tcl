@@ -377,8 +377,7 @@ set update_sql "
 		company_id = :company_id
 "
 db_dml update_company $update_sql
-im_audit -object_type "im_company" -object_id $company_id -action after_update
-
+im_audit -object_type "im_company" -object_id $company_id -type_id $company_type_id -status_id $company_status_id -action after_update
 
 # -----------------------------------------------------------------
 # Make sure the creator and the manager become Key Accounts

@@ -7,6 +7,176 @@
 
 
 ==============================================================
+V4.0 Changes
+==============================================================
+
+
+Incompatible Changes
+
+]po[ V4.0 requires new versions of OpenACS, AOLserver and PostgreSQL, 
+so customers with AOLserver 3.3.x or PostgreSQL 8.1 or below will have 
+to update their entire installation. This is the reason for the change 
+in the "major" release number to V4.0. These changes are justified by 
+several main improvements:
+
+      * New "XoWiki": 
+	XoWiki is a full Media Wiki implementation integrated with the
+	rest of ]po[.
+
+      * AJAX Support: 
+	The new OpenACS version (5.7) includes support for a number of 
+	AJAX libraries. AJAX support is going to become progressively 
+	more important. 
+
+
+Major Enhancements & New Packages
+
+      * MS-Project Round-Trip Integration: 
+      	V4.0 allows you to start your project in ]po[, import a project
+	schedule from MS-Project, continue to edit information in ]po[, 
+	export the results to MS-Project for further editing, import the 
+	results and so on.
+
+      *	LDAP and Active Directory Integration: 
+      	V4.0 includes a configuration wizard that guides usres through the 
+      	process of setting up an integration with Active Directory. 
+
+      * System Configurator: 
+	A new configurator allows to export a ]po[ configuration into CSV 
+	(Excel) format and to apply the configuration to a new server. This 
+	configurator allows us to define several "verticals" for ]po[ with 
+	very specific configuration, effectively reducing the effort 
+	necessary to adapt ]po[ to a user's needs. 
+
+      * Project Baselines (Enteprise Edition): 
+      	This package package stores "versions" of a project and allows
+	users to compare the current project plan to previous plans. 
+	The pac	kage depends on the Audit commercial package and may 
+	become part of the ]po[ "enterprise" version. 
+
+      *	Financial Planning (Enterprise Edition): 
+      	The package allows for financial/cashflow/budget planning per 
+	project phase, project member, cost type and date (month, quarter, 
+	year). Planned values are integrated into the project's financial 
+	summary. 
+
+      * Project Portfolio Management: 
+      	]po[ now allows to define define portfolios of projects and 
+	includes a number of reports and indicators in order to track 
+	portfolios. 
+	The package also contains "what-if" scenarios to analyze the impact
+	of adding additional projects or changing project priorities. 
+
+      * Project Risk Management: 
+      	This package allows to manage a risk plan per project. A graphical 
+	indicators shows summarized risks. 
+
+      * Sharepoint Integration: 
+      	The package links ]po[ projects to a Sharepoint server for storing 
+	documents.
+
+      * Mail Tracking:
+      	A CRM package capable of associating incoming and outgoing mails 
+	with users and projects.
+
+      *	Funambol integration ( Outlook and mobile devices): 
+      	The Linux version of ]po[ V4.0 will include an experimental 
+	Funambol integration. Funambol  is a SyncMS server allowing to 
+	synchronize tasks and calendar items across mobile devices and 
+	PIM software including MS-Outlook. We expect to improve this 
+	integration during the course of the V4.0 lifecycle.
+
+      *	SLA Management and improved Helpdesk: 
+      	A ITSM package that provides "SLA Parameters" to capture 
+	contractual rules defined in SLAs and a component for SLA working 
+	hours. Indicators automatically track the value of SLA parameters, 
+	warning managers if defined SLA levels are close to be violated.
+
+      * CVS Integration: 
+      	This ITSM package allows to import CVS commits into ]po[, 
+      	automatically associating commits with projects. 
+	The package also allows to generate CVS+ACL configuration files, 
+	effectively allowing to maintain CVS permission configuration in 
+	]po[.
+
+
+New Features:
+
+      * AJAX Date-Pickers for all important forms: 
+      	All important forms in ]po[ now include an AJAX date picket widget 
+	in order to avoid editing dates in a Web 1.0 type of widget. 
+	Reports and similar pages still don't have a date picker, because 
+	most users seem to be fine with a YYYY-MM-DD input. 
+
+      * Expense Management:
+      	Allows adding notes in multi-expense forms. We have also added two 
+	additional reports.
+
+      * Extended HTTPS Support: 
+      	You can now wonfigure which pages can only be accessed through 
+	HTTPS.
+
+      * Resource Management: 
+      	We have added a new New Resource Planning Report.
+
+      * Exchange rates: 
+      	]project-open[ can now be configured to get updated exchange rates 
+      	automatically.
+
+      * Invoices:
+      	OpenOffice "Writer" Export: Invoices can now be exported in 
+	"Writer" format. In the future we might also add a Writer to PDF 
+	converter in order to create PDF. 
+
+      *	Grouped invoice items: 
+      	Create an invoice for a main project that contains grouped & 
+	accumulated invoice elements of positions from sub-projects
+	Invoice elements are now related to time sheet tasks.
+
+      *	Translation: 
+      	* Invoices can now have Discount/Surcharge Lines
+	* A "Customer Portal" allows customers to request a quote and get
+	  access to their financial documents. 
+	* Bulk edit of translation tasks is now possible
+
+      * Admin:
+      	Admin -> User Profiles now allows to filter privileges by keyword.
+
+
+==============================================================
+V3.5 Changes
+==============================================================
+
+
+Major Enhancements & New Packages
+
+      * REST Interface:
+	The REST Web-Services server is now available in version 
+	V1.5.1 with includes a number of bug fixes. The fixes are 
+	due to active development of several new REST clients:
+	PO-Timesheet  is a REST Java client implementing timesheet
+	management. A Perl REST client is available in 
+	/intranet-rest/perl-client-examples/ showing access to ]po[ 
+	projects. ]po[ partner Winzentis is developing an iPhone App 
+	using the REST interface.
+
+      * Resource Management Package: 
+	This package currently contains only a single resource report 
+	which replaces the V3.4 /intranet-ganttproject/gant-resources-cube. 
+	The new report:
+	* fixes a bug of the older report (related to the maximum 
+	  length of the URL), 
+	* provides better performance (now allows for hundreds of 
+	  projects and users) and 
+	* integrates absences into the display. 
+
+Bug Fixes
+
+V3.5 is mainly a bug-fix release of V3.4, so literally hundreds
+of fixes have been applied.
+
+
+==============================================================
 V3.4 Changes
 ==============================================================
 

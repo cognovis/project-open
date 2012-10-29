@@ -137,7 +137,7 @@ append filter_html "
 # ---------------------------------------------------------------
 
 set admin_html ""
-if {$add_reports_p} { append admin_html "<li><a href='[export_vars -base "new" {{indicator_object_type $object_type} return_url}]'>Add a new Indicator</a></li>\n" }
+if {$add_reports_p} { append admin_html "<li><a href='[export_vars -base "new" {{indicator_object_type $object_type} {form_mode edit} return_url}]'>Add a new Indicator</a></li>\n" }
 
 set left_navbar_html "
             <div class=\"filter-block\">

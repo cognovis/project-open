@@ -16,7 +16,6 @@
   
   <fullquery name = "delete_cost_item">
     <querytext>
-    
       select ${otype}__delete(:cost_id);
         
       </querytext>

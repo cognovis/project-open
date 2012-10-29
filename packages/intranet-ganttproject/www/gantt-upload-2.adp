@@ -32,7 +32,8 @@ Importing data...
 
 <if @resources_to_assign_p@>
 
-	<h2>@resource_title@</h2>
+	<h2>@missing_resources_title@</h2>
+	<p>@missing_resources_msg@</p>
 	<ul>
 	@resource_html;noquote@
 	</ul>

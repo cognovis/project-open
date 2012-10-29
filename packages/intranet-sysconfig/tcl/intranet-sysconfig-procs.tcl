@@ -38,7 +38,7 @@ ad_proc -public im_sysconfig_component { } {
     of a freshly installed V3.2 and higher system, allowing
     the user to configure the system
 } {
-    set bg "/intranet/images/girlongrass.600x400.jpg"
+    set bg ""
     set po "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>"
 
     set wizard "
