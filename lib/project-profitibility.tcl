@@ -50,8 +50,9 @@ if {![string equal "t" $read_p]} {
 set full_view_p 0 
 if {
     [im_profile::member_p -profile_id [im_accounting_group_id] -user_id $current_user_id] || \
-    [im_profile::member_p -profile_id 469 -user_id $current_user_id] || \
-    [im_profile::member_p -profile_id 66359 -user_id $current_user_id] || \
+    [im_profile::member_p -profile_id [im_profile::profile_id_from_name -profile "Senior Managers"] -user_id $current_user_id] || \
+    [im_profile::member_p -profile_id [im_profile::profile_id_from_name -profile "Bereichsleitung"] -user_id $current_user_id] || \
+    [im_profile::member_p -profile_id [im_profile::profile_id_from_name -profile "Technical Office"] -user_id $current_user_id] || \
     [acs_user::site_wide_admin_p] \
 } {
     set full_view_p 1
@@ -1028,7 +1029,7 @@ template::multirow foreach project_list {
         template::multirow set project_list $i profit_and_loss_project $profit_and_loss_project_var_pretty
 
 	# P&L 1  
-	set profit_and_loss_one_var [expr $sum_invoices_value - $cost_timesheet_logged_cache - $total_expenses_billable_bak - $provider_bills]
+	set profit_and_loss_one_var [expr $sum_invoices_value - [expr $amount_costs_staff+$amount_allocation_costs] - $total_expenses_billable_bak - $provider_bills]
 	set profit_and_loss_one_var_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $profit_and_loss_one_var+0] $rounding_precision] $format_string $locale]
         template::multirow set project_list $i profit_and_loss_one $profit_and_loss_one_var_pretty
 
@@ -1076,7 +1077,7 @@ template::multirow foreach project_list {
 	ds_comment "invoiceable_total_var: $invoiceable_total_var"
 
 	set total__amount_costs_staff  		[expr $total__amount_costs_staff + $amount_costs_staff]; 			# Personalkosten (4th column) 
-	set total__target_benefit 		[expr $total__target_benefit + $cost_timesheet_logged_cache]; 			# Sollerloes
+	set total__target_benefit 		[expr $total__target_benefit + $amount_costs_staff + $amount_allocation_costs];	# Sollerloes / Selbstkosten/ Target Benefit
 	set total__amount_invoicable_matrix	[expr $total__amount_invoicable_matrix + $amount_invoicable_matrix_var];      	# Abrechenbar lt. E/C
 	set total__total_expenses_billable	[expr $total__total_expenses_billable + $total_expenses_billable]; 		# Materialkosten (billable)
 	set total__total_expenses_not_billable	[expr $total__total_expenses_not_billable + $total_expenses_not_billable]; 	# Materialkosten (not billable)
