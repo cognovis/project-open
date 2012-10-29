@@ -40,8 +40,9 @@ ad_proc -public im_project_profitibility_component_weber {
    	 [im_profile::member_p -profile_id [im_employee_group_id] -user_id $user_id] && \
 	 !(
 		[im_profile::member_p -profile_id [im_admin_group_id] -user_id $user_id] || \
-		[im_profile::member_p -profile_id [db_string get_data "select group_id from groups where group_name='Senior Managers'" -default 0] -user_id $user_id] || \
-		[im_profile::member_p -profile_id [db_string get_data "select group_id from groups where group_name='Technical Office'" -default 0] -user_id $user_id] \
+		[im_profile::member_p -profile_id [im_profile::profile_id_from_name -profile "Senior Managers"] -user_id $user_id] || \
+   	        [im_profile::member_p -profile_id [im_profile::profile_id_from_name -profile "Technical Office"] -user_id $user_id] || \
+		[im_profile::member_p -profile_id [im_profile::profile_id_from_name -profile "Bereichsleitung"] -user_id $user_id] \
 	  )
     } {
 	if { $user_id != [db_string get_data "select project_lead_id from im_projects where project_id = :project_id" -default 0] } {
