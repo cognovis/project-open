@@ -198,6 +198,7 @@ ad_form -extend -name $form_id \
 	db_dml edit_menu "
 		update im_menus set
 			parent_menu_id = :parent_menu_id,
+			name = :report_name,
 			url = :url
 		where menu_id = :report_menu_id
 	"
