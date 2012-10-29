@@ -426,29 +426,145 @@ ad_proc -public im_price_list {
 				"
 			} else {
                         	set where_clause "
-					cost_object_category_id = $glob_cost_object_category_id and
+					dlo.cost_object_category_id = $glob_cost_object_category_id and
 		                        user_id = :project_member_id and
 		                        currency = :glob_project_budget_currency
 				"
 			}
-	                set inner_sql "
-				select 
-					id as id_price_table,
-		        	        user_id,
-        		       		object_id as price_object_id,
-	                		amount,
-			                currency,
-        			        cost_object_category_id,
-					im_name_from_user_id(user_id, $name_order) as name, 
-					start_date
-				from 
-					im_customer_prices
-				where 
-					$where_clause 
-				order by	 
-					name,
-					start_date
-                 	"
+
+		    	set filter_records [ns_queryget filter_records]
+			if { "" == $filter_records } {set filter_records "current" }
+
+			switch $filter_records {
+                        "current_and_future" {
+                                set inner_sql "
+                                        select
+                                                id as id_price_table,
+                                                user_id,
+                                                object_id as price_object_id,
+                                                amount,
+                                                currency,
+                                                dlo.cost_object_category_id,
+                                                im_name_from_user_id(user_id, $name_order) as name,
+                                                start_date
+                                        from
+	                                        im_customer_prices
+                                        where
+                                                $where_clause
+
+	                                UNION
+        	                        (
+                	                       select
+                        	                 l.id as id_price_table,
+                                	         l.user_id,
+                                        	 l.object_id as price_object_id,
+	                                         l.amount,
+        	                                 l.currency,
+                	                         l.cost_object_category_id,
+                        	                 im_name_from_user_id(l.user_id, $name_order) as name,
+                                	         l.start_date
+	                                        from (
+        	                                        select
+                	                                        cost_object_category_id,
+                        	                                (
+                                	                        select  li
+                                        	                from    im_customer_prices li
+                                                	        where
+                                                        	        li.cost_object_category_id = dl.cost_object_category_id and
+	                                                                user_id = $project_member_id and
+        	                                                        start_date <= now()
+                	                                        order by
+                        	                                        cost_object_category_id, start_date DESC
+                                	                        offset 0 limit 1
+                                        	                ) as mid
+	                                               	from    (
+        	                                                select  cost_object_category_id
+                	                                        from    im_customer_prices lo
+                        	                                where   user_id = $project_member_id
+                                	                        group by
+                                        	                        cost_object_category_id
+                                                	        ) dl
+	                                        ) dlo
+        	                        	join    im_customer_prices l
+	                	                on      l.cost_object_category_id = dlo.cost_object_category_id
+                        	                	and row(l.start_date, l.id) = row(start_date, (mid).id)
+                                	)
+                                        order by
+                                                name,
+                                                start_date
+                                "
+			}
+                        "current" {
+		                set inner_sql "
+					select 
+						id as id_price_table,
+		        		        user_id,
+        		       			object_id as price_object_id,
+	                			amount,
+				                currency,
+        				        dlo.cost_object_category_id,
+						im_name_from_user_id(user_id, $name_order) as name, 
+						start_date
+					from 
+        	                                ( select
+                	                                cost_object_category_id,
+                        	                        (
+                                	                        select  li
+                                        	                from    im_customer_prices li
+                                                	        where
+                                                        	        li.cost_object_category_id = dl.cost_object_category_id and
+                                                                	user_id = $project_member_id and
+	                                                                start_date <= now()
+        	                                                order by
+                	                                                li.cost_object_category_id, start_date DESC
+                        	                                offset 0 limit 1
+                                	                ) as mid
+                                        	from (
+                                                	select  lo.cost_object_category_id
+	                                                from    im_customer_prices lo
+        	                                        where   user_id = $project_member_id
+                	                                group by cost_object_category_id
+                        	                     ) dl
+                                	     ) dlo
+	                                join    im_customer_prices l
+        	                        on      l.cost_object_category_id = dlo.cost_object_category_id
+                	                        and row(l.start_date, l.id) = row(start_date, (mid).id)
+					where 
+						$where_clause 
+					order by	 
+						name,
+						start_date
+                 		"
+			}
+			default {
+	                        if { !$project_related_price_exists } {
+                                	set where_clause "
+                                        	cost_object_category_id = $glob_cost_object_category_id and
+	                                        user_id = :project_member_id and
+        	                                currency = :glob_project_budget_currency
+                	                "
+                        	}
+
+                                set inner_sql "
+                                        select
+                                                id as id_price_table,
+                                                user_id,
+                                                object_id as price_object_id,
+                                                amount,
+                                                currency,
+                                                cost_object_category_id,
+                                                im_name_from_user_id(user_id, $name_order) as name,
+                                                start_date
+                                        from
+						im_customer_prices
+                                        where
+                                                $where_clause
+                                        order by
+                                                name,
+                                                start_date
+                                "
+			}
+		      }; # switch
 	    	}
 
 	        "user"  {
@@ -948,7 +1064,7 @@ ad_proc -public im_price_list {
 
     # ------------------ Format the table footer with button ------------
     set footer_html ""
-    if { ("user" == $object_type || $portlet_allocation_costs_p) && $admin_p } {
+    if { ("im_project" == $object_type || "user" == $object_type || $portlet_allocation_costs_p) && $admin_p } {
 	append footer_html "
 	    <tr>
 	      <td align=left colspan=$colspan>
