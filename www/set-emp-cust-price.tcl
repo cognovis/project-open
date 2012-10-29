@@ -12,7 +12,7 @@ ad_page_contract {
     amount:array,optional
     currency:array,optional
     project_type_id:integer,array,optional
-    new_user_id:integer
+    new_user_id:integer,optional
     new_cost_object_category_id:integer,optional
     new_amount:optional
     new_currency:optional    
@@ -24,7 +24,7 @@ ad_page_contract {
 }
 
 # -----------------------------------------------------------------
-# Security
+# Security & Defaults
 # -----------------------------------------------------------------
 
 set current_user_id [ad_maybe_redirect_for_registration]
@@ -42,6 +42,8 @@ if {!$write} {
     ad_return_complaint 1 "You have no rights to modify members of this object."
     return
 }
+
+if { ![info exists new_amount] } { set new_amount "" }
 
 ns_log Notice "member-update: object_id=$object_id"
 ns_log Notice "member-update: submit=$submit"
