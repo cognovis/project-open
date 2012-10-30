@@ -28,8 +28,8 @@ where menu_id in (select report_menu_id from im_reports where report_code = 'sal
 -- gets hours logged for user/project on particular day
 -- 
 
-drop function FUNCTION im_get_hours_logged( int4,  int4,  "varchar");
-CREATE OR REPLACE FUNCTION im_get_hours_logged( int4,  int4,  "varchar") RETURNS "numeric" AS '
+drop FUNCTION im_get_hours_logged(integer,  integer,  varchar);
+CREATE OR REPLACE FUNCTION im_get_hours_logged( int4,  int4,  varchar) RETURNS numeric AS '
 declare
 	v_user_id	ALIAS FOR $1;
         v_project_id    ALIAS FOR $2;
