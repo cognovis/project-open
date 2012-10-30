@@ -2,7 +2,7 @@
 	<%=[im_header]%>
         <%=[im_navbar]%>
 
-        <form>
+        <form action='project-profitibility'>
         <%=[export_form_vars opened_projects]%>
 
         <table border=0 cellspacing=1 cellpadding=1>
@@ -24,15 +24,22 @@
                   </td>
                 </tr>
                 <tr>
-                  <td class=form-label><%=[lang::message::lookup "" intranet-core.Project_Status "Project Status"]%></td>
-                  <td class=form-widget>
-			<%= [im_category_select -include_empty_p 1 -include_empty_name [lang::message::lookup "" intranet-core.All "All"] "Intranet Project Status" project_status_id_from_search $project_status_id_from_search] %>
-                  </td>
-                </tr>
-                <tr>
                   <td class=form-label><%=[lang::message::lookup "" intranet-core.Customer "Customer"]%></td>
                   <td class=form-widget>
                      <%=[im_company_select -include_empty_name [lang::message::lookup "" intranet-core.All "All"] customer_id $customer_id]%>
+                  </td>
+                </tr>
+                <tr>
+                  <td class=form-label><%=[lang::message::lookup "" intranet-core.Project_Name "Project Name"]%></td>
+                  <td class=form-widget>
+                        <%= [im_project_select -include_empty_p 1 -exclude_subprojects_p 0 -include_empty_name [lang::message::lookup "" intranet-core.All "All"] project_id $project_id_from_filter] %>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td class=form-label><%=[lang::message::lookup "" intranet-core.Project_Status "Project Status"]%></td>
+                  <td class=form-widget>
+			<%= [im_category_select -include_empty_p 1 -include_empty_name [lang::message::lookup "" intranet-core.All "All"] "Intranet Project Status" project_status_id_from_search $project_status_id_from_search] %>
                   </td>
                 </tr>
                 <tr>
@@ -45,12 +52,14 @@
                         </select>
                   </td>
                 </tr>
+<!--
                 <tr>
                   <td class=form-label><%=[lang::message::lookup "" intranet-core.employees "Employees"]%></td>
                   <td class=form-widget>
                      <%=[im_user_select -include_empty_p 1 -include_empty_name [lang::message::lookup "" intranet-core.All "All"] -group_id [im_profile_employees] "user_id_from_search" $user_id_from_search]%>
                   </td>
                 </tr>
+--> 
                 <tr>
                   <td class=form-label><%=[lang::message::lookup "" intranet-reporting.Output_Format "Output Format"]%></td>
                   <td class=form-widget>
