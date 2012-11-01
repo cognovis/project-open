@@ -668,6 +668,7 @@ ad_proc -public im_audit_impl {
     {-type_id "" }
     {-action "after_update" }
     {-comment "" }
+    {-debug_p 0}
 } {
     Creates a new audit item for object after an update.
     @param baseline_id A baseline is a version of a project.
@@ -675,7 +676,7 @@ ad_proc -public im_audit_impl {
 	   The baseline_id is stored in im_projects_audit.baseline_id,
 	   because baselines always refer to projects.
 } {
-    ns_log Notice "im_audit_impl: object_id=$object_id, user_id=$user_id, object_type=$object_type, status_id=$status_id, type_id=$type_id, action=$action, comment=$comment"
+    if {$debug_p} { ns_log Notice "im_audit_impl: object_id=$object_id, user_id=$user_id, object_type=$object_type, status_id=$status_id, type_id=$type_id, action=$action, comment=$comment" }
 
     if {0 == $user_id || "" == $user_id} { set user_id [ad_get_user_id] }
     set peeraddr [ns_conn peeraddr]
@@ -845,35 +846,36 @@ ad_proc -public im_project_audit_impl  {
     {-type_id "" }
     {-action after_update }
     {-comment "" }
+    {-debug_p 0}
 } {
     Additional(!) functionality when auditing a project.
     Writes a record to im_projects_audit.
     @param baseline_id A Baseline is a version of the project.
 } {
-    ns_log Notice "im_project_audit_impl: project_id=$project_id, user_id=$user_id, baseline_id=$baseline_id"
+    if {$debug_p} { ns_log Notice "im_project_audit_impl: project_id=$project_id, user_id=$user_id, baseline_id=$baseline_id" }
     if {"" == $user_id} { set user_id [ad_get_user_id] }
 
     # No audit for non-existing projects
     if {"" == $project_id} { 
-	ns_log Notice "im_project_audit_impl: project_id is empty" 
+	if {$debug_p} { ns_log Notice "im_project_audit_impl: project_id is empty" }
 	return ""
     }
     if {0 == $project_id} { 
-	ns_log Notice "im_project_audit_impl: project_id = 0"
+	if {$debug_p} { ns_log Notice "im_project_audit_impl: project_id = 0" }
 	return ""
     }
 
     # Make sure the table exists (compatibility)
     set audit_exists_p [im_table_exists im_projects_audit]
     if {!$audit_exists_p} { 
-	ns_log Notice "im_project_audit_impl: Audit table doesn't exist" 
+	if {$debug_p} { ns_log Notice "im_project_audit_impl: Audit table doesn't exist" }
 	return ""
     }
 
     # Parameter to enable/disable project audit
     set audit_projects_p [parameter::get_from_package_key -package_key "intranet-core" -parameter "AuditProjectsP" -default 1]
     if {!$audit_projects_p} { 
-	ns_log Notice "im_project_audit_impl: Audit not enabled"
+	if {$debug_p} { ns_log Notice "im_project_audit_impl: Audit not enabled" }
 	return ""
     }
 
@@ -902,7 +904,7 @@ ad_proc -public im_project_audit_impl  {
 	set baseline_val_sql ""
     }
 
-    ns_log Notice "im_project_audit_impl: About to write im_projects_audit log"
+    if {$debug_p} { ns_log Notice "im_project_audit_impl: About to write im_projects_audit log" }
     if {[catch {
 	db_dml audit_insert "
 	    insert into im_projects_audit (
@@ -946,7 +948,7 @@ ad_proc -public im_project_audit_impl  {
 	ad_return_complaint 1 "im_project_audit_impl: Error creating an im_projects_audit entry:<br><pre>$err_msg</pre>"
 	
     }
-    ns_log Notice "im_project_audit_impl: After writing im_projects_audit log"
+    if {$debug_p} { ns_log Notice "im_project_audit_impl: After writing im_projects_audit log" }
 
     return $err_msg
 }
