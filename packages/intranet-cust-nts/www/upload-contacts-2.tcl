@@ -257,7 +257,7 @@ foreach csv_line_fields $values_list_of_lists {
     # We might have to add the cost_center later
     # Add the department now :-)
     if { "" != $level_1 } { 
-	set parent_department_id [db_string department "select cost_center_id from im_cost_centers where cost_center_label = :level_1 and parent_id = 32965" -default ""]
+	set parent_department_id [db_string department "select cost_center_id from im_cost_centers where cost_center_label = :level_1 and parent_id = 525" -default ""]
 	if {"" == $parent_department_id} {
 	    # Create the parent_depar	 tment_id
 	    set parent_department_id [db_string cost_center_insert "SELECT im_cost_center__new (
@@ -273,7 +273,7 @@ foreach csv_line_fields $values_list_of_lists {
 		:cost_center,
 		3001,
 		3101,
-		32965,
+		525,
 		null,
 		'f',
 		null,
@@ -281,7 +281,7 @@ foreach csv_line_fields $values_list_of_lists {
 	);"]
 	
 	    db_dml update_context "	update acs_objects set 
-		context_id = 32965
+		context_id = 525
 		where	object_id = :parent_department_id;"
 	}
 	

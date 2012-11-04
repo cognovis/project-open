@@ -49,3 +49,9 @@ update im_categories set category = 'Absent' where category_id = 453;
 -- Profiles
 select im_profile__new('student','student') from dual;
 select im_profile__new('intern','intern') from dual;
+
+-- Clean up cost centers
+delete from im_employees where department_id != 525;
+delete from im_cost_centers where cost_center_id != 525;
+delete from acs_permissions where object_id in (select object_id from acs_objects where object_type = 'im_cost_center' and object_id != 525);
+delete from acs_objects where object_type = 'im_cost_center' and object_id != 525;
