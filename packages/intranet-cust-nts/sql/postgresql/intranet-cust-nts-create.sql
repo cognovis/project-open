@@ -42,4 +42,10 @@ SELECT im_dynfield_widget__new (
 		'im_name_from_id'
 );
 
+delete from im_categories where category_id in (451,452,10097,10098,10099,10100);
+update im_categories set category = 'Absent' where category_id = 453;
 -- SELECT im_dynfield_attribute_new ('person', 'cost_center_id', '#intranet-core.Cost_Center#', 'cost_centers', 'integer', 't', 10, 't', 'im_employees');
+
+-- Profiles
+select im_profile__new('student','student') from dual;
+select im_profile__new('intern','intern') from dual;

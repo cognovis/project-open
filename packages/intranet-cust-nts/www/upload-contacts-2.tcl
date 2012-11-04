@@ -154,7 +154,7 @@ foreach csv_line_fields $values_list_of_lists {
 	set var_name [im_upload_cvs_translate_varname $var_name]
 
 	lappend var_name_list $var_name
-
+	
 	set var_value [string trim [lindex $csv_line_fields $j]]
 	set var_value [string map -nocase {"\"" "" "\{" "(" "\}" ")" "\[" "(" "\]" ")"} $var_value]
 	if {[string equal "NULL" $var_value]} { set var_value ""}
@@ -170,7 +170,7 @@ foreach csv_line_fields $values_list_of_lists {
     }
 
     # We only import NTS employees
-    if {"NTS" != level_0} {
+    if {"NTS" != $level_0} {
 	continue
     }
 
@@ -190,11 +190,10 @@ foreach csv_line_fields $values_list_of_lists {
 
     # Find out the employee_id
     set employee_id [db_string employee "select person_id from persons where 	lower(first_names) = lower(:first_names) 
-			and lower(last_name) = lower(:last_name)" -default ""]
+			and lower(last_name) = lower(:last_name) and person_id not in (select party_id from parties where email like '%.local')" -default ""]
 
     if {"" == $employee_id} {
-	ns_write "<li>Error: $first_names $last_name in $linecount is not in LDAP.<br>
-        We can not add users with an empty last name. Please correct the CSV file.<br>"
+	ns_write "<li>Error: $first_names $last_name in $linecount is not in LDAP.<br>"
 	continue
     }	
 
@@ -202,25 +201,29 @@ foreach csv_line_fields $values_list_of_lists {
     # Deal with the users's profile membership
     #
 
-    switch profile {
+    set intern_profile_id [db_string profile "select profile_id from im_profiles where profile_gif = 'intern'"]
+    set student_profile_id [db_string profile "select profile_id from im_profiles where profile_gif = 'student'"]
+    switch $profile {
 	"MA" {set profile_id 463}
-	"Praktikum" {set profile_id 463}
+	"Praktikum" {set profile_id $intern_profile_id}
 	"ext." {set profile_id 465}
-	"WS" {set profile_id 463}
+	"WS" {set profile_id $student_profile_id}
     }
+
+    ds_comment "$profile :: $profile_id"
 
     if {0 != $profile_id} {
         # Make the user a member of the group (=profile)
-        ns_log Notice "upload-contacts-2: => relation_add $profile_id $user_id"
-        set rel_id [relation_add -member_state "approved" "membership_rel" $profile_id $user_id]
+        ns_log Notice "upload-contacts-2: => relation_add $profile_id $employee_id"
+        set rel_id [relation_add -member_state "approved" "membership_rel" $profile_id $employee_id]
         db_dml update_relation "update membership_rels set member_state='approved' where rel_id=:rel_id"
-        ns_write "<li>'$first_name $last_name': Added to group '$profile_id'.\n"
+        ns_write "<li>'$first_names $last_name': Added to group '$profile_id'.\n"
     } else {
-        ns_write "<li>'$first_name $last_name': Not adding the user to any group.\n"
+        ns_write "<li>'$first_names $last_name': Not adding the user to any group.\n"
     }
 
     ns_write "<li>
-	'$first_name $last_name': Updating user ...<br>
+	'$first_names $last_name': Updating user ...<br>
     "  
 
     # Add a im_employees record to the user since the 3.0 PostgreSQL
@@ -228,10 +231,17 @@ foreach csv_line_fields $values_list_of_lists {
     # Simply add the record to all users, even it they are not employees...
     set employee_found [db_string employee_found "select count(*) from im_employees where employee_id = :employee_id"]
     if {!$employee_found} {
-	db_dml add_im_employees "insert into im_employees (employee_id) values (:user_id)"
+	db_dml add_im_employees "insert into im_employees (employee_id) values (:employee_id)"
     }
 
     # Translate the employee_status_id
+    switch $status {
+	active { set employee_status_id 454 }
+	inactive { set employee_status_id 455 }
+	open { set employee_status_id 450 }
+	absent { set employee_status_id 453 }
+    }
+
     set employee_status_id [db_string category_id "select category_id from im_categories where category = :status" -default 0]
     if {0 != $employee_status_id} {
 	db_dml update_status "update im_employees set employee_status_id = :employee_status_id where employee_id = :employee_id"
@@ -239,47 +249,49 @@ foreach csv_line_fields $values_list_of_lists {
 
     # Translate the weekhours
     if {"" == $week_hours} {
-	set availability "100%"
+	set availability "100"
     } else {
 	set availability [expr $week_hours / 40]
     }
 
     # We might have to add the cost_center later
     # Add the department now :-)
-    set parent_department_id [db_string department "select cost_center_id from im_cost_centers where cost_center_name = :level_1" -default ""]
-    if {"" == $parent_department_id} {
-	# Create the parent_department_id
-	set parent_department_id [db_string cost_center_insert "	SELECT im_cost_center__new (
-		null,			-- cost_center_id
-		'im_cost_center',	-- object_type
-		now(),			-- creation_date
-		null,			-- creation_user
-		null,			-- creation_ip
-		null,			-- context_id
-
+    if { "" != $level_1 } { 
+	set parent_department_id [db_string department "select cost_center_id from im_cost_centers where cost_center_label = :level_1 and parent_id = 32965" -default ""]
+	if {"" == $parent_department_id} {
+	    # Create the parent_depar	 tment_id
+	    set parent_department_id [db_string cost_center_insert "SELECT im_cost_center__new (
+		null,			-- co	st_center_id
+		'im_cost_center',	-- objec	t_type
+		now(),			-- creation_date	
+		null,			-- creation_user		
+		null,			-- creation_ip			
+		null,			-- context_id			
+		
 		:level_1,
 		:level_1,
-		:level_1,
+		:cost_center,
 		3001,
 		3101,
 		32965,
 		null,
-		't',
+		'f',
 		null,
 		null
 	);"]
 	
-	db_dml update_context "	update acs_objects set 
+	    db_dml update_context "	update acs_objects set 
 		context_id = 32965
-	where	object_id = :parent_department_id;"
-    }
-
-    set department_id [db_string department "select cost_center_id from im_cost_centers where cost_center_name = :level_2 and parent_id = :parent_department_id" -default ""]
-    if {"" == $department_id} {
-	# We need to create the department
+		where	object_id = :parent_department_id;"
+	}
 	
-	set code "$level_1 - $level_2"
-	set department_id [db_string cost_center_insert "	SELECT im_cost_center__new (
+	if {"" != $level_2} {
+	    set code "$level_1 - $level_2"
+	    set department_id [db_string department "select cost_center_id from im_cost_centers where cost_center_label = :code" -default ""]
+	    if {"" == $department_id} {
+		# We need to create the department
+		ns_log Notice "$code"
+		set department_id [db_string cost_center_insert "	SELECT im_cost_center__new (
 		null,			-- cost_center_id
 		'im_cost_center',	-- object_type
 		now(),			-- creation_date
@@ -288,8 +300,8 @@ foreach csv_line_fields $values_list_of_lists {
 		null,			-- context_id
 
 		:level_2,
-		:level_2,
 		:code,
+		:cost_center,
 		3001,
 		3101,
 		:parent_department_id,
@@ -298,14 +310,16 @@ foreach csv_line_fields $values_list_of_lists {
 		null,
 		null
 	);"]
-	
-	db_dml update_context "	update acs_objects set 
-		context_id = :parent_department_id
-	where	object_id = :department_id;"
+		
+		db_dml update_context "	update acs_objects set 
+				context_id = :parent_department_id
+				where	object_id = :department_id;"
 
+	    }
+	}
     }
     
-    db_dml update_employee "update im_employees set department_id = :department_id, availability = :availabilty, personnel_number=:personnel_number where employee_id = :employee_id"
+    db_dml update_employee "update im_employees set department_id = :department_id, availability = :availability, personnel_number=:personnel_number where employee_id = :employee_id"
 
 }
 
