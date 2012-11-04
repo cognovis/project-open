@@ -76,7 +76,8 @@ set main_sql "
 		im_name_from_user_id(m.manager_id) as manager_name,
 		e.employee_id as employee_id,
 		im_name_from_user_id(e.employee_id) as employee_name,
-		acs_object__name(o.context_id) as context
+		acs_object__name(o.context_id) as context,
+                o.tree_sortkey
 	from
 		acs_objects o,
 		im_cost_centers m
@@ -89,7 +90,7 @@ set main_sql "
 		) e ON (e.department_id = m.cost_center_id)
 	where
 		o.object_id = m.cost_center_id
-	order by cost_center_code,employee_name
+	order by o.tree_sortkey,employee_name
 "
 
 set table ""
