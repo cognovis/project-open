@@ -137,8 +137,10 @@ if {$reports_exist_p && $user_admin_p} {
 	
 	append main_sql_select "\tim_object_permission_p(m.menu_id, $group_id, 'read') as p${group_id}_read_p,\n"
     }
-
 }
+
+# Get rid of ] and [ in order to fix issues in the template::list code
+set elements_list [string map {[ "" ] ""} $elements_list]
 
 
 # ---------------------------------------------------
