@@ -2,7 +2,7 @@
 	<%=[im_header]%>
         <%=[im_navbar]%>
 
-        <form action='project-profitibility'>
+        <form action='project-profitibility' id='intranet_cust_koernigweber_lib_project_profitibiliy'>
         <%=[export_form_vars opened_projects]%>
 
         <table border=0 cellspacing=1 cellpadding=1>
