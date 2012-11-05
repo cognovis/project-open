@@ -55,3 +55,23 @@ delete from im_employees where department_id != 525;
 delete from im_cost_centers where cost_center_id != 525;
 delete from acs_permissions where object_id in (select object_id from acs_objects where object_type = 'im_cost_center' and object_id != 525);
 delete from acs_objects where object_type = 'im_cost_center' and object_id != 525;
+
+-- Project Categories
+
+SELECT im_category_new(2511, 'BU VW Group / RoE', 'Intranet Project Type');
+SELECT im_category_new(2512, 'PD VW Group / RoE', 'Intranet Project Type');
+SELECT im_category_new(2513, 'PD BMW', 'Intranet Project Type');
+SELECT im_category_new(2514, 'PD Daimler', 'Intranet Project Type');
+SELECT im_category_new(2515, 'CC_Navigation', 'Intranet Project Type');
+SELECT im_category_new(2516, 'NTS Intragroup', 'Intranet Project Type');
+
+-- update to consulting projects
+insert into im_category_hierarchy (parent_id,child_id) values (2501,2511);
+insert into im_category_hierarchy (parent_id,child_id) values (2501,2512);
+insert into im_category_hierarchy (parent_id,child_id) values (2501,2513);
+insert into im_category_hierarchy (parent_id,child_id) values (2501,2514);
+insert into im_category_hierarchy (parent_id,child_id) values (2501,2515);
+insert into im_category_hierarchy (parent_id,child_id) values (2501,2516);
+
+alter table im_projects add column sow text;
+SELECT im_dynfield_attribute_new ('im_project', 'sow', '#intranet-cust-nts.SOW#', 'textbox_medium', 'text', 't', 33, 't');
