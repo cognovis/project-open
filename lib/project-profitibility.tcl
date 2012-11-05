@@ -83,7 +83,8 @@ im_reporting_form_update_ajax \
 	"customer_id" \
 	"project_id" \
 	"company_id" \
-	"project_id" 
+	"project_id" \
+    	"{exclude_subprojects_p 1} {include_empty 1} {include_empty_name {[lang::message::lookup "" intranet-cust-koernigweber.All_Projects_From_Customers "All projects from customer"]} }"
 
 set page_title [lang::message::lookup "" intranet-cust-koernigweber.Title_Profit_And_Loss_Report "Project Profit & Loss"]
 set context_bar [im_context_bar $page_title]
