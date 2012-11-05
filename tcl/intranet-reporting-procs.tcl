@@ -966,6 +966,7 @@ ad_proc -public im_reporting_form_update_ajax {
     target_form_element_name 
     source_table_column_name
     target_table_column_name
+    parameters
 } {
     Includes JS code for asynchronous HTML requests to be triggered 
     when source element is changed. Re-populates target element based 
@@ -982,6 +983,8 @@ ad_proc -public im_reporting_form_update_ajax {
 } {
     set par_str "form_id=$form_id&source_object_type=$source_object_type&target_object_type=$target_object_type&"
     append par_str "source_form_element_name=$source_form_element_name&target_form_element_name=$target_form_element_name&"
-    append par_str "source_table_column_name=$source_table_column_name&target_table_column_name=$target_table_column_name"
+    append par_str "source_table_column_name=$source_table_column_name&target_table_column_name=$target_table_column_name&"
+    append par_str "parameters=$parameters"
+
     template::head::add_javascript -src "/intranet-reporting/js/ajax_update_select_box.js?$par_str" -order "999"
 }
