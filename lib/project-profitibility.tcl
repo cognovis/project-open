@@ -1,4 +1,4 @@
-# /packages/intranet-reporting/www/projects-timesheet.tcl
+# /packages/intranet-cust-koernigweber/www/projects-profitibility.tcl
 #
 # Copyright (C) 2003-2012 ]project-open[
 #
@@ -6,10 +6,6 @@
 # http://www.project-open.com/ for licensing details.
 # author: Klaus Hofeditz klaus.hofeditz@project-open.com 
 # author: Frank Bergmann frank.bergmann@project-open.com  
-
-# set project_id_from_filter 66011
-
-# ad_return_complaint 1 $project_id_from_filter
 
 # ------------------------------------------------------------
 # Request for component 
@@ -79,6 +75,16 @@ if { "" == $user_id_from_search  } { set user_id_from_search 0 }
 # ------------------------------------------------------------
 # Constants & Options
 
+# Set AJAX update company/project
+im_reporting_form_update_ajax \
+	"intranet_cust_koernigweber_lib_project_profitibiliy" \
+	"im_company" \
+	"im_project" \
+	"customer_id" \
+	"project_id" \
+	"company_id" \
+	"project_id" 
+
 set page_title [lang::message::lookup "" intranet-cust-koernigweber.Title_Profit_And_Loss_Report "Project Profit & Loss"]
 set context_bar [im_context_bar $page_title]
 set context ""
@@ -92,7 +98,6 @@ set written_order_2_selected ""
 set first_request_p 0
 set internal_company_id [im_company_internal]
 set cc_company_id [im_cost_center_company]
-
 
 if { 0 == $project_status_id_from_search } {
     set project_status_id_from_search ""
