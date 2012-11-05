@@ -28,6 +28,33 @@ ad_proc -private im_package_reporting_cubes_id_helper {} {
     } -default 0]
 }
 
+
+ad_proc -private im_reporting_cube_sort_options { options} {
+    Sort options alphabetically
+} {
+    # Convert options list into list of list
+    array set hash $options
+    set attribute_list [list]
+    foreach attribute [lsort [array names hash]] {
+	set name $hash($attribute)
+	lappend attribute_list [list $attribute $name]
+    }
+
+    # Sort the list of lists
+    set sorted_attribute_list [qsort $attribute_list [lambda {s} { lindex $s 1 }]]
+
+    # Convert list of lists into options list
+    set result [list]
+    foreach tuple $sorted_attribute_list {
+	set att [lindex $tuple 0]
+	set nam [lindex $tuple 1]
+	lappend result $att
+	lappend result $nam
+    }
+    return $result
+}
+
+
 # ----------------------------------------------------------------------
 # Get Cube data finance
 # ----------------------------------------------------------------------

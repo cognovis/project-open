@@ -22,7 +22,6 @@ ad_page_contract {
     { customer_id:integer 0 }
 }
 
-
 # ------------------------------------------------------------
 # Define Dimensions
 
@@ -184,11 +183,6 @@ set left_scale_options {
 	"main_project_type" "Main Project Type"
 	"main_project_status" "Main Project Status"
 
-	"main2_project_name" "Sub Project/Task Name"
-	"main2_project_nr" "Sub Project/Task Nr"
-	"main2_project_type" "Sub Project/Task Type"
-	"main2_project_status" "Sub Project/Task Status"
-
 	"sub_project_name" "Leaf Project/Task Name"
 	"sub_project_nr" "Leaf Project/Task Nr"
 	"sub_project_type" "Leaf Project/Task Type"
@@ -196,10 +190,8 @@ set left_scale_options {
 
 	"user_name" "User Name"
 	"department" "User Department"
+	"employee_supervisor" "User Supervisor"
 	"customer_name" "Customer Name"
-	"customer_type" "Customer Type"
-	"customer_status" "Customer Status"
-	"project_manager_name" "Project Manager"
 }
 
 
@@ -211,8 +203,10 @@ set left_scale_options {
 set dynfield_sql "
 	select	aa.attribute_name,
 		aa.pretty_name,
+		aa.object_type,
 		w.widget as tcl_widget,
-		w.widget_name as dynfield_widget
+		w.widget_name as dynfield_widget,
+		w.deref_plpgsql_function
 	from
 		im_dynfield_attributes a,
 		im_dynfield_widgets w,
@@ -222,11 +216,26 @@ set dynfield_sql "
 		and a.acs_attribute_id = aa.attribute_id
 		and w.widget in ('select', 'generic_sql', 'im_category_tree', 'im_cost_center_tree', 'checkbox')
 		and aa.object_type in ('im_project','im_company')
+		-- Exclude the company's default_xxx fields
 		and aa.attribute_name not like 'default%'
+		-- Fix issues with certain duplicate fields. These fields are implemented hard coded.
+		and aa.attribute_name not in ('company_id', 'parent_id', 'supervisor_id')
 " 
 
 set derefs [list]
 db_foreach dynfield_attributes $dynfield_sql {
+
+    switch $object_type {
+	im_project { 
+	    set pretty_name "Main Project $pretty_name" 
+	}
+	im_company { 
+	    set pretty_name "Customer $pretty_name" 
+	}
+	default {
+	    # Do nothing, keep pretty_name like it is.
+	}
+    }
 
     lappend left_scale_options ${attribute_name}_deref
     lappend left_scale_options $pretty_name
@@ -240,14 +249,11 @@ db_foreach dynfield_attributes $dynfield_sql {
     }
 
     # Catch the generic ones - We know how to dereferentiate integer references of these fields.
-    set deref ""
+    set deref "${deref_plpgsql_function}($attribute_name) as ${attribute_name}_deref"
+    set ttt {
     switch $tcl_widget {
-	im_category_tree {
-	    set deref "im_category_from_id($attribute_name) as ${attribute_name}_deref"
-	}
-	im_cost_center_tree {
-	    set deref "im_cost_center_name_from_id($attribute_name) as ${attribute_name}_deref"
-	}
+	im_category_tree { set deref "im_category_from_id($attribute_name) as ${attribute_name}_deref" }
+	im_cost_center_tree { set deref "im_cost_center_name_from_id($attribute_name) as ${attribute_name}_deref" }
     }
 
     switch $dynfield_widget {
@@ -261,10 +267,20 @@ db_foreach dynfield_attributes $dynfield_sql {
 	project_account_manager { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
 	pl_fachbereich { set deref "acs_object__name($attribute_name) as ${attribute_name}_deref" }
     }
+    switch $attribute_name {
+        employee_supervisor_id { set deref "im_name_from_user_id($attribute_name) as ${attribute_name}_deref" }
+    }
 	
+    }
+
     if {"" == $deref} { set deref "$attribute_name as ${attribute_name}_deref" }
     lappend derefs $deref
 }
+
+
+set left_scale_options [im_reporting_cube_sort_options $left_scale_options]
+
+# ad_return_complaint 1 $left_scale_options
 
 # ------------------------------------------------------------
 # Determine which "dereferenciations" we need (pulling out nice value for integer reference)
@@ -279,9 +295,6 @@ foreach var $dimension_vars {
 
 	main_project_type { lappend derefs "im_category_from_id(p1.project_type_id) as main_project_type" }
 	main_project_status { lappend derefs "im_category_from_id(p1.project_status_id) as main_project_status" }
-
-	main2_project_type { lappend derefs "im_category_from_id(p2.project_type_id) as main2_project_type" }
-	main2_project_status { lappend derefs "im_category_from_id(p2.project_status_id) as main2_project_status" }
 
 	project_type { lappend derefs "im_category_from_id(h.sub_project_type_id) as project_type" }
 	project_status { lappend derefs "im_category_from_id(h.sub_project_status_id) as project_status" }
@@ -432,11 +445,11 @@ set inner_sql "
 			im_category_from_id(p.project_status_id) as sub_project_status,
 			p.project_type_id as sub_project_type_id,
 			im_category_from_id(p.project_type_id)  as sub_project_type,
-			im_name_from_user_id(p.project_lead_id) as project_manager_name,
 			c.*,
 			c.company_name as customer_name,
 			u.*,
 			e.*,
+			im_name_from_user_id(e.supervisor_id) as employee_supervisor,
 			im_cost_center_name_from_id(e.department_id) as department,
 			im_name_from_user_id(u.user_id) as user_name,
 			im_reporting_cube_tree_ancestor_key(p.tree_sortkey, 1) as main_project_sortkey,
@@ -466,18 +479,10 @@ set middle_sql "
 		p1.project_nr as main_project_nr,
 		p1.project_type_id as main_project_type_id,
 		p1.project_status_id as main_project_status_id,
-
-		p2.project_name as main2_project_name,
-		p2.project_nr as main2_project_nr,
-		p2.project_type_id as main2_project_type_id,
-		p2.project_status_id as main2_project_status_id,
-
 		[join $derefs ",\n\t\t"]
 	from	($inner_sql) h,
-		im_projects p1,
-		im_projects p2
-	where	h.main_project_sortkey = p1.tree_sortkey and
-		h.main2_project_sortkey = p2.tree_sortkey
+		im_projects p1
+	where	h.main_project_sortkey = p1.tree_sortkey
 "
 
 set outer_sql "
