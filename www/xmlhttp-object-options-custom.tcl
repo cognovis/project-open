@@ -21,10 +21,12 @@ ad_page_contract {
     on user request. 
  
     @author klaus.hofeditz@project-open.com
+
 } {
     { object_type }
     { source_form_element_name } 
     { source_form_element_value:integer }
+    { parameters "" }
     { auto_login "" }
 }
 
@@ -39,25 +41,36 @@ set current_user_id [ad_maybe_redirect_for_registration]
 # Body 
 # -------------------------------------
 
+foreach parameter_key_value $parameters {
+    set cmd "set [lindex $parameter_key_value 0] \"[lindex $parameter_key_value 1]\""
+    eval $cmd
+}
+
 switch $object_type {
 	im_project { 
+
+		# Project defaults 
+	    	if { ![info exists exclude_subprojects_p] } { set exclude_subprojects_p 0 }
+	    	if { ![info exists include_empty] } { set include_empty 0 }
+	    	if { ![info exists include_empty_name] } { set include_empty_name "" }
+
 		if { "customer_id" == $source_form_element_name } {
 			if { [im_permission $current_user_id "view_projects_all"] } {
 				set option_list [im_project_options \
-					    -include_empty 1 \
-					    -include_empty_name "" \
+					    -include_empty $include_empty \
+					    -include_empty_name $include_empty_name \
 					    -include_project_ids 1 \
-					    -exclude_subprojects_p 0 \
+					    -exclude_subprojects_p $exclude_subprojects_p \
 					    -exclude_tasks_p 1 \
 					    -company_id $source_form_element_value \
 					]
  
 			} else {
                         	set option_list [im_project_options \
-					    -include_empty 1 \
-					    -include_empty_name "" \
+					    -include_empty $include_empty \
+					    -include_empty_name $include_empty_name \
                                             -include_project_ids 1 \
-                                            -exclude_subprojects_p 0 \
+                                            -exclude_subprojects_p $exclude_subprojects_p \
                                             -exclude_tasks_p 1 \
 					    -member_user_id $current_user_id \
 					    -company_id $source_form_element_value \
@@ -71,22 +84,27 @@ switch $object_type {
         }
 }
 
-set result "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-append result "<dropdown>\n"
 set ctr 0 
+set option_items ""
 foreach { key_value } $option_list {
-	append result "<select_item>\n"
-	append result "<title>[lindex $key_value 0]</title>\n"
-	append result "<values><value>[lindex $key_value 1]</value></values>\n"
-	append result "</select_item>\n"
+	append option_items "<select_item>\n"
+	append option_items "<title>[lindex $key_value 0]</title>\n"
+	append option_items "<values><value>[lindex $key_value 1]</value></values>\n"
+	append option_items "</select_item>\n"
         incr ctr
 }
 
-if { 0 == $ctr } {
-    append result "<select_item>\n"
-    append result "<title>[lang::message::lookup "" intranet-core.NoProjectsFound "No Projects found"]</title>\n"
-    append result "<values><value></value></values>\n"
-    append result "</select_item>\n"    
+if { (0 == $include_empty && 0 == $ctr) || (1 == $include_empty && 1 == $ctr) } {
+    # Overwrite single empty option_item
+    set option_items ""
+    append option_items "<select_item>\n"
+    append option_items "<title>[lang::message::lookup "" intranet-core.NoProjectsFound "No Projects found"]</title>\n"
+    append option_items "<values><value></value></values>\n"
+    append option_items "</select_item>\n"    
 }
+
+set result "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+append result "<dropdown>\n"
+append result $option_items
 append result "</dropdown>"
 doc_return 200 "xml" $result

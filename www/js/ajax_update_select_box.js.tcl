@@ -28,6 +28,7 @@ ad_page_contract {
     @param target_form_element_name	
     @param source_table_column_name 
     @param target_table_column_name
+    @param parameters
 
     @author klaus.hofeditz@project-open.com
 
@@ -39,6 +40,7 @@ ad_page_contract {
     target_form_element_name
     source_table_column_name
     target_table_column_name
+    parameters
 }
 
 switch $target_object_type {
@@ -47,11 +49,15 @@ switch $target_object_type {
 	switch $source_object_type {
 	    im_company {
 		# Building request string that return options in json/xml format
-		# Value of soource element can be found in var ${source_form_element_name}_value   
-		set request_str "\"GET\",\"/intranet-reporting/xmlhttp-object-options-custom?object_type=$target_object_type&"
-		append request_str "source_table_column_name=$source_table_column_name&source_form_element_name=$source_form_element_name&"
-		append request_str "source_table_column_name=$source_table_column_name&source_form_element_value=\" + ${source_form_element_name}_value,true"
+		# Value of source element can be found in var ${source_form_element_name}_value   
+		
+		# Build url 
+		set url "\"/intranet-reporting/xmlhttp-object-options-custom?object_type=$target_object_type&"
+		append url "source_table_column_name=$source_table_column_name&source_form_element_name=$source_form_element_name&"
+		append url "parameters=$parameters&$source_table_column_name=$source_table_column_name&source_form_element_value=\" + ${source_form_element_name}_value"
 
+		# Build complete request string 
+		set request_str "\"GET\",$url,true"
 		set result_ds_type "xml"
 	    }
 	    default {
