@@ -54,8 +54,8 @@ switch $target_object_type {
 		# Build url 
 		set url "\"/intranet-reporting/xmlhttp-object-options-custom?object_type=$target_object_type&"
 		append url "source_table_column_name=$source_table_column_name&source_form_element_name=$source_form_element_name&"
-		append url "parameters=$parameters&$source_table_column_name=$source_table_column_name&source_form_element_value=\" + ${source_form_element_name}_value"
-
+		append url "parameters=$parameters&$source_table_column_name=$source_table_column_name&source_form_element_value=\" + ${source_form_element_name}_value + "
+                append url "\"&target_form_element_value=\" + ${target_form_element_name}_value"
 		# Build complete request string 
 		set request_str "\"GET\",$url,true"
 		set result_ds_type "xml"
