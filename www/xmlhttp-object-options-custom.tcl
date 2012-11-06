@@ -26,6 +26,7 @@ ad_page_contract {
     { object_type }
     { source_form_element_name } 
     { source_form_element_value:integer }
+    { target_form_element_value:integer }
     { parameters "" }
     { auto_login "" }
 }
@@ -89,7 +90,7 @@ set option_items ""
 foreach { key_value } $option_list {
 	append option_items "<select_item>\n"
 	append option_items "<title>[lindex $key_value 0]</title>\n"
-	append option_items "<values><value>[lindex $key_value 1]</value></values>\n"
+	append option_items "<values><value>[lindex $key_value 1]</value></values>\n"	
 	append option_items "</select_item>\n"
         incr ctr
 }
@@ -106,5 +107,11 @@ if { (0 == $include_empty && 0 == $ctr) || (1 == $include_empty && 1 == $ctr) } 
 set result "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 append result "<dropdown>\n"
 append result $option_items
-append result "</dropdown>"
+append result "</dropdown>\n"
+append result "<target_form_element_values>"
+if { [info exists target_form_element_value] } {
+	append result "<target_form_element_value>$target_form_element_value</target_form_element_value>"	
+}
+append result "</target_form_element_values>\n"
+
 doc_return 200 "xml" $result
