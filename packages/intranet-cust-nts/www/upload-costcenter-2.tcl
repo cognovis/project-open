@@ -174,145 +174,77 @@ foreach csv_line_fields $values_list_of_lists {
 	set result [eval $cmd]
     }
 
-    if {"" == $first_names} {
-	ns_write "<li>Error: We have found an empty 'First Name' in line $linecount.<br>
-        Error: We can not add users with an empty first name, Please correct the CSV file.
-        <br><pre>$pretty_field_string</pre>"
-	continue
+
+    # We might have to add the cost_center later
+    # Add the department now :-)
+    set manager_id [db_string manger "select user_id from users where lower(username) = lower(:username)" -default ""]
+    if {$manager_id ne ""} {
+	set rel_id [relation_add -member_state "approved" "membership_rel" 469 $manager_id]
     }
-
-    if {"" == $last_name} {
-	ns_write "<li>Error: We have found an empty 'Last Name' in line $linecount.<br>
-        We can not add users with an empty last name. Please correct the CSV file.<br>
-        <pre>$pretty_field_string</pre>"
-	continue
+    set parent_department_id [db_string department "select cost_center_id from im_cost_centers where cost_center_label = :level1 and parent_id = 525" -default ""]
+    if {"" == $parent_department_id} {
+	# Create the parent_depar	 tment_id
+	set parent_department_id [db_string cost_center_insert "SELECT im_cost_center__new (
+		null,			-- co	st_center_id
+		'im_cost_center',	-- objec	t_type
+		now(),			-- creation_date	
+		null,			-- creation_user		
+		null,			-- creation_ip			
+		null,			-- context_id			
+		
+		:level1,
+		:level1,
+		:cost_center,
+		3001,
+		3101,
+		525,
+		:manager_id,
+		't',
+		null,
+		null
+	);"]
+	
+	db_dml update_context "	update acs_objects set 
+		context_id = 525
+		where	object_id = :parent_department_id;"
     }
+	
+    if {"" != $level2} {
+	set code "$level1 - $level2"
+	set department_id [db_string department "select cost_center_id from im_cost_centers where cost_center_label = :code" -default ""]
+	if {"" == $department_id} {
+	    # We need to create the department
+	    ns_log Notice "$code"
+	    set department_id [db_string cost_center_insert "	SELECT im_cost_center__new (
+		null,			-- cost_center_id
+		'im_cost_center',	-- object_type
+		now(),			-- creation_date
+		null,			-- creation_user
+		null,			-- creation_ip
+		null,			-- context_id
 
-    set employee_id [db_string employee "select person_id from persons where 	lower(first_names) = lower(:first_names) 
-			and lower(last_name) = lower(:last_name) and person_id not in (select party_id from parties where email like '%.local')" -default ""]
-
-    if {$employee_id eq ""} {
-    # Find out the employee_id
-    regsub -all {ä} $first_names {ae} first_names
-    regsub -all {ö} $first_names {oe} first_names
-    regsub -all {ü} $first_names {ue} first_names
-    regsub -all {ß} $first_names {ss} first_names
-    regsub -all {ä} $last_name {ae} last_name
-    regsub -all {ö} $last_name {oe} last_name
-    regsub -all {ü} $last_name {ue} last_name
-    regsub -all {ß} $last_name {ss} last_name
-
-    set employee_id [db_string employee "select person_id from persons where 	lower(first_names) = lower(:first_names) 
-			and lower(last_name) = lower(:last_name) and person_id not in (select party_id from parties where email like '%.local')" -default ""]
-}
-
-    if {"" == $employee_id} {
-	set username "${first_names}.${last_name}"
-	set email "${username}@neusoft.com"
-	auth::create_user -email $email -username $username -first_names $first_names -last_name $last_name 
-#	set employee_id [person::new -
-#	person::new -first_names $first_names -last_name $last_name -email $email
-	ns_write "<li>Error: $first_names $last_name $email in $linecount is not in LDAP.<br>"
-	continue
-    }	
-
-    # -------------------------------------------------------
-    # Deal with the users's profile membership
-    #
-
-    set intern_profile_id [db_string profile "select profile_id from im_profiles where profile_gif = 'intern'"]
-    set student_profile_id [db_string profile "select profile_id from im_profiles where profile_gif = 'student'"]
-    switch $profile {
-	"MA" {set profile_id 463}
-	"Praktikum" {set profile_id $intern_profile_id}
-	"ext." {set profile_id 465}
-	"WS" {set profile_id $student_profile_id}
-    }
-
-    ds_comment "$profile :: $profile_id"
-
-    if {0 != $profile_id} {
-        # Make the user a member of the group (=profile)
-        ns_log Notice "upload-contacts-2: => relation_add $profile_id $employee_id"
-        set rel_id [relation_add -member_state "approved" "membership_rel" $profile_id $employee_id]
-        db_dml update_relation "update membership_rels set member_state='approved' where rel_id=:rel_id"
-        ns_write "<li>'$first_names $last_name': Added to group '$profile_id'.\n"
-    } else {
-        ns_write "<li>'$first_names $last_name': Not adding the user to any group.\n"
-    }
-
-    ns_write "<li>
-	'$first_names $last_name': Updating user ...<br>
-    "  
-
-    # Add a im_employees record to the user since the 3.0 PostgreSQL
-    # port, because we have dropped the outer join with it...
-    # Simply add the record to all users, even it they are not employees...
-    set employee_found [db_string employee_found "select count(*) from im_employees where employee_id = :employee_id"]
-    if {!$employee_found} {
-	db_dml add_im_employees "insert into im_employees (employee_id) values (:employee_id)"
-    }
-
-    # Translate the employee_status_id
-    switch $status {
-	active { set employee_status_id 454 }
-	inactive { set employee_status_id 455 }
-	open { set employee_status_id 450 }
-	absent { set employee_status_id 453 }
-	resigned { set employee_status_id 452 }
-    }
-
-    set employee_status_id [db_string category_id "select category_id from im_categories where category = :status" -default 0]
-    if {0 != $employee_status_id} {
-	db_dml update_status "update im_employees set employee_status_id = :employee_status_id where employee_id = :employee_id"
-    }
-
-    # Translate the weekhours
-    if {"" == $week_hours} {
-	set availability "100"
-    } else {
-	set availability [expr $week_hours / 40]
-    }
-
-
-    # add the note as a note of type 11512
-    if {"" != $note} {
-	set note [string trim $note]
-	set duplicate_note_sql "
-                select  count(*)
-                from    im_notes
-                where   object_id = :employee_id and note = :note
-        "
-	if {[db_string dup $duplicate_note_sql -default 0]==0} {
-	    set note_id [db_exec_plsql create_note "	
-		SELECT im_note__new(
-			null,
-			'im_note',
-			now(),
-			:employee_id,
-			'[ad_conn peeraddr]',
-			null,
-			:note,
-			:employee_id,
-			11512,
-			[im_note_status_active]
-		)
-        "]
+		:level2,
+		:code,
+		:cost_center,
+		3001,
+		3101,
+		:parent_department_id,
+		:manager_id,
+		't',
+		null,
+		null
+	);"]
+	    
+	    db_dml update_context "	update acs_objects set 
+				context_id = :parent_department_id
+				where	object_id = :department_id;"
+	    
 	}
     }
+    ns_write "<li>
+          $manager_id :: $level1</li>
+    "  
 
-    # define the department id
-    if {"" != $level2} {
-	set department_id [db_string department "select cost_center_id from im_cost_centers where cost_center_name = :level2" -default 525]
-    } else {
-	set department_id [db_string department "select cost_center_id from im_cost_centers where cost_center_name = :level1" -default 525]	
-    }
-
-    db_dml update_employee "update im_employees set department_id = :department_id, availability = :availability, personnel_number=:personnel_number, old_personnel_number=:old_personnel_number, panf=:panf where employee_id = :employee_id"
-    db_dml update_person "update persons set gender=:gender where person_id = :employee_id"
-
-    # add the external dienstleister
-    
 }
 
 
