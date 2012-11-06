@@ -29,7 +29,7 @@ if {![info exists task]} {
 	{ form_mode "edit" }
 	{ plugin_id "" }
 	{ view_name "" }
-	{ return_url "/intranet-riskmanagement/" }
+	{ return_url "" }
     }
 
     set show_components_p 1
@@ -41,7 +41,7 @@ if {![info exists task]} {
     set case_id $task(case_id)
 
     set vars_from_url ""
-    set return_url [im_url_with_query]
+    set return_url ""
 
     set risk_id [db_string pid "select object_id from wf_cases where case_id = :case_id" -default ""]
     set transition_key [db_string transition_key "select transition_key from wf_tasks where task_id = :task_id"]
@@ -69,6 +69,7 @@ if {![info exists task]} {
 
 }
 
+
 # ------------------------------------------------------------------
 # Default & Security
 # ------------------------------------------------------------------
@@ -79,6 +80,7 @@ set current_url [im_url_with_query]
 set action_url "/intranet-riskmanagement/new"
 # set focus "riskmanagement_risk.var_name"
 set focus "risk.var_name"
+if {"" == $return_url} { set return_url [im_url_with_query] }
 
 if {[info exists risk_id] && "" == $risk_id} { unset risk_id }
 
@@ -168,22 +170,26 @@ ad_form \
 # Risk Action
 # ------------------------------------------------------------------
 
-set tid [value_if_exists risk_id]
-set risk_action_html "
-<form action=/intranet-riskmanagement/action name=riskmanagement_action>
-[export_form_vars return_url tid]
-<input type=submit value='[lang::message::lookup "" intranet-riskmanagement.Action "Action"]'>
-[im_category_select \
-     -translate_p 1 \
-     -package_key "intranet-riskmanagement" \
-     -plain_p 1 \
-     -include_empty_p 1 \
-     -include_empty_name "" \
-     "Intranet Risk Action" \
-     action_id \
-]
-</form>
-"
+set risk_action_html ""
+if {[info exists risk_id]} {
+    set risk_action_html "
+	<form action=/intranet-riskmanagement/action name=riskmanagement_action>
+	[export_form_vars return_url]
+	<!-- manual pass-through of risk_id as an array -->
+	<input type=hidden name=risk_id.$risk_id value='on'>
+	<input type=submit value='[lang::message::lookup "" intranet-riskmanagement.Action "Action"]'>
+	[im_category_select \
+	     -translate_p 1 \
+	     -package_key "intranet-riskmanagement" \
+	     -plain_p 1 \
+	     -include_empty_p 1 \
+	     -include_empty_name "" \
+	     "Intranet Risk Action" \
+	     action_id \
+	]
+	</form>
+    "
+}
 
 # ------------------------------------------------------------------
 # Delete pressed?
@@ -284,11 +290,16 @@ ad_form -extend -name riskmanagement_risk -on_request {
 
 } -edit_data {
 
-#    set start_date_sql [template::util::date get_property sql_date $start_date]
-#    set end_date_sql [template::util::date get_property sql_timestamp $end_date]
-
-    db_dml risk_update {}
-    db_dml project_update {}
+    db_dml risk_update "
+	update im_risks set
+		 risk_project_id = :risk_project_id,
+		 risk_status_id = :risk_status_id,
+		 risk_type_id = :risk_type_id,
+		 risk_name = :risk_name,
+		 risk_probability_percent = :risk_probability_percent,
+		 risk_impact = :risk_impact
+	where risk_id = :risk_id
+    "
 
     im_dynfield::attribute_store \
 	-object_type "im_risk" \
@@ -296,7 +307,7 @@ ad_form -extend -name riskmanagement_risk -on_request {
 	-form_id riskmanagement_risk
 
     # Write Audit Trail
-    im_audit -object_id $risk_id -action after_update
+    im_audit -object_id $risk_id -object_type "im_risk" -status_id $risk_status_id -type_id $risk_type_id -action after_update
 
 } -on_submit {
 
