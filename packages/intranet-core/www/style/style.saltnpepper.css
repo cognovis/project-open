@@ -46,7 +46,6 @@
 }
 
 .log_hours{
-	
 	color: #000000;
 }
 
@@ -363,6 +362,7 @@ background-position: 0px -10px;
 	padding-left: 1em;
 }
 
+
 #main_users_online {
    color: #666666;
    float:left;
@@ -380,6 +380,10 @@ background-position: 0px -10px;
 #main_search INPUT {
    position: relative;
    top: -3px;
+}
+
+#main_search .form-button40  {
+   top: -8px; 
 }
 
 
@@ -687,17 +691,15 @@ a   span  {float:none;}
       border-bottom-width: 0px;
 }
 
-
 #footer {
   text-align: center;
   margin-top: 1em;
   position: relative;
-  visibility: hidden;
 }
 
 #footer, #footer a {
 	color: #24618E;
-	z-index: -20;
+	z-index: 20;
 }
 
 #slave_content {

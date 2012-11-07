@@ -1,4 +1,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+
+<%
+   set version "\]po\[ V4.0:"
+   switch [ns_info server] {
+   po40ts   { set page_title "$version Simple Timesheet Management" }
+   po40cons { set page_title "$version PSA - Profesional Services Automation" }
+   default  { set page_title "$version All-Features Demo Server" }
+   }
+%>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -6,7 +15,7 @@
 <script defer type='text/javascript' src='/intranet/js/pngfix.js'></script>
 <![endif]-->
 <meta name="generator" content="OpenACS version 5.7.0" lang="en">
-<title>]project-open[  ]po[ V4.0.3. All-Features Demo Server</title>
+<title>@page_title@</title>
 <link rel="stylesheet" type="text/css" href="index.css" media="all">
 <style type="text/css">
 div.outer {
@@ -134,12 +143,9 @@ function setBgImage (id,img) {
     </ul>
   </div>
   <div id="main_header">
-    <div id="main_title"> ]po[ V4.0.3. All-Features Demo Server </div>
-    <div id="main_context_bar"> <a class="contextbar" href="http://po40demo.project-open.net/intranet/">]project-open[</a> : <span class="contextbar"> ]po[ V4.0.3. All-Features Demo Server</span> </div>
+    <div id="main_title">@page_title@</div>
+    <div id="main_context_bar"> <a class="contextbar" href="http://po40demo.project-open.net/intranet/">]project-open[</a> : <span class="contextbar">@page_title@</span> </div>
     <div id="main_maintenance_bar"> </div>
-    <div id="main_portrait_and_username">
-      <p id="main_username"> Welcome, Unregistered Visitor </p>
-    </div>
     <div id="main_header_deco"></div>
   </div>
 </div>
@@ -147,12 +153,16 @@ function setBgImage (id,img) {
 <div style="visibility: visible; width:900px; margin:0px auto;" >
 <div style="text-align: left">
   <h2>Please select one of the demo accounts in order to login:</h2>
+  <p>
+    The different users have different permissions. Please choose "Ben Bigboss"
+    for maximum permissions.
+  </p>
 </div>
 <br>
 <table border="0" cellpadding="10" cellspacing="10" width="100%">
   <tr>
   <td>
-  <table border="0" cellpadding="0" cellspacing="0">
+  <table border="1" cellpadding="0" cellspacing="0">
     <colgroup>
     <col width="80px">
     <col width="230px">
@@ -241,13 +251,13 @@ function setBgImage (id,img) {
         <col width="230px">
         </colgroup>
         <tr class="off" onmouseover="this.className='on';removeBgImage('5')" onmouseout="this.className='off';setBgImage('5','/intranet/images/demoserver/laura_leadarchitect_bw.jpg')">
-          <td><div class="outer outer5"><a href="/become?user_id=8864&amp;url=/intranet/" id="outer5"><span></span></a></div></td>
-          <td><a href="/become?user_id=8864&amp;url=/intranet/"><b>Login as Laura Leadarchitect</b><br>
+          <td><div class="outer outer5"><a href="/become?user_id=8858&amp;url=/intranet/" id="outer5"><span></span></a></div></td>
+          <td><a href="/become?user_id=8858&amp;url=/intranet/"><b>Login as Laura Leadarchitect</b><br>
             (Employee)</a></nobr>
             </div>
             <br>
             <br>
-            <div class="login"><a href="/become?user_id=8864&amp;url=/intranet/" id="login5"><span></span></a></div></td>
+            <div class="login"><a href="/become?user_id=8858&amp;url=/intranet/" id="login5"><span></span></a></div></td>
         </tr>
       </table></td>
     <td><table cellpadding="0" cellspacing="0" border="0">
@@ -266,6 +276,7 @@ function setBgImage (id,img) {
         </tr>
       </table></td>
   </tr>
+  <tr><td colspan=2><hr style="width:740px" align="left"></td></tr>
   <tr>
     <td><table cellpadding="0" cellspacing="0" border="0">
         <colgroup>
@@ -298,52 +309,10 @@ function setBgImage (id,img) {
         </tr>
       </table></td>
   </tr>
+  <tr><td colspan=2><hr style="width:740px" align="left"></td></tr>
   </tbody>
 </table>
 
-<br>
-<br>
-
-<hr style="width:740px" align="left">
-
-
-<table cellpadding="20" cellspacing="20" border="0" width="740px">
-  <tr>
-    <td valign="top"><div style="font-size:x-small" align="left">
-        <h3>Please note:</h3>
-        <ul>
-          <li><strong>Shared Resource</strong>:<br>
-            This demo server is a shared resource:<br>
-            Other users may have changed demo projects and the configuration. </li>
-          <li><strong>Localization</strong>:<br>
-            The ]po[ language settings depend on browser settings and are cached.
-            These chached settings are cleared every 15 minutes. </li>
-          <li><strong>Server Reset</strong>:<br>
-            Once a day we will reset the server and any data entered will be deleted. </li>
-          <li><strong>Administrator Permissions</strong>:<br>
-            Please note that you won't get Admin permissions on this demo server. <br>
-            <a href="http://www.project-open.org/en/install_main"> Please download and install ]po[ </a> in your own server in order to test administration functionality. </li>
-        </ul>
-      </div></td>
-    <td valign="top"><div style="font-size:x-small" align="left">
-        <h3>Other Demo Server</h3>
-        Please see the other available demo servers:<br>
-        <br>
-        <ul>
-          <li><a href="http://po40demo.project-open.net/">All-Features Demo Server</a></li>
-          <a href="http://po40demo.project-open.net/"> </a>
-          <li><a href="http://po40demo.project-open.net/"></a><a href="http://po40ppm.project-open.net/">Project &amp; Portfolio Management Demo Server</a></li>
-          <a href="http://po40ppm.project-open.net/"> </a>
-          <li><a href="http://po40ppm.project-open.net/"></a><a href="http://po40itsm.project-open.net/">IT Services Management Demo Server</a></li>
-          <a href="http://po40itsm.project-open.net/"> </a>
-          <li><a href="http://po40itsm.project-open.net/"></a><a href="http://po40cons.project-open.net/">Consuling Companies Demo Server</a></li>
-          <a href="http://po40cons.project-open.net/">
-          <!--	<li><a href="http://po40trans.project-open.net">Translation Companies Demo Server</h1></li>	-->
-          </a>
-        </ul>
-        <a href="http://po40cons.project-open.net/"> </a> </div></td>
-  </tr>
-</table>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
   <tbody>
     <tr>
