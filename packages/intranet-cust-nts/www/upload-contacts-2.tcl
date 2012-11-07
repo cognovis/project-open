@@ -260,12 +260,13 @@ foreach csv_line_fields $values_list_of_lists {
 	open { set employee_status_id 450 }
 	absent { set employee_status_id 453 }
 	resigned { set employee_status_id 452 }
+	default {set employee_status_id ""}
     }
 
-    set employee_status_id [db_string category_id "select category_id from im_categories where category = :status" -default 0]
-    if {0 != $employee_status_id} {
+#    set employee_status_id [db_string category_id "select category_id from im_categories where category = :status" -default 0]
+#    if {0 != $employee_status_id} {
 	db_dml update_status "update im_employees set employee_status_id = :employee_status_id where employee_id = :employee_id"
-    }
+#    }
 
     # Translate the weekhours
     if {"" == $week_hours} {
@@ -308,11 +309,67 @@ foreach csv_line_fields $values_list_of_lists {
 	set department_id [db_string department "select cost_center_id from im_cost_centers where cost_center_name = :level1" -default 525]	
     }
 
-    db_dml update_employee "update im_employees set department_id = :department_id, availability = :availability, personnel_number=:personnel_number, old_personnel_number=:old_personnel_number, panf=:panf where employee_id = :employee_id"
+    # Make the department manager the manager for the employee
+    set supervisor_id [db_string manager "select manager_id from im_cost_centers where cost_center_id = :department_id" -default ""]
+    if {$supervisor_id eq $employee_id} {
+	set supervisor_id ""
+    }
+
+    db_dml update_employee "update im_employees set department_id = :department_id, availability = :availability, personnel_number=:personnel_number, old_personnel_number=:old_personnel_number, panf=:panf, supervisor_id = :supervisor_id where employee_id = :employee_id"
     db_dml update_person "update persons set gender=:gender where person_id = :employee_id"
 
-    # add the external dienstleister
+    # Update the dates
+    set rep_cost_ids [db_list rep_costs_exist "
+	select	rc.rep_cost_id
+	from	im_repeating_costs rc,
+		im_costs ci
+	where 	rc.rep_cost_id = ci.cost_id
+		and ci.cause_object_id = :employee_id
+"]
+
+
+    if {$exit_date eq "" || $exit_date eq "?"} {
+	set exit_date "31.12.50"
+    }
+
+    if {$entry_date eq "" || $entry_date eq "?"} {
+	set entry_date "01.11.12"
+    }
+
+    if {[llength $rep_cost_ids] == 0} {
+	set rep_cost_id [im_cost::new -object_type "im_repeating_cost" -cost_name $employee_id -cost_type_id [im_cost_type_employee]]
+	db_dml insert_repeating_costs "
+			insert into im_repeating_costs (
+				rep_cost_id,
+				start_date,
+				end_date
+			) values (
+				:rep_cost_id,
+				to_date(:entry_date,'DD.MM.YY'),
+				to_date(:exit_date,'DD.MM.YY')
+			)"
+    } else {
+	set rep_cost_id [lindex $rep_cost_ids 0]
+	db_dml update_repeating_costs "
+			update im_repeating_costs set start_date = to_date(:entry_date,'DD.MM.YY'),end_date = to_date(:exit_date,'DD.MM.YY') where rep_cost_id = :rep_cost_id"
+    }
     
+    db_dml update_costs "
+			update im_costs set
+				cause_object_id = :employee_id
+			where
+				cost_id = :rep_cost_id
+		"
+	    
+
+    
+    # add the external dienstleister
+
+    if {$external != "" && $external != "andere"} {
+	set provider_id [im_company_find_or_create -company_name $external -company_type_id 56]
+	im_biz_object_add_role $employee_id $provider_id 1300
+    }
+
 }
 
 
