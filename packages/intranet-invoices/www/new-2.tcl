@@ -380,7 +380,6 @@ foreach nr $item_list {
 	    set rate [db_string company_type_rate "select price from im_timesheet_prices where company_id = [im_company_internal] and uom_id = :uom_id" -default 0]
 	}
     }
-	
 
     # Insert only if it's not an empty line from the edit screen
     if {!("" == [string trim $name] && (0 == $units || "" == $units))} {

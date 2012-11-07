@@ -137,12 +137,19 @@ if {$reports_exist_p && $user_admin_p} {
 	
 	append main_sql_select "\tim_object_permission_p(m.menu_id, $group_id, 'read') as p${group_id}_read_p,\n"
     }
-
 }
+
+# Get rid of ] and [ in order to fix issues in the template::list code
+set elements_list [string map {[ "" ] ""} $elements_list]
 
 
 # ---------------------------------------------------
 # 
+
+# Hide the REST reports for non-administrators.
+# A bit dirty like this, though...
+set hide_rest_reports_sql ""
+if {!$user_admin_p} { set hide_rest_reports_sql "and m.name not like 'REST%'" }
 
 set top_menu_sortkey [db_string top_menu_sortkey "
 	select tree_sortkey 
@@ -174,6 +181,7 @@ db_multirow -extend {indent_spaces edit_html} reports get_reports "
 	        tree_sortkey like '$top_menu_sortkey%'
 		and 't' = im_object_permission_p(m.menu_id, :current_user_id, 'read')
 		and m.label != 'reporting'
+		$hide_rest_reports_sql
 	order by tree_sortkey
 " {
     # Pass the report name though the localization system
@@ -186,12 +194,17 @@ db_multirow -extend {indent_spaces edit_html} reports get_reports "
     }
 
     # Show an "edit" icon for dynamic reports
-    set edit_html "<a href='[export_vars -base "new" {report_id}]'>[im_gif "wrench"]</a>"
-    if {"" == $report_id} { 
-	set edit_html "" 
+    if {"" == $report_id} {
+	# TCL Report - edit the menu
+	set edit_html "<a href='[export_vars -base "/intranet/admin/menus/new" {menu_id return_url}]'>[im_gif "wrench"]</a>"
     } else {
+	# SQL report - edit the report itself
+	set edit_html "<a href='[export_vars -base "new" {report_id return_url}]'>[im_gif "wrench"]</a>"
 	set url [export_vars -base "view" {report_id}]
     }
+
+    # Skip the wrench for the headers
+    if {4 == $indent_level} { set edit_html "" }
 
     # Format the group permission display
     foreach gid $group_list {
@@ -200,7 +213,7 @@ db_multirow -extend {indent_spaces edit_html} reports get_reports "
 	set t_or_f [set $varname]
 	if {"t" == $t_or_f} {
 	    set toggle_url [export_vars -base "/intranet/admin/toggle" {{action remove_readable} {horiz_group_id $gid} {object_id $menu_id} return_url}]
-	    set p${gid}_read_p "<a href='$toggle_url'><b>R</b></a>\n"
+ 	    set p${gid}_read_p "<a href='$toggle_url'><b>R</b></a>\n"
 	} else {
 	    set toggle_url [export_vars -base "/intranet/admin/toggle" {{action add_readable} {horiz_group_id $gid} {object_id $menu_id} return_url}]
 	    set p${gid}_read_p "<a href='$toggle_url'>r</a>\n"
