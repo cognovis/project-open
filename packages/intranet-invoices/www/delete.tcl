@@ -34,6 +34,18 @@ db_1row type_and_status "select cost_type_id, cost_status_id from im_costs where
 
 im_audit -object_type "$otype" -object_id $invoice_id -status_id $cost_status_id -type_id $cost_type_id -action before_delete
 
+# Delete rels
+set rel_ids [db_list rels "select rel_id from acs_rels where object_id_one = :cost_id or object_id_two = :cost_id"]
+foreach rel_id $rel_ids {
+    db_string delete_rel "select acs_rel__delete(:rel_id) from dual"
+}
+
+# Delete attached content items
+set item_ids [db_list context "select object_id from acs_objects where context_id = :cost_id and object_type = 'content_item'"]
+foreach item_id $item_ids {
+    content::item::delete -item_id $item_id
+}
+
 db_string delete_cost_item ""
 
 ad_returnredirect $return_url

@@ -470,14 +470,22 @@ ad_proc -public im_ms_project_seconds_in_timephased {
     Returns "" if there are no timephased data for this task.
 } {
     set sql "
-	select	gat.*
+	select	gat.*,
+		bom.percentage
 	from	acs_rels r,
+		im_biz_object_members bom,
 		im_gantt_assignment_timephases gat
 	where	r.object_id_one = :task_id and
+		r.rel_id = bom.rel_id and
 		r.rel_id = gat.rel_id
     "
     set seconds ""
     db_foreach timephased_data $sql {
+
+        # Fraber 20120914: Overwritten assignments have NULL percentage.
+	# ToDo: Fix the update of timephased data to remove TP for old assignments
+        if {"" == $percentage} { continue }
+
 	if {"" != $timephase_value} {
 	    set value_seconds [im_gp_ms_project_time_to_seconds $timephase_value]
 	    if {[string is integer $value_seconds]} { 

@@ -118,7 +118,11 @@ if {!$download_p} {
 
 }
 
+# Where are the PostgreSQL binaries located?
 set pgbin [db_get_pgbin]
+set pgbin_param [parameter::get_from_package_key -package_key "intranet-core" -parameter "PgPathUnix" -default ""]
+if {"" != $pgbin_param} { set pgbin $pgbin_param }
+
 set dest_file "$path/$filename"
 
 global tcl_platform
@@ -157,7 +161,7 @@ if { [catch {
 	}
 	default {
 	    # Probably Linux or some kind of Unix derivate
-	    set cmd [list exec pg_dump --no-owner --clean $disable_dollar_quoting --format=$format --file=$dest_file]
+	    set cmd [list exec ${pgbin}pg_dump --no-owner --clean $disable_dollar_quoting --format=$format --file=$dest_file]
 	}
     }
 

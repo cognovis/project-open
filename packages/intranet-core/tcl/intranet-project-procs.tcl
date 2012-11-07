@@ -677,11 +677,17 @@ ad_proc -public im_project_options {
 } { 
     Get a list of projects
 } {
-    # Default: Exclude tasks and deleted projects
+    set exclude_type_id [list]
+    # Default: Exclude tickets and deleted projects
     if {"" == $exclude_status_id} { set exclude_status_id [im_project_status_deleted] }
-    if {"" == $exclude_type_id} { set exclude_type_id [list [im_project_type_task] [im_project_type_ticket]] }
-    if {!$exclude_tasks_p} { set exclude_subprojects_p 0 }
-
+    if {"" == $exclude_type_id} { set exclude_type_id [list [im_project_type_ticket]] } 
+    # Exclude tasks? 
+    if {!$exclude_tasks_p} { 
+	# Overwrite parameter when tasks should be shown
+	set exclude_subprojects_p 0 
+    } else {
+	lappend exclude_type_id [im_project_type_task]
+    }
     set current_project_id $project_id
     set super_project_id $project_id
 
@@ -805,7 +811,7 @@ ad_proc -public im_project_options {
     }
 
     if {0 != $exclude_type_id && "" != $exclude_type_id} {
-	lappend p_criteria "p.project_type_id not in ([join [im_sub_categories -include_disabled_p 1 $exclude_type_id] ","])"
+	# lappend p_criteria "p.project_type_id not in ([join [im_sub_categories -include_disabled_p 1 $exclude_type_id] ","])"
 	# No restriction of type on parent project!
     }
 
@@ -2432,6 +2438,7 @@ ad_proc im_project_nuke {
     string otherwise.
 } {
     ns_log Notice "im_project_nuke: project_id=$project_id"
+    set detailed_explanation ""
     
     # Use a predefined user_id to avoid a call to ad_get_user_id.
     # ad_get_user_id's connection isn't defined during a DELETE REST request.
@@ -2705,6 +2712,15 @@ ad_proc im_project_nuke {
 	    "
 	}
 
+	# MS-Project Warnings
+	if {[im_table_exists im_gantt_ms_project_warning]} {
+	    ns_log Notice "projects/nuke-2: im_gantt_ms_project_warning"
+	    db_dml im_gantt_ms_project_warnings "
+		    delete from im_gantt_ms_project_warning
+		    where project_id = :project_id
+	    "
+	}
+
 	# Helpdesk
 	if {[im_table_exists im_tickets]} {
 	    ns_log Notice "projects/nuke-2: im_tickets"
@@ -2844,6 +2860,15 @@ ad_proc im_project_nuke {
 	# Relationships
 	foreach rel_id $rels {
 	    db_dml del_rels "delete from group_element_index where rel_id = :rel_id"
+	    if {[im_column_exists im_biz_object_members skill_profile_rel_id]} {
+		db_dml del_rels "update im_biz_object_members set skill_profile_rel_id = null where skill_profile_rel_id = :rel_id"
+	    }
+	    if {[im_table_exists im_gantt_assignment_timephases]} {
+		db_dml del_rels "delete from im_gantt_assignment_timephases where rel_id = :rel_id"
+	    }
+	    if {[im_table_exists im_gantt_assignments]} {
+		db_dml del_rels "delete from im_gantt_assignments where rel_id = :rel_id"
+	    }
 	    db_dml del_rels "delete from im_biz_object_members where rel_id = :rel_id"
 	    db_dml del_rels "delete from membership_rels where rel_id = :rel_id"
 	    if {$im_conf_item_project_rels_exists_p} { db_dml del_rels "delete from im_conf_item_project_rels where rel_id = :rel_id" }
@@ -2880,6 +2905,15 @@ ad_proc im_project_nuke {
 
 	
 	ns_log Notice "users/nuke2: Main tables"
+
+	db_dml parent_projects "
+		-- project_nr and project_path are unique, 
+		-- so the parent_id = null statement below will create
+		-- duplicate main projects
+		update im_projects set 
+			project_nr = project_nr || random(),
+			project_path = project_path || random()
+		where parent_id = :project_id"
 	db_dml parent_projects "
 		update im_projects 
 		set parent_id = null 
@@ -2895,20 +2929,17 @@ ad_proc im_project_nuke {
 		where object_id = :project_id"
 
     } on_error {
-
-	set detailed_explanation ""
 	if {[ regexp {integrity constraint \([^.]+\.([^)]+)\)} $errmsg match constraint_name]} {
-	    
 	    set sql "select table_name from user_constraints 
 		     where constraint_name=:constraint_name"
 	    db_foreach user_constraints_by_name $sql {
-		set detailed_explanation "<p>[_ intranet-core.lt_It_seems_the_table_we]"
+		append detailed_explanation "<p>[_ intranet-core.lt_It_seems_the_table_we]"
 	    }
-	    
 	}
-	return "$detailed_explanation<br><pre>$errmsg</pre>"
+	append detailed_explanation "<pre>$errmsg</pre>"
     }
-    return ""
+
+    return $detailed_explanation
 }
 
 

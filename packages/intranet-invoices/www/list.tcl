@@ -266,13 +266,11 @@ select
     	im_email_from_user_id(i.company_contact_id) as company_contact_email,
       	im_name_from_user_id(i.company_contact_id) as company_contact_name,
 	im_cost_center_code_from_id(ci.cost_center_id) as cost_center_code,
+	im_cost_center_name_from_id(ci.cost_center_id) as cost_center_name,
         c.company_name as customer_name,
         c.company_path as company_short_name,
 	p.company_name as provider_name,
 	p.company_path as provider_short_name,
-        im_category_from_id(i.invoice_status_id) as invoice_status,
-        im_category_from_id(i.cost_type_id) as cost_type,
-        im_category_from_id(i.cost_status_id) as cost_status,
 	to_date(:today, :date_format) - (to_date(to_char(i.invoice_date, :date_format),:date_format) + i.payment_days) as overdue
 	$extra_select
 from
@@ -476,6 +474,11 @@ db_foreach invoices_info_query $selection {
     } else {
 	set url_string "<a href=\"$url\">$url</a>"
     }
+
+    # Translate the categories
+    set cost_type [im_category_from_id $cost_type_id]
+    set cost_status [im_category_from_id $cost_status_id]
+    set invoice_status [im_category_from_id $invoice_status_id]
 
     # Don't show paid invices over due in red:
     if {$invoice_status_id == [im_cost_status_paid] || \

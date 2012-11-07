@@ -40,7 +40,7 @@ if {![string equal "t" $read_p]} {
     return
 }
 
-set page_title "Timesheet Productivity Report"
+set page_title  [lang::message::lookup "" intranet-reporting.Timesheet_Logging "Timesheet Productivity Report"]
 set context_bar [im_context_bar $page_title]
 set context ""
 
@@ -121,22 +121,23 @@ select
 	h.note,
 	h.billing_rate,
 	e.availability,
-	to_char(e.salary, :num_format) as salary,
-	to_char(e.social_security, :num_format) as social_security,
-	to_char(e.insurance, :num_format) as insurance,
-	to_char(e.other_costs, :num_format) as other_costs,
-	to_char(e.hourly_cost, :num_format) as hourly_cost,
+	to_char(e.salary, :num_format) || '&nbsp;' || e.currency as salary,
+	to_char(e.social_security, :num_format) || '&nbsp;' || e.currency as social_security,
+	to_char(e.insurance, :num_format) || '&nbsp;' || e.currency as insurance,
+	to_char(e.other_costs, :num_format) || '&nbsp;' || e.currency as other_costs,
+	to_char(e.hourly_cost, :num_format) || '&nbsp;' || e.currency as hourly_cost,
 	e.currency,
-	e.hourly_cost,
 	e.salary_payments_per_year,
 	(e.salary + e.social_security + e.insurance + e.other_costs) * e.salary_payments_per_year / 12 as total_cost
 from
+	im_costs co,
 	im_hours h,
 	im_projects p,
 	users u
 	LEFT OUTER JOIN im_employees e ON (u.user_id = e.employee_id)
 where
-	h.project_id = p.project_id
+	h.cost_id = co.cost_id
+	and h.project_id = p.project_id
 	and p.project_status_id not in ([im_project_status_deleted])
 	and h.user_id = u.user_id
 	and h.day >= to_date(:start_date, 'YYYY-MM')

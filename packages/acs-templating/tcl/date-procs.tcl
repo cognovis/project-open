@@ -898,7 +898,7 @@ ad_proc -public template::widget::dateFragment {
     set value [template::util::date::get_property $fragment $value]
     set value [template::util::leadingTrim $value]
 
-#    ns_log Notice "template::widget::dateFragment: fragment=$fragment, size=$size, type=$type, value=$value"
+#    ns_log Debug "template::widget::dateFragment: fragment=$fragment, size=$size, type=$type, value=$value"
     
     if { $mode ne "edit" } {
 	set output {}
@@ -1063,7 +1063,7 @@ ad_proc -public template::widget::date { element_reference tag_attributes } {
 	set element(format) [_ acs-lang.localization-formbuilder_date_format]
     }
     
-    ns_log Notice "template::widget::date: element=[array get element]"
+    ns_log Debug "template::widget::date: element=[array get element]"
     
     # Choose a pre-selected format, if any
     switch $element(format) {
@@ -1093,7 +1093,7 @@ ad_proc -public template::widget::date { element_reference tag_attributes } {
 
 	# Deal with values that are coming directly out of the database
 	# YYYY-MM-DD & YYYY-MM-DD HH24:MI:SS+TZ
-	ns_log Notice "template::widget::date: before date massage: format=$element(format), value=$value"
+	ns_log Debug "template::widget::date: before date massage: format=$element(format), value=$value"
 	if {[regexp {^(\d{4})\-(\d{2})\-(\d{2})$} $value match year moy dom]} { set value [list $year $moy $dom] }
 	if {[regexp {^(\d{4})\-(\d{2})\-(\d{2}) (\d{2}):(\d{2}):(\d{2})\+(\d{2})$} $value match year moy dom hod moh som tz]} { set value [list $year $moy $dom $hod $moh $som $tz] }
 	if {[regexp {^(\d{4})\-(\d{2})\-(\d{2}) (\d{2}):(\d{2}):(\d{2})\.(\d*)\+(\d{2})$} $value match year moy dom hod moh som secfrac tz]} { set value [list $year $moy $dom $hod $moh $som $tz] }
@@ -1106,7 +1106,7 @@ ad_proc -public template::widget::date { element_reference tag_attributes } {
 	set value {}
     }
     
-    ns_log Notice "template::widget::date: after date massage: format=$element(format), value=$value"
+    ns_log Debug "template::widget::date: after date massage: format=$element(format), value=$value"
     
     # Keep taking tokens off the top of the string until out of tokens
     set format_string $element(format)
@@ -1135,7 +1135,7 @@ ad_proc -public template::widget::date { element_reference tag_attributes } {
 	    set attributes(id) "${id_attr_name}.${fragment}"
 	}
 	
-	ns_log Notice "template::widget::date: template::widget::[lindex $fragment_def 0] element $fragment [lindex $fragment_def 2] $type $value $element(mode) [array get attributes]"
+	ns_log Debug "template::widget::date: template::widget::[lindex $fragment_def 0] element $fragment [lindex $fragment_def 2] $type $value $element(mode) [array get attributes]"
 
 	set widget [template::widget::[lindex $fragment_def 0] \
 			element \

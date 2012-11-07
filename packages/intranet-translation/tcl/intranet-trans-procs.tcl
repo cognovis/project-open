@@ -128,7 +128,7 @@ proc intranet_task_download {} {
     set user_id [ad_maybe_redirect_for_registration]
 
     set url "[ns_conn url]"
-    ns_log Notice "intranet_task_download: url=$url"
+    ns_log Debug "intranet_task_download: url=$url"
 
     # Using the task_id as only reasonable identifier
     set path_list [split $url {/}]
@@ -138,7 +138,7 @@ proc intranet_task_download {} {
     set task_id [lindex $path_list 3]
     set task_path [lindex $path_list 4]
     set task_file_body [lindex $path_list 5]
-    ns_log Notice "intranet_task_download: task_id=$task_id, task_path=$task_path, task_body=$task_file_body"
+    ns_log Debug "intranet_task_download: task_id=$task_id, task_path=$task_path, task_body=$task_file_body"
 
     # Make sure $task_id is a number and emit an error otherwise!
 
@@ -181,7 +181,7 @@ where
     set upload_list [im_task_component_upload $user_id $user_admin_p $task_status_id $source_language $target_language $trans_id $edit_id $proof_id $other_id]
     set download_folder [lindex $upload_list 0]
     set upload_folder [lindex $upload_list 1]
-    ns_log Notice "intranet_task_download: download_folder=$download_folder, upload_folder=$upload_folder"
+    ns_log Debug "intranet_task_download: download_folder=$download_folder, upload_folder=$upload_folder"
 
     # Allow to download the file if the user is an admin, a project admin
     # or an employee of the company. Or if the task is assigned to the user.
@@ -248,7 +248,7 @@ where
 	# Update the task to advance to the next status
 	im_trans_download_action $task_id $task_status_id $task_type_id $user_id
 
-	ns_log Notice "intranet_task_download: rp_serve_concrete_file $file"
+	ns_log Debug "intranet_task_download: rp_serve_concrete_file $file"
         rp_serve_concrete_file $file
 
     } else {
@@ -388,7 +388,7 @@ ad_proc im_task_insert {
 			where category_id = :task_type
 		" -default ""]
 
-		ns_log Notice "im_task_insert: workflow_key=$workflow_key for task_type=$task_type"
+		ns_log Debug "im_task_insert: workflow_key=$workflow_key for task_type=$task_type"
 		# Check that the workflow_key is available
 		set wf_valid_p [db_string wf_valid_check "
 			select count(*)
@@ -756,7 +756,7 @@ ad_proc im_task_user_select {
     Return a formatted HTML drop-down select component with the
     list of members of the current project.
 } {
-    ns_log Notice "default_user_id=$default_user_id"
+    ns_log Debug "default_user_id=$default_user_id"
     set select_html "<select name='$select_name'>\n"
     if {"" == $default_user_id} {
 	append select_html "<option value='' selected>[_ intranet-translation.--_Please_Select_--]</option>\n"
@@ -1097,7 +1097,7 @@ ad_proc im_trans_upload_action {
 	}
     }
 
-    ns_log Notice "im_trans_upload_action task_id=$task_id task_status_id=$task_status_id task_type_id=$task_type_id user_id=$user_id => $new_status_id"
+    ns_log Debug "im_trans_upload_action task_id=$task_id task_status_id=$task_status_id task_type_id=$task_type_id user_id=$user_id => $new_status_id"
 
     # only update if there was a change...
     if {$new_status_id != $task_status_id} {
@@ -1187,7 +1187,7 @@ ad_proc im_trans_download_action {task_id task_status_id task_type_id user_id} {
 	}
     }
 
-    ns_log Notice "im_trans_download_action task_id=$task_id task_status_id=$task_status_id task_type_id=$task_type_id user_id=$user_id => $new_status_id"
+    ns_log Debug "im_trans_download_action task_id=$task_id task_status_id=$task_status_id task_type_id=$task_type_id user_id=$user_id => $new_status_id"
 
     # only update if there was a change...
     if {$new_status_id != $task_status_id} {
@@ -1453,7 +1453,7 @@ ad_proc im_task_component_upload {
     2. the folder for upload or "" and
     3. a message for the user
 } {
-    ns_log Notice "im_task_component_upload(user_id=$user_id user_admin_p=$user_admin_p task_status_id=$task_status_id target_language=$target_language trans_id=$trans_id edit_id=$edit_id proof_id=$proof_id other_id=$other_id)"
+    ns_log Debug "im_task_component_upload(user_id=$user_id user_admin_p=$user_admin_p task_status_id=$task_status_id target_language=$target_language trans_id=$trans_id edit_id=$edit_id proof_id=$proof_id other_id=$other_id)"
 
     # Localize the workflow stage directories
     set locale "en_US"
@@ -1658,13 +1658,13 @@ ad_proc im_task_status_component { user_id project_id return_url } {
     File movements outside the translation workflow (moving files
     in the filesystem) are not reflected by this component (yet).
 } {
-    ns_log Notice "im_trans_status_component($user_id, $project_id)"
+    ns_log Debug "im_trans_status_component($user_id, $project_id)"
     set current_user_id [ad_get_user_id]
     set current_user_is_employee_p [expr [im_user_is_employee_p $current_user_id] | [im_is_user_site_wide_or_intranet_admin $current_user_id]]
 
     # Is this a translation project?
     if {![im_project_has_type $project_id "Translation Project"]} {
-	ns_log Notice "im_task_status_component: Project $project_id is not a translation project"
+	ns_log Debug "im_task_status_component: Project $project_id is not a translation project"
 	return ""
     }
 
@@ -2114,7 +2114,7 @@ ad_proc im_task_component {
     db_foreach wf_assignment $wf_assignments_sql {
 	set ass_key "$task_id $transition_key"
 	set ass($ass_key) $party_id
-	ns_log Notice "im_task_component: DynWF Assig: wf='$workflow_key': '$ass_key' -> '$party_id'"
+	ns_log Debug "im_task_component: DynWF Assig: wf='$workflow_key': '$ass_key' -> '$party_id'"
     }
 
 
@@ -2252,7 +2252,7 @@ ad_proc im_task_component {
     set last_task_id 0
     db_foreach select_tasks "" {
 
-	ns_log Notice "im_task_component: task: task_id $task_id task_uom_id $task_uom_id task_type_id $task_type_id source_language_id $source_language_id target_language_id $target_language_id subject_area_id $subject_area_id"
+	ns_log Debug "im_task_component: task: task_id $task_id task_uom_id $task_uom_id task_type_id $task_type_id source_language_id $source_language_id target_language_id $target_language_id subject_area_id $subject_area_id"
 
 	set dynamic_task_p 0
 	if {$wf_installed_p} {
@@ -2384,20 +2384,20 @@ ad_proc im_task_component {
 	    # Load the list into a hash
 	    array unset line_hash
 	    array set line_hash $line_list
-	    ns_log Notice "im_task_component: line: $line_list"
+	    ns_log Debug "im_task_component: line: $line_list"
 
 	    # Check if the lines has the same parameters as the current task	    
 	    set found_p 1
 	    foreach dynfield $material_dynfields {
 		set task_value [eval "set a \$$dynfield"]
-		ns_log Notice "im_task_component: $dynfield=$task_value"
+		ns_log Debug "im_task_component: $dynfield=$task_value"
 		set line_value $line_hash($dynfield)
 		if {$task_value != $line_value} { 
 		    set found_p 0 
-		    ns_log Notice "im_task_component: found_p=$found_p because of $dynfield"
+		    ns_log Debug "im_task_component: found_p=$found_p because of $dynfield"
 		}
 	    }
-	    ns_log Notice "im_task_component: found_p=$found_p"
+	    ns_log Debug "im_task_component: found_p=$found_p"
 	    if {!$found_p} { continue }
 
 	    # We have found a perfectly matching price/cost line for this task.
@@ -2405,7 +2405,7 @@ ad_proc im_task_component {
 	    # field
 	    set invoice_type_id $line_hash(invoice_type_id)
 	    set amount $line_hash(price_per_unit)
-	    ns_log Notice "im_task_component: invoice_id=$invoice_id, type_id=$invoice_type_id, amount=$amount"
+	    ns_log Debug "im_task_component: invoice_id=$invoice_id, type_id=$invoice_type_id, amount=$amount"
 	    switch $invoice_type_id {
 		3702 {
 		    # Quote
@@ -2427,8 +2427,8 @@ ad_proc im_task_component {
 	    }
 	}
 
-        ns_log Notice "im_task_component: invoice_id=$invoice_id, type_id=$invoice_type_id, qmin=$quoted_price_min, qmax=$quoted_price_max"
-        ns_log Notice "im_task_component: invoice_id=$invoice_id, type_id=$invoice_type_id, pmin=$po_cost_min, pmax=$po_cost_max"
+        ns_log Debug "im_task_component: invoice_id=$invoice_id, type_id=$invoice_type_id, qmin=$quoted_price_min, qmax=$quoted_price_max"
+        ns_log Debug "im_task_component: invoice_id=$invoice_id, type_id=$invoice_type_id, pmin=$po_cost_min, pmax=$po_cost_max"
 
 	set gross_margin_valid_p 1
 	if {$quoted_price_min == $quoted_price_max} {
@@ -2462,7 +2462,7 @@ ad_proc im_task_component {
 	    # => Asume "External" (File System) integration, just the static old solution...
 	    if {"" == $tm_integration_type} { set tm_integration_type "External" }
 
-	    ns_log Notice "im_task_component: Static WF"
+	    ns_log Debug "im_task_component: Static WF"
 	    # Message - Tell the freelancer what to do...
 	    # Check if the user is a freelance who is allowed to
 	    # upload a file for this task, depending on the task
@@ -2472,7 +2472,7 @@ ad_proc im_task_component {
 	    set download_folder [lindex $upload_list 0]
 	    set upload_folder [lindex $upload_list 1]
 	    set message [lindex $upload_list 2]
-	    ns_log Notice "im_task_component: download_folder=$download_folder, upload_folder=$upload_folder"
+	    ns_log Debug "im_task_component: download_folder=$download_folder, upload_folder=$upload_folder"
 	    
 	    # Download Link - where to get the task file
 	    set download_link ""
@@ -2541,7 +2541,7 @@ ad_proc im_task_component {
 	# - Show a message with the task
 	if {$dynamic_task_p} {
 
-	    ns_log Notice "im_task_component: Dynamic WF"
+	    ns_log Debug "im_task_component: Dynamic WF"
 	    # Check for the currently enabled Tasks
 	    # This should be only one task at a time in a simplified
 	    # PetriNet without parallelism
@@ -2755,7 +2755,7 @@ ad_proc im_task_error_component { user_id project_id return_url } {
 
     if {!$err_count} {
 	set missing_task_list [im_task_missing_file_list $project_id]
-	ns_log Notice "im_task_error_component: missing_task_list=$missing_task_list"
+	ns_log Debug "im_task_error_component: missing_task_list=$missing_task_list"
     }
 
 
@@ -2912,7 +2912,7 @@ ad_proc im_new_task_component {
     foreach file $files {
 
 	# Get the basic information about a file
-	ns_log Notice "file=$file"
+	ns_log Debug "file=$file"
 	set file_paths [split $file "/"]
 	set file_paths_len [llength $file_paths]
 	set body_index [expr $file_paths_len - 1]
@@ -2920,7 +2920,7 @@ ad_proc im_new_task_component {
 
 	# The first folder of the project - contains access perms
 	set top_folder [lindex $file_paths $start_index]
-	ns_log Notice "top_folder=$top_folder"
+	ns_log Debug "top_folder=$top_folder"
 
 	# Check if it is the toplevel directory
 	if {[string equal $file $project_path]} { 
@@ -3202,9 +3202,9 @@ where
     set org_paths [split $source_folder "/"]
     set org_paths_len [llength $org_paths]
 
-    ns_log Notice "im_task_missing_file_list: source_folder=$source_folder"
-    ns_log Notice "im_task_missing_file_list: org_paths=$org_paths"
-    ns_log Notice "im_task_missing_file_list: org_paths_len=$org_paths_len"
+    ns_log Debug "im_task_missing_file_list: source_folder=$source_folder"
+    ns_log Debug "im_task_missing_file_list: org_paths=$org_paths"
+    ns_log Debug "im_task_missing_file_list: org_paths_len=$org_paths_len"
     
     if { [catch {
 	set find_cmd [im_filestorage_find_cmd]
@@ -3238,7 +3238,7 @@ where
 	}
 
 	ns_set put $file_set $file_name $file_name
-	ns_log Notice "im_task_missing_file_list: file_name=$file_name"
+	ns_log Debug "im_task_missing_file_list: file_name=$file_name"
     }
 
     # We've got now a list of all files in the source folder.

@@ -247,4 +247,7 @@ if { "" != $err_mess } {
     append ret_url "&err_mess=$err_mess" 
 }
 
+# Audit creation
+im_audit -object_type "im_invoice" -object_id $invoice_id -action after_create -status_id $cost_status_id -type_id $cost_type_id
+
 ad_returnredirect $ret_url

@@ -16,8 +16,10 @@
 	<h2>@page_title@</h2>
 	<formtemplate id=form></formtemplate>
 	<br>
+	<!--
 	<h2>@included_hours_msg@</h2>
-	@modify_hours_link;noquote@
+	@modify_hours_link;noquote@ 
+	-->
 	<listtemplate name=@list_id@></listtemplate>
 
 <if @form_mode@ eq "display" >

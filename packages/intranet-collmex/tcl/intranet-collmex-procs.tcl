@@ -42,7 +42,8 @@ ad_proc -public intranet_collmex::http_post {
     set token [::http::geturl https://www.collmex.de/cgi-bin/cgi.exe?${customer_nr},0,data_exchange \
 		     -type "text/csv" \
 		   -query $data]
-    
+
+    ns_log Notice "Collmex Query: $data"
     set response [::http::data $token]
     ns_log Notice "Collmex:: $response"
     set meldungstyp [lindex [split $response ";"] 1]
@@ -197,12 +198,13 @@ ad_proc -public intranet_collmex::update_provider_bill {
     # Get all the invoice information
     db_1row invoice_data {
 	select collmex_id,to_char(effective_date,'YYYYMMDD') as invoice_date, invoice_nr, 
-	  round(vat,0) as vat, round(amount,2) as netto, c.company_id, address_country_code, aux_int1 as konto
-	from im_invoices i, im_costs ci, im_companies c, im_offices o, im_categories ca
+	round(vat,0) as vat, round(amount,2) as netto, c.company_id, address_country_code, ca.aux_int2 as konto, cc.collmex_kostenstelle as kostenstelle
+	from im_invoices i, im_costs ci, im_companies c, im_offices o, im_categories ca, im_cost_centers cc
 	where c.company_id = ci.provider_id 
 	and c.main_office_id = o.office_id
 	and ci.cost_id = i.invoice_id 
-	and ca.category_id = ci.cost_type_id
+	and ca.category_id = c.tax_classification
+        and cc.cost_center_id = ci.cost_center_id
 	and i.invoice_id = :invoice_id
     }
 
@@ -270,12 +272,13 @@ ad_proc -public intranet_collmex::update_customer_invoice {
     # Get all the invoice information
     db_1row invoice_data {
 	select collmex_id,to_char(effective_date,'YYYYMMDD') as invoice_date, invoice_nr, 
-	  round(vat,0) as vat, round(amount,2) as netto, c.company_id, address_country_code, aux_int1 as konto
-	from im_invoices i, im_costs ci, im_companies c, im_offices o, im_categories ca
+	  round(vat,0) as vat, round(amount,2) as netto, c.company_id, address_country_code, ca.aux_int2 as konto, cc.collmex_kostenstelle as kostenstelle
+	from im_invoices i, im_costs ci, im_companies c, im_offices o, im_categories ca, im_cost_centers cc
 	where c.company_id = ci.customer_id 
 	and c.main_office_id = o.office_id
 	and ci.cost_id = i.invoice_id 
-	and ca.category_id = ci.cost_type_id
+        and cc.cost_center_id = ci.cost_center_id
+        and ca.category_id = c.tax_classification
 	and i.invoice_id = :invoice_id
     }
 
@@ -305,26 +308,14 @@ ad_proc -public intranet_collmex::update_customer_invoice {
     append csv_line ";" ; # Steuer zum vollen Umsatzsteuersatz
     append csv_line ";" ; # Nettobetrag halber Umsatzsteuersatz
     append csv_line ";" ; # Steuer zum halben Umsatzsteuersatz
+    append csv_line ";" ; # Umsätze Innergemeinschaftliche Lieferung
+    append csv_line ";" ; # Umsätze Export
+    append csv_line ";$konto" ; # Steuerfreie Erloese Konto
     if {$vat eq 19} {
-	append csv_line ";"
-	append csv_line ";"
+	append csv_line ";" ; # Hat VAT => Nicht Steuerfrei
     } else {
-	switch $address_country_code {
-	    us,au,ca {
-		# Export
-		append csv_line ";" 
-		append csv_line ";\"[im_csv_duplicate_double_quotes $netto]\""
-	    }
-	    default {
-		# Umsaetze innergemeinschatliche Lieferung
-		append csv_line ";\"[im_csv_duplicate_double_quotes $netto]\""
-		append csv_line ";"
-	    }
-	}
+	append csv_line ";\"[im_csv_duplicate_double_quotes $netto]\""; # Steuerfrei Betrag
     }
-    
-    append csv_line ";" ; # Steuerfreie Erloese Konto
-    append csv_line ";" ; # Steuerfrei Betrag
     append csv_line ";\"EUR\"" ; # Währung (ISO-Codes)
     append csv_line ";" ; # Gegenkonto
     append csv_line ";0" ; # Rechnungsart

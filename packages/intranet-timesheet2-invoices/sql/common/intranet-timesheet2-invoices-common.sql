@@ -7,10 +7,3 @@
 --
 -- @author frank.bergmann@project-open.com
 
--- Timesheet Invoicing
---
--- Defines:
---	im_trans_prices			List of prices with defaults
---
-
-

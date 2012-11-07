@@ -45,9 +45,6 @@ ad_page_contract {
     { project_id_form ""}
 }
 
-# Fraber 20120626: Fixed hard error, but no idea why...
-set member ""
-
 	# ------------------------------------------------------------
 	# Defaults
 	# ------------------------------------------------------------
@@ -405,6 +402,33 @@ foreach project_id $main_project_ids {
                 	        null as subproject_status,
                         	null as subproject_type,
 	                        0 as subproject_level,
+		coalesce((
+				select	sum(coalesce(bom.percentage, 0.0))
+				from	acs_rels r,
+					im_biz_object_members bom,
+					users u
+				where	r.object_id_one = parent.project_id and
+					r.object_id_two = u.user_id and
+					r.rel_id = bom.rel_id and
+					u.user_id in (
+						select member_id from group_distinct_member_map 
+						where group_id = [im_profile_skill_profile]
+					)
+		), 0.0) as percentage_skill_profiles,
+		coalesce((
+				select	sum(coalesce(bom.percentage, 0.0))
+				from	acs_rels r,
+					im_biz_object_members bom,
+					users u
+				where	r.object_id_one = parent.project_id and
+					r.object_id_two = u.user_id and
+					r.rel_id = bom.rel_id and
+					u.user_id not in (
+						select member_id from group_distinct_member_map 
+						where group_id = [im_profile_skill_profile]
+					)
+		), 0.0) as percentage_non_skill_profiles,
+
         	                null as red_p
                 	from
                         	im_projects parent
@@ -474,7 +498,33 @@ foreach project_id $main_project_ids {
                 child.project_status_id as subproject_status_id,
                 im_category_from_id(child.project_status_id) as subproject_status,
                 im_category_from_id(child.project_type_id) as subproject_type,
-                tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as subproject_level
+                tree_level(child.tree_sortkey) - tree_level(parent.tree_sortkey) as subproject_level,
+		coalesce((
+				select	sum(coalesce(bom.percentage, 0.0))
+				from	acs_rels r,
+					im_biz_object_members bom,
+					users u
+				where	r.object_id_one = child.project_id and
+					r.object_id_two = u.user_id and
+					r.rel_id = bom.rel_id and
+					u.user_id in (
+						select member_id from group_distinct_member_map 
+						where group_id = [im_profile_skill_profile]
+					)
+		), 0.0) as percentage_skill_profiles,
+		coalesce((
+				select	sum(coalesce(bom.percentage, 0.0))
+				from	acs_rels r,
+					im_biz_object_members bom,
+					users u
+				where	r.object_id_one = child.project_id and
+					r.object_id_two = u.user_id and
+					r.rel_id = bom.rel_id and
+					u.user_id not in (
+						select member_id from group_distinct_member_map 
+						where group_id = [im_profile_skill_profile]
+					)
+		), 0.0) as percentage_non_skill_profiles
                 $extra_select
         from
                 ($parent_perm_sql) parent,
@@ -598,9 +648,34 @@ foreach project_id $main_project_ids {
 			100 {
 	        	    # Timesheet Task
 			    set object_url [export_vars -base "/intranet-timesheet2-tasks/new" {{task_id $child_project_id} return_url}]
-			    set member [join [db_list members "select im_name_from_id(object_id_two) from acs_rels where object_id_one = :child_project_id and rel_type = 'im_biz_object_member'"] ","]
-			    if {$member eq "" || [string range $member 0 3] eq "Abt."} {
-				set member "<font color='red'>#intranet-reporting.assign# $member</font>"
+			    if {$percentage_non_skill_profiles < $percentage_skill_profiles} {
+				# still needs assignments
+				set skill_profiles [join [db_list members "
+			    	select	im_name_from_id(object_id_two) 
+				from	acs_rels
+				where	object_id_one = :child_project_id and 
+					rel_type = 'im_biz_object_member' and
+					object_id_two in (
+						select	member_id
+						from	group_distinct_member_map
+						where	group_id = [im_profile_skill_profile]
+					)
+			        "] ","]
+				set member "<font color='red'>#intranet-reporting.assign# $skill_profiles</font>"
+			    } else {
+				# Does not need assignment anymore
+				set member [join [db_list members "
+			    	select	im_name_from_id(object_id_two) 
+				from	acs_rels
+				where	object_id_one = :child_project_id and 
+					rel_type = 'im_biz_object_member' and
+					-- Ignore Skill Profiles users, because these are not real users...!!!
+					object_id_two not in (
+						select	member_id
+						from	group_distinct_member_map
+						where	group_id = [im_profile_skill_profile]
+					)
+			        "] ","]
 			    }
 			}
 			101 {
@@ -634,7 +709,7 @@ foreach project_id $main_project_ids {
 		        set planned_hours ""
     		}
 
-		set task_name "<nobr>[string range $task_name 0 20]</nobr>"
+		set task_name "<nobr>[string range $task_name 0 30]</nobr>"
 	
         	# We've got a task.
 	        # Write out a line with task information
