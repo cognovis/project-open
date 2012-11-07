@@ -957,3 +957,34 @@ ad_proc -public im_reporting_tree_sortkey_spacers {
     return $result
 }
 
+
+ad_proc -public im_reporting_form_update_ajax {
+    form_id
+    source_object_type
+    target_object_type
+    source_form_element_name 
+    target_form_element_name 
+    source_table_column_name
+    target_table_column_name
+    parameters
+} {
+    Includes JS code for asynchronous HTML requests to be triggered 
+    when source element is changed. Re-populates target element based 
+    on biz rules as defined /intranet-reporting/www/js/ajax_update_select_box.js.tcl
+
+    ]po[ package "intranet-rest" can't be used in all cases to get a list 
+    of new options for a HTML combo boxes. Combo boxes like "Projects" require 
+    indention which is not supported by intranet-rest. Therefore customized  
+    server side scripts need to be possible. 
+
+    Function will be used principally for reports, however it should work
+    application wide.  
+
+} {
+    set par_str "form_id=$form_id&source_object_type=$source_object_type&target_object_type=$target_object_type&"
+    append par_str "source_form_element_name=$source_form_element_name&target_form_element_name=$target_form_element_name&"
+    append par_str "source_table_column_name=$source_table_column_name&target_table_column_name=$target_table_column_name&"
+    append par_str "parameters=$parameters"
+
+    template::head::add_javascript -src "/intranet-reporting/js/ajax_update_select_box.js?$par_str" -order "999"
+}
