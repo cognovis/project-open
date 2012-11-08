@@ -15,7 +15,12 @@ declare
         v_day_substring ALIAS FOR $3;
 	v_hours        	NUMERIC (5,2);
 BEGIN
-    select hours into v_hours from im_hours where user_id = v_user_id and project_id = v_project_id and substring (day from 1 for 10) = v_day_substring; 
+	select	hours 
+	into	v_hours
+	from	im_hours
+	where	user_id = v_user_id and 
+		project_id = v_project_id and 
+		substring (day::varchar from 1 for 10) = v_day_substring; 
     return v_hours;
 END;'
 LANGUAGE 'plpgsql';
@@ -35,9 +40,19 @@ CREATE OR REPLACE FUNCTION im_get_hours_percentage(int4, int4, "varchar")
         v_hours_total   NUMERIC (10,2);
         v_result   	NUMERIC (10,2);
     BEGIN
-        select sum(hours) into v_hours_project from im_hours where user_id = v_user_id and project_id = v_project_id and substring (day from 1 for 7) = v_day_substring; 
-        select sum(hours) into v_hours_total from im_hours where user_id = v_user_id and substring (day from 1 for 7) = v_day_substring; 
+	select	sum(hours) into v_hours_project
+	from	im_hours
+	where	user_id = v_user_id and 
+		project_id = v_project_id and 
+		substring (day::varchar from 1 for 7) = v_day_substring; 
+
+	select	sum(hours) into v_hours_total
+	from	im_hours 
+	where	user_id = v_user_id and 
+		substring (day::varchar from 1 for 7) = v_day_substring; 
+
         v_result := v_hours_project * 100 / v_hours_total;
-        return v_result;
+ 
+       return v_result;
     END;'
 LANGUAGE 'plpgsql';

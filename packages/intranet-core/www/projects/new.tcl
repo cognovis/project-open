@@ -306,6 +306,22 @@ ad_form -extend -name $form_id -new_request {
     if {$project_nr_p} {
         set project_nr [im_next_project_nr]
     }
+
+    set previous_company_id [db_string prev_company_id "select company_id from im_projects where project_id = :project_id" -default ""]
+
+#    ad_return_complaint 1 $previous_company_id
+    # Only check for sub-projects:
+    # The user shouldn't change the customer
+    if {"" != $parent_id } {
+	if {"" != $previous_company_id && $company_id != $previous_company_id} {
+	    incr n_error
+	    template::element::set_error $form_id company_id [lang::message::lookup "" intranet-core.Cant_change_customer_of_subproject "You can't cange the customer of a sub-project"]
+	}
+    }
+
+    if {$n_error >0} {
+	return
+    }
     
     db_transaction {
         set project_id [project::new \
@@ -341,16 +357,18 @@ ad_form -extend -name $form_id -new_request {
             ad_script_abort
         }
         
-        # add users to the project as PMs
-        # - current_user (creator/owner)
-        # - project_leader
-        # - supervisor
-        
-        set role_id [im_biz_object_role_project_manager]
-        im_biz_object_add_role $user_id $project_id $role_id 
-        if {[exists_and_not_null project_lead_id]} {
-            im_biz_object_add_role $project_lead_id $project_id $role_id 
-        }
+	# add users to the project as PMs
+	# - current_user (creator/owner)
+	# - project_leader
+	# - supervisor
+	set role_id [im_biz_object_role_project_manager]
+	im_biz_object_add_role $user_id $project_id $role_id 
+	if {"" != $project_lead_id} {
+	    im_biz_object_add_role $project_lead_id $project_id $role_id 
+	}
+	if {[exists_and_not_null supervisor_id]} {
+	    im_biz_object_add_role $supervisor_id $project_id $role_id 
+	}
         
         
         # -----------------------------------------------------------------
@@ -383,7 +401,21 @@ ad_form -extend -name $form_id -new_request {
         # Set the old project type. Used to detect changes in the project
         # type and therefore the need to display new DynField fields in a
         # second page.
-        set previous_project_type_id 0
+	if {0 == $id_count} {
+	    set previous_project_type_id 0
+	    set previous_project_company_id 0
+	} else {
+	    set sql "
+	 	select
+			project_type_id         as previous_project_type_id,
+			company_id              as previous_project_company_id
+		from	im_projects
+		where	project_id = :project_id
+        "
+	    if {![db_0or1row select_orig_values $sql] } {
+		ad_return_complaint 1 "Could not find project with id: $project_id, please get in touch with your System Administrator"
+	    }
+	}
         
         # -----------------------------------------------------------------
         # Update the Project
@@ -432,6 +464,7 @@ ad_form -extend -name $form_id -new_request {
         util_memoize_flush_regexp "im_project_has_type_helper.*"
         util_memoize_flush_regexp "db_list_of_lists company_info.*"
         
+
     }
     
 } -edit_data {
@@ -446,13 +479,19 @@ ad_form -extend -name $form_id -new_request {
     
     ns_log Notice "/intranet/projects/new: im_dynfield::attribute_store -object_type $object_type -object_id $project_id -form_id $form_id"
 
+    # Check if the user has changed the project's customer.
+    # Propagate to sub-projects
+    if {0 != $previous_project_company_id && $previous_project_company_id != $company_id} {
+	im_project_set_customer_for_children -project_id $project_id -company_id $company_id
+    }
+
     im_dynfield::attribute_store \
         -object_type $object_type \
         -object_id $project_id \
         -form_id $form_id
     
 
-    # -----------------------------------------------------------------                                                                                                                                                # Create a new Workflow for the project either if:                                                                                                                                                                 # - specified explicitely in the parameters or                                                                                                                                                                     # - if there is a WF associated with the project_type                                                                                                                                                              # Check if there is a WF associated with the project type                                                                                                                                                       
+    # -----------------------------------------------------------------                                                                                                                     # Create a new Workflow for the project either if:                                                                                                                                      # - specified explicitely in the parameters or                                                                                                                                          # - if there is a WF associated with the project_type                                                                                                                                   # Check if there is a WF associated with the project type                                                                                                                                                       
     if {"" == $workflow_key} {
         set wf_key [db_string wf "select aux_string1 from im_categories where category_id = :project_type_id" -default ""]
         set wf_exists_p [db_string wf_exists "select count(*) from wf_workflows where workflow_key = :wf_key"]
@@ -527,16 +566,32 @@ ad_form -extend -name $form_id -new_request {
 	foreach close_task_id $close_task_ids {
 	    db_dml close_task "update im_timesheet_tasks set task_status_id = [im_timesheet_task_status_closed] where task_id = :close_task_id"
 	    db_dml close_task "update im_projects set project_status_id = [im_project_status_closed] where project_id = :close_task_id"
-	}
 
+	}
 	# Find the list of subprojects
 	set close_subproject_ids [im_project_subproject_ids -project_id $project_id -exclude_self]
 	foreach close_project_id $close_subproject_ids {
 	    db_dml close_task "update im_projects set project_status_id = :project_status_id where project_id = :close_project_id"
 	}
     }
-	
-	
+
+    # -----------------------------------------------------------------
+    # Where do we want to go now?
+    #
+    # "Wizard" type of operation: We need to display a second page
+    # with all the potentially new DynField fields if the type of the
+    # project has changed. 
+
+    if {[info exists previous_project_type_id]} {
+	if {$project_type_id != $previous_project_type_id} {
+	    
+	    # Check that there is atleast one dynfield. Otherwise
+	    # it's not necessary to show the same page again
+	    if {$field_cnt > 0} {
+		set return_url [export_vars -base "/intranet/projects/new" {project_id return_url}]
+	    }
+	}
+    }		
 } -after_submit {
   
     set return_url [export_vars -base "/intranet/projects/view" {project_id}]

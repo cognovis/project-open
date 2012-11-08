@@ -18,7 +18,6 @@
         <provides url="intranet-wiki" version="3.2"/>
         <requires url="wiki" version="0.2d"/>
         <requires url="intranet-core" version="3.2"/>
-        <requires url="cms" version="4.1.1"/>
 
         <callbacks>
         </callbacks>

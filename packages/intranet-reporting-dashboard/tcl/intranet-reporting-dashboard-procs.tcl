@@ -156,8 +156,8 @@ ad_proc -public im_dashboard_status_matrix {
     array set matrix_hash $data_matrix
 
     # Format the table header
-    set from_to_msg [lang::message::lookup "" intranet-reporting_dashboard.From_to "From \\ To"]
-    set new_msg [lang::message::lookup "" intranet-reporting_dashboard.Status_New_Object "&lt;New&gt;"]
+    set from_to_msg [lang::message::lookup "" intranet-reporting-dashboard.From_to "From \\ To"]
+    set new_msg [lang::message::lookup "" intranet-reporting-dashboard.Status_New_Object "&lt;New&gt;"]
     set html "<table border=2 bordercolor=$border_color>\n"
     append html "<tr><td><b>$from_to_msg</b></td>\n"
     foreach stid $status_list {
