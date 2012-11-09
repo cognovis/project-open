@@ -175,9 +175,7 @@ foreach csv_line_fields $values_list_of_lists {
 	if {$employee_id eq "" || "" == $project_id} {
 	    ns_write "<li>ERROR $employee_id :: $personnel_nr ---- $project_id :: $project_name</li>"
 	} else {
-	    # Create the relationship if it does not already exist
-	    set rel_id [im_biz_object_add_role $employee_id $project_id 1300]
-	    db_dml cleanup "delete from im_biz_object_members_availability where rel_id = :rel_id"
+	    db_dml cleanup "delete from im_project_assignments where user_id  = :employee_id and project_id = :project_id"
 	    set avail ""
 	    foreach month {1207 1208 1209 1210 1211 1212 1301 1302 1303 1304 1305 1306 1307 1308 1309 1310 1311 1312} {
 		set start_date "01$month"
@@ -188,11 +186,15 @@ foreach csv_line_fields $values_list_of_lists {
 
 		    # Make sure we store percentages
 		    set availability [ expr $availability * 100 ]
-		    db_dml insert_availability "insert into im_biz_object_members_availability (rel_id,start_date,availability) values (:rel_id, to_date(:start_date,'DDYYMM'),:availability)"
-		    
+
 		    if {"011211" == $start_date} {
-			db_dml update_project_avail "update im_biz_object_members set percentage = :availability where rel_id = :rel_id"
+			# Create the relationship for this month
+			set rel_id [im_biz_object_add_role -percentage $availability $employee_id $project_id 1300]
+		    } else {
+			set rel_id ""
 		    }
+
+		    db_dml insert_availability "insert into im_project_assignments (user_id,project_id,rel_id,start_date,availability) values (:employee_id, :project_id,:rel_id, to_date(:start_date,'DDYYMM'),:availability)"
 		    append avail "$start_date - ${availability}% ::"
 		}
 	    }
