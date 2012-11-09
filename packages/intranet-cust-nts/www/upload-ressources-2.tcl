@@ -189,7 +189,7 @@ foreach csv_line_fields $values_list_of_lists {
 
 		    if {"011211" == $start_date} {
 			# Create the relationship for this month
-			set rel_id [im_biz_object_add_role -percentage $availability $employee_id $project_id 1300]
+			set rel_id [im_biz_object_add_role -propagate_superproject_p 0 -percentage $availability $employee_id $project_id 1300]
 		    } else {
 			set rel_id ""
 		    }
