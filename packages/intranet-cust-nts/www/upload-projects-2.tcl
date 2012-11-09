@@ -121,7 +121,6 @@ ad_return_top_of_page "
 # Start parsing the CSV
 # ---------------------------------------------------------------
 
-
 set linecount 0
 foreach csv_line_fields $values_list_of_lists {
     incr linecount
@@ -171,62 +170,92 @@ foreach csv_line_fields $values_list_of_lists {
 
     switch $customer {
 	HAD {set company_id [db_string company "select company_id from im_companies where company_path = 'had'"]}
+	NT {set company_id [db_string company "select company_id from im_companies where company_path = 'nt'"]}
 	default {set company_id [db_string company "select company_id from im_companies where company_path = 'internal'"]} 
     }
 
     switch $project_category {
-	"BU VW Group / RoE" {set project_type_id 2511}
-	"PD VW Group / RoE" {set project_type_id 2512}
-	"PD BMW" {set project_type_id 2513}
-	"PD Daimler" {set project_type_id 2514}
-	"CC_Navigation" {set project_type_id 2515}
-	"NTS Intragroup" {set project_type_id 2516}
+	"HAD T&M" {set project_type_id 2511}
+	"Guest" {set project_type_id 2512}
+	"NTS Overhead" {set project_type_id 2513}
+	"HAD FPP" {set project_type_id 2514}
+	"NTS FPP" {set project_type_id 2515}
+	default {set project_type_id 86}
     }
 
     # create the program
     set program_id [db_string program_id "select project_id from im_projects where project_name = :program" -default ""]
     if {"" == $program_id && "" != $program} {
+	set project_path [string tolower [string trim $program]]
+	set project_path [string map -nocase {" " "_" "'" "" "/" "_" "-" "_"} $project_path]
+
         set program_id [project::new \
                             -project_name $program \
                             -project_nr $program \
-                            -project_path $program \
+                            -project_path $project_path \
                             -company_id $company_id \
                             -parent_id "" \
                             -project_type_id 2501 \
                             -project_status_id 76\
                            ]
+	db_dml project_info "update im_projects set sow = :sow, gs_int = :gs_int, gs_ext=:gs_ext, start_date = to_date('2012-01-01','YYYY-MM-DD'), end_date = to_date('2013-06-30','YYYY-MM-DD') where project_id = :program_id"
     }
 
     # create the PSP
     set psp_id [db_string psp_id "select project_id from im_projects where project_name = :psp" -default ""]
     if {"" == $psp_id && "" != $psp} {
+	set project_path [string tolower [string trim $psp]]
+	set project_path [string map -nocase {" " "_" "'" "" "/" "_" "-" "_"} $project_path]
+
         set psp_id [project::new \
                             -project_name $psp \
                             -project_nr $psp \
-                            -project_path [string trim $psp] \
+                            -project_path $project_path \
                             -company_id $company_id \
                             -parent_id $program_id \
-                            -project_type_id $project_type_id \
+                            -project_type_id 2501 \
                             -project_status_id 76\
                            ]
+	db_dml project_info "update im_projects set sow = :sow, gs_int = :gs_int, gs_ext=:gs_ext, start_date = to_date('2012-01-01','YYYY-MM-DD'), end_date = to_date('2013-06-30','YYYY-MM-DD') where project_id = :psp_id"
     }
 
-    # Create the project
-    set project_id [db_string project_id "select project_id from im_projects where project_name = :project_name" -default ""]
-    if {"" == $project_id && "" != $project_name} {
-        set project_id [project::new \
+
+    # create the main_project
+    set main_project_id [db_string main_project_id "select project_id from im_projects where project_name = :project_name" -default ""]
+    if {"" == $main_project_id && "" != $project_name} {
+	set project_path [string tolower [string trim $project_name]]
+	set project_path [string map -nocase {" " "_" "'" "" "/" "_" "-" "_"} $project_path]
+
+        set main_project_id [project::new \
                             -project_name $project_name \
-                            -project_nr $project_code \
-                            -project_path [string trim $project_name] \
+                            -project_nr $project_name \
+                            -project_path $project_path \
                             -company_id $company_id \
                             -parent_id $psp_id \
+                            -project_type_id 2501 \
+                            -project_status_id 76\
+                           ]
+	db_dml project_info "update im_projects set sow = :sow, gs_int = :gs_int, gs_ext=:gs_ext, start_date = to_date('2012-01-01','YYYY-MM-DD'), end_date = to_date('2013-06-30','YYYY-MM-DD') where project_id = :main_project_id"
+    }
+    
+    # Create the project
+    set project_id [db_string project_id "select project_id from im_projects where project_name = :project_ref" -default ""]
+    if {"" == $project_id && "" != $project_ref} {
+	set project_path [string tolower [string trim $project_ref]]
+	set project_path [string map -nocase {" " "_" "'" "" "/" "_" "-" "_"} $project_path]
+        set project_id [project::new \
+                            -project_name $project_ref \
+                            -project_nr $project_code \
+                            -project_path $project_path \
+                            -company_id $company_id \
+                            -parent_id $main_project_id \
                             -project_type_id $project_type_id \
                             -project_status_id 76\
                            ]
-	db_dml sow "update im_projects set sow = :sow where project_id = :project_id"
+	db_dml project_info "update im_projects set sow = :sow, gs_int = :gs_int, gs_ext=:gs_ext, start_date = to_date('2012-01-01','YYYY-MM-DD'), end_date = to_date('2013-06-30','YYYY-MM-DD') where project_id = :project_id"
     }
-    
-        ns_write "<li>'$program :: $psp :: $project_name'\n $project_id</li>"
+
+    ns_write "<li>'$program :: $psp :: $project_name'\n $project_id</li>"
 }
 
 
