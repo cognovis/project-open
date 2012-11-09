@@ -290,3 +290,18 @@ ad_proc -public -callback intranet_fs::after_project_folder_create -impl pmo_def
     }
     }
 }
+
+# ---------------------------------------------------------------------
+# Project Assignment Component 
+# ---------------------------------------------------------------------
+ad_proc -public im_project_assignment_component { 
+    -project_id
+    -user_id
+    -return_url
+} { 
+} {
+    set params [list  [list base_url "/intranet-pmo/"]  [list user_id $user_id] [list project_id $project_id] [list return_url [im_biz_object_url $project_id]]]
+    
+    set result [ad_parse_template -params $params "/packages/intranet-pmo/lib/project-assignment"]
+    return [string trim $result]
+}
