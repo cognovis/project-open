@@ -9,12 +9,12 @@
     <implements-subsite-p>f</implements-subsite-p>
     <inherit-templates-p>f</inherit-templates-p>
     
-    <version name="4.0.3.0.0" url="http://openacs.org/repository/download/apm/intranet-pmo-4.0.3.0.0.apm">
+    <version name="4.0.3.0.1" url="http://openacs.org/repository/download/apm/intranet-pmo-4.0.3.0.1.apm">
         <owner url="mailto:malte.sussdorff@cognovis.de">Malte Sussdorff</owner>
         <summary>PMO Module including budget component</summary>
         <maturity>0</maturity>
 
-        <provides url="intranet-pmo" version="4.0.3.0.0"/>
+        <provides url="intranet-pmo" version="4.0.3.0.1"/>
         <requires url="intranet-openoffice" version="4.0.2.0.0"/>
         <requires url="extjs" version="0.1d1"/>
 
