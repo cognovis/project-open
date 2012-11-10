@@ -25,6 +25,11 @@ set user_id [ad_maybe_redirect_for_registration]
 set page_title [lang::message::lookup "" intranet-reporting-portfolio.Skill_Profile_Occupation "Skill Profile Occupation"]
 set context [im_context_bar $page_title]
 
+# set start_date [db_string start_date "select to_char(now()::date - 180, 'YYYY-MM') || '-01' from dual"]
+# set end_date [db_string start_date "select (to_char(now()::date + 360, 'YYYY-MM') || '-01')::date from dual"]
+
+set start_date [db_string start_date "select now()::date - 90 from dual"]
+set end_date [db_string start_date "select now()::date + 360 from dual"]
 
 # ---------------------------------------------------------------
 # 
@@ -35,7 +40,7 @@ set skill_profile_sql "
 		pe.first_names,
 		pe.last_name,
 		pa.email,
-		coalesce(e.availability, 100) as availability
+		coalesce(e.availability, 100) / 100.0 * 8.0 as availability
 	from	persons pe,
 		parties pa
 		LEFT OUTER JOIN im_employees e ON (pa.party_id = e.employee_id)
@@ -43,6 +48,7 @@ set skill_profile_sql "
 		pe.person_id in (select member_id from group_distinct_member_map where group_id = (
 			select group_id from groups where group_name = 'Skill Profile'
 		))
+-- and pe.person_id = 8999
 	order by pe.first_names, pe.last_name
 "
 set skill_profiles [db_list_of_lists skill_profiles $skill_profile_sql]
@@ -53,11 +59,19 @@ foreach tuple $skill_profiles {
     set skill_profile_id [lindex $tuple 0]
     set first_names [lindex $tuple 1]
     set last_name [lindex $tuple 2]
-    set availability [lindex $tuple 3]
+    set email [lindex $tuple 3]
+    set availability [lindex $tuple 4]
 #    set  [lindex $tuple ]
 
-    append body "<h2>$first_names $last_name</h2>\n"
+    append body "<h2>$first_names $last_name ($skill_profile_id)</h2>\n"
 
-    append body [sencha_project_timeline -diagram_user_id $skill_profile_id]
+    append body [sencha_project_timeline \
+		     -diagram_user_id $skill_profile_id \
+		     -diagram_start_date $start_date \
+		     -diagram_end_date $end_date \
+		     -diagram_width 1200 \
+		     -diagram_height 300 \
+		     -diagram_availability $availability \
+		    ]
 }
 

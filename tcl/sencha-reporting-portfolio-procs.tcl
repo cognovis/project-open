@@ -93,6 +93,7 @@ ad_proc -public sencha_project_timeline {
     {-diagram_start_date ""}
     {-diagram_end_date ""}
     {-diagram_user_id ""}
+    {-diagram_availability ""}
 } {
     Returns a HTML code with a Sencha project timelinediagram.
     The timeline shows the resource requirements over time.
@@ -112,6 +113,7 @@ ad_proc -public sencha_project_timeline {
 		    [list diagram_start_date $diagram_start_date] \
 		    [list diagram_end_date $diagram_end_date] \
 		    [list diagram_user_id $diagram_user_id] \
+		    [list diagram_availability $diagram_availability] \
     ]
 
     set result [ad_parse_template -params $params "/packages/sencha-reporting-portfolio/lib/project-timeline"]
@@ -148,3 +150,47 @@ ad_proc -public sencha_project_eva {
     set result [ad_parse_template -params $params "/packages/sencha-reporting-portfolio/lib/project-eva"]
     return [string trim $result]
 }
+
+
+
+ad_proc -public sencha_main_project_colors {
+} {
+    Returns a hash with random RGB colors for every main project
+} {
+    return [util_memoize sencha_main_project_colors_helper 1200]
+}
+
+
+ad_proc -public sencha_main_project_colors_helper {
+} {
+    Returns a hash with random RGB colors for every main project
+} {
+    set hex_list {0 1 2 3 4 5 6 7 8 9 A B C D E F}
+
+    set main_project_ids [db_list main_project_ids "
+	select	p.project_id
+	from	im_projects p
+	where	p.parent_id is null and
+		p.project_type_id not in ([im_project_type_task], [im_project_type_ticket])
+	order by p.project_id
+    "]
+
+    foreach pid $main_project_ids {
+	set r [expr int(random() * 256)]
+	set g [expr int(random() * 256)]
+	set b [expr int(random() * 256)]
+	
+	# Convert the RGB values back into a hex color string
+	set color ""
+	append color [lindex $hex_list [expr $r / 16]]
+	append color [lindex $hex_list [expr $r % 16]]
+	append color [lindex $hex_list [expr $g / 16]]
+	append color [lindex $hex_list [expr $g % 16]]
+	append color [lindex $hex_list [expr $b / 16]]
+	append color [lindex $hex_list [expr $b % 16]]
+
+	set hash($pid) $color
+    }
+    return [array get hash]
+}
+

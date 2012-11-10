@@ -39,7 +39,24 @@ Ext.onReady(function () {
 	    position: 'bottom',
 	    fields: ['date']
 	}],
-	series: [{
+	series: [
+<if "" ne @diagram_availability@>
+	{
+            type: 'line',
+            title: 'Available Resources',
+            axis: 'left',
+            smooth: true,
+            fill: false,
+            xField: 'date',
+            yField: 'availability',
+            markerConfig: {
+                    type: 'circle',
+                    size: 1,
+                    fill: 'red'
+            }
+        }, 
+</if>
+	{
 	    type: 'area',
 	    axis: 'left',
 	    xField: 'name',
