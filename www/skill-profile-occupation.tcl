@@ -75,3 +75,21 @@ foreach tuple $skill_profiles {
 		    ]
 }
 
+
+
+# ---------------------------------------------------------------
+#
+# ---------------------------------------------------------------
+
+set sub_navbar ""
+set main_navbar_label "projects"
+
+set project_menu ""
+
+# Show the same header as the ProjectListPage
+set letter ""
+set next_page_url ""
+set previous_page_url ""
+set menu_select_label "skill-profile-use"
+set sub_navbar [im_project_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list start_idx order_by how_many view_name letter project_status_id] $menu_select_label]
+
