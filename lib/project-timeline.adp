@@ -1,10 +1,10 @@
-<if @project_count@ ge 2>
+<if @project_count@ ge 1>
 
 <div id=@diagram_id@></div>
 <script type='text/javascript'>
 Ext.require(['Ext.chart.*', 'Ext.Window', 'Ext.fx.target.Sprite', 'Ext.layout.container.Fit']);
 
-    window.store1 = Ext.create('Ext.data.JsonStore', {
+    window.store_@diagram_id@ = Ext.create('Ext.data.JsonStore', {
         fields: ['x_axis', 'y_axis', 'color', 'diameter', 'caption'],
         data: @data_json;noquote@
     });
@@ -26,7 +26,7 @@ Ext.onReady(function () {
         width: @diagram_width@,
         height: @diagram_height@,
         animate: false,
-        store: store1,
+        store: store_@diagram_id@,
         renderTo: '@diagram_id@',
 	legend: { position: 'right' },
 	axes: [{

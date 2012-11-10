@@ -23,6 +23,8 @@ set year 2000
 set month "01"
 set day "01"
 
+set data_list {}
+
 # project_id may be overwritten by SQLs below
 set main_project_id $project_id
 
@@ -122,7 +124,7 @@ db_1row start_end "
 	from	($date_days_sql) t
 "
 
-db_1row start_end "
+db_0or1row start_end "
 	select	min(h.day)::date as hours_start_date,
 		main_p.start_date::date as main_project_start_date,
 		max(h.day)::date as hours_end_date,
@@ -136,6 +138,9 @@ db_1row start_end "
 	group by
 		main_p.start_date, main_p.end_date
 "
+
+# Skip and abort the portlet if there are no hours logged for the project
+if {![info exists main_project_start_date]} { return  }
 
 # -----------------------------------------------
 # Determine Start- and End date for the Tracker
@@ -212,7 +217,6 @@ set y_axis_max_date_js "new Date($year, $month, $day)"
 # Format the data JSON and HTML
 # -----------------------------------------------------------------
 
-set data_list {}
 set debug_html "<table>"
 
 # Header row

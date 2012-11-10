@@ -33,6 +33,13 @@ set color "yellow"
 set diameter 5
 set title ""
 
+set user_sql ""
+if {"" != $diagram_user_id} { 
+    set user_sql "
+	and t.task_id in (select object_id_one from acs_rels where object_id_two = $diagram_user_id)
+    " 
+}
+
 set workload_sql "
     	select	day.day,
 		to_char(day.day, 'YYYY-MM') as month,
@@ -47,6 +54,7 @@ set workload_sql "
 				im_timesheet_tasks t
 			where	sub_p.project_id = t.task_id and
 				sub_p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey)
+				$user_sql
 		) t) as estimated_days
 	from	im_projects main_p,
 		im_day_enumerator(:diagram_start_date, :diagram_end_date) day

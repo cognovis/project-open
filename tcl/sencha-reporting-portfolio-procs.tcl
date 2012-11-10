@@ -92,6 +92,7 @@ ad_proc -public sencha_project_timeline {
     {-diagram_caption "Project Timeline" }
     {-diagram_start_date ""}
     {-diagram_end_date ""}
+    {-diagram_user_id ""}
 } {
     Returns a HTML code with a Sencha project timelinediagram.
     The timeline shows the resource requirements over time.
@@ -110,6 +111,7 @@ ad_proc -public sencha_project_timeline {
 		    [list diagram_caption $diagram_caption] \
 		    [list diagram_start_date $diagram_start_date] \
 		    [list diagram_end_date $diagram_end_date] \
+		    [list diagram_user_id $diagram_user_id] \
     ]
 
     set result [ad_parse_template -params $params "/packages/sencha-reporting-portfolio/lib/project-timeline"]
