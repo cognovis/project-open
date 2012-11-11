@@ -122,45 +122,50 @@ db_foreach workload $workload_sql {
     if {[regexp {^(..)-(..)-(..)$} $date_day match year month day]} { set date_day "$year-$month-$day" }
     if {[regexp {^(..)-(..)$} $date_week match year week]} { set date_week "$year-$week" }
 
-    # Get the double day_hash (date_days -> (project_id -> work))
-    set v ""
-    if {[info exists day_hash($date_day)]} { set v $day_hash($date_day) }
-    # ps is a day_hash table project_id -> hours of work (of the specific day)
-    array unset ps
-    array set ps $v
-    set p_hours 0
-    if {[info exists ps($project_id)]} { set p_hours $ps($project_id) }
-    set p_hours [expr $p_hours + $estimated_hours]
-    set ps($project_id) $p_hours
-    set day_hash($date_day) [array get ps]
 
+    switch $diagram_aggregation_level {
+	day {
 
-    # Sum up per week
-    set v ""
-    if {[info exists week_hash($date_week)]} { set v $week_hash($date_week) }
-    # ps is a week_hash table project_id -> hours of work (of the specific week)
-    array unset ps
-    array set ps $v
-    set p_hours 0
-    if {[info exists ps($project_id)]} { set p_hours $ps($project_id) }
-    set p_hours [expr $p_hours + $estimated_hours]
-    set ps($project_id) $p_hours
-    set week_hash($date_week) [array get ps]
-
-
-    # Sum up per month
-    set v ""
-    if {[info exists month_hash($date_month)]} { set v $month_hash($date_month) }
-    # ps is a month_hash table project_id -> hours of work (of the specific month)
-    array unset ps
-    array set ps $v
-    set p_hours 0
-    if {[info exists ps($project_id)]} { set p_hours $ps($project_id) }
-    set p_hours [expr $p_hours + $estimated_hours]
-    set ps($project_id) $p_hours
-    set month_hash($date_month) [array get ps]
-
-
+	    # Get the double day_hash (date_days -> (project_id -> work))
+	    set v ""
+	    if {[info exists day_hash($date_day)]} { set v $day_hash($date_day) }
+	    # ps is a day_hash table project_id -> hours of work (of the specific day)
+	    array unset ps
+	    array set ps $v
+	    set p_hours 0
+	    if {[info exists ps($project_id)]} { set p_hours $ps($project_id) }
+	    set p_hours [expr $p_hours + $estimated_hours]
+	    set ps($project_id) $p_hours
+	    set day_hash($date_day) [array get ps]
+	}
+	week {
+	    # Sum up per week
+	    set v ""
+	    if {[info exists week_hash($date_week)]} { set v $week_hash($date_week) }
+	    # ps is a week_hash table project_id -> hours of work (of the specific week)
+	    array unset ps
+	    array set ps $v
+	    set p_hours 0
+	    if {[info exists ps($project_id)]} { set p_hours $ps($project_id) }
+	    set p_hours [expr $p_hours + $estimated_hours]
+	    set ps($project_id) $p_hours
+	    set week_hash($date_week) [array get ps]
+	}
+	month {
+	    # Sum up per month
+	    set v ""
+	    if {[info exists month_hash($date_month)]} { set v $month_hash($date_month) }
+	    # ps is a month_hash table project_id -> hours of work (of the specific month)
+	    array unset ps
+	    array set ps $v
+	    set p_hours 0
+	    if {[info exists ps($project_id)]} { set p_hours $ps($project_id) }
+	    set p_hours [expr $p_hours + $estimated_hours]
+	    set ps($project_id) $p_hours
+	    set month_hash($date_month) [array get ps]
+	}
+    }
+   
     # Sum up the work per project
     set v 0
     if {[info exists project_work_hash($project_id)]} { set v $project_work_hash($project_id) }
