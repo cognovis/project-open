@@ -20,7 +20,8 @@ Ext.require(['Ext.chart.*', 'Ext.Window', 'Ext.fx.target.Sprite', 'Ext.layout.co
 
 Ext.onReady(function () {
     
-    var fields = [@project_json;noquote@];
+    var project_fields = [@project_fields_json;noquote@];
+    var all_fields = [@all_fields_json;noquote@];
 
     chart = new Ext.chart.Chart({
         width: @diagram_width@,
@@ -32,12 +33,13 @@ Ext.onReady(function () {
 	axes: [{
 	    type: 'Numeric',
 	    position: 'left',
-	    fields: fields,
+	    fields: all_fields,
 	    grid: true
 	}, {
 	    type: 'Category',
 	    position: 'bottom',
-	    fields: ['date']
+	    fields: ['date'],
+	    label: { rotate: { degrees: 315 } }	
 	}],
 	series: [
 <if "" ne @diagram_availability@>
@@ -60,7 +62,7 @@ Ext.onReady(function () {
 	    type: 'area',
 	    axis: 'left',
 	    xField: 'name',
-	    yField: fields,
+	    yField: project_fields,
 	    highlight: true
 	}]
     }

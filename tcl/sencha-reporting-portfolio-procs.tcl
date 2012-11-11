@@ -93,7 +93,9 @@ ad_proc -public sencha_project_timeline {
     {-diagram_start_date ""}
     {-diagram_end_date ""}
     {-diagram_user_id ""}
+    {-diagram_project_status_id ""}
     {-diagram_availability ""}
+    {-diagram_aggregation_level ""}
 } {
     Returns a HTML code with a Sencha project timelinediagram.
     The timeline shows the resource requirements over time.
@@ -113,6 +115,8 @@ ad_proc -public sencha_project_timeline {
 		    [list diagram_start_date $diagram_start_date] \
 		    [list diagram_end_date $diagram_end_date] \
 		    [list diagram_user_id $diagram_user_id] \
+		    [list diagram_project_status_id $diagram_project_status_id] \
+		    [list diagram_aggregation_level $diagram_aggregation_level] \
 		    [list diagram_availability $diagram_availability] \
     ]
 

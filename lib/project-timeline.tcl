@@ -16,6 +16,7 @@
 #	diagram_start_date
 # 	diagram_end_date
 #	diagram_caption
+#	diagram_project_status_id
 
 if {"" == $diagram_width} { set diagram_width 1000 }
 if {"" == $diagram_height} { set diagram_width 400 }
@@ -36,7 +37,7 @@ set title ""
 # Calculate estimated hours. Simple case: No users to take into account:
 set estimated_hours_sql "
 		(select	coalesce(sum(planned_units * uom_factor), 0.0) from (
-			select	t.planned_units / (extract(epoch from sub_p.end_date - sub_p.start_date) / 3600.0 / 24.0),
+			select	t.planned_units / (extract(epoch from sub_p.end_date - sub_p.start_date) / 3600.0 / 24.0) as planned_units,
 				CASE WHEN t.uom_id = 321 THEN 8.0 ELSE 1.0 END as uom_factor
 			from	im_projects sub_p,
 				im_timesheet_tasks t
@@ -44,6 +45,14 @@ set estimated_hours_sql "
 				sub_p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
 				sub_p.start_date <= day.day and
 				sub_p.end_date >= day.day
+		UNION
+			select	project_budget_hours / (extract(epoch from sub_p.end_date - sub_p.start_date) / 3600.0 / 24.0) as planned_units,
+				1.0 as uom_factor
+			from	im_projects sub_p
+			where	sub_p.project_id = main_p.project_id and
+				project_budget_hours is not null and
+				not exists (select p.* from im_projects p where p.parent_id = sub_p.project_id)
+
 		) t) as estimated_hours
 "
 
@@ -64,13 +73,34 @@ if {"" != $diagram_user_id} {
 				r.object_id_one = t.task_id and
 				r.object_id_two = :diagram_user_id and
 				r.rel_id = bom.rel_id
+		UNION
+			select	project_budget_hours / (extract(epoch from sub_p.end_date - sub_p.start_date) / 3600.0 / 24.0) * bom.percentage / 100.0 as planned_units,
+				1.0 as uom_factor
+			from	im_projects sub_p,
+				acs_rels r,
+				im_biz_object_members bom
+			where	sub_p.project_id = main_p.project_id and
+				r.object_id_one = sub_p.project_id and
+				r.object_id_two = :diagram_user_id and
+				r.rel_id = bom.rel_id and
+				project_budget_hours is not null and
+				not exists (select p.* from im_projects p where p.parent_id = sub_p.project_id)
+				
 		) t) as estimated_hours
     "
 }
 
+
+set project_status_sql ""
+if {"" != $diagram_project_status_id} {
+   set project_status_sql "and main_p.project_status_id in (select * from im_sub_categories(:diagram_project_status_id))"
+}
+
 set workload_sql "
     	select	day.day,
-		to_char(day.day, 'YYYY-MM-DD') as month,
+		to_char(day.day, 'YY-MM-DD') as date_day,
+		to_char(day.day, 'YY-IW') as date_week,
+		to_char(day.day, 'YY-MM') as date_month,
 		main_p.project_id,
 		main_p.project_nr,
 		main_p.project_name,
@@ -82,25 +112,54 @@ set workload_sql "
 		main_p.start_date <= day.day and
 		main_p.end_date >= day.day and
 		main_p.end_date > main_p.start_date
+		$project_status_sql
 	order by day.day
 "
 # ad_return_complaint 1 "<pre>[im_ad_hoc_query $workload_sql]</pre>"
 
 db_foreach workload $workload_sql {
 
-    # Get the double hash (months -> (project_id -> work))
-    set v ""
-    if {[info exists hash($month)]} { set v $hash($month) }
+    if {[regexp {^(..)-(..)-(..)$} $date_day match year month day]} { set date_day "$year-$month-$day" }
+    if {[regexp {^(..)-(..)$} $date_week match year week]} { set date_week "$year-$week" }
 
-    # ps is a hash table project_id -> hours of work (of the specific day)
+    # Get the double day_hash (date_days -> (project_id -> work))
+    set v ""
+    if {[info exists day_hash($date_day)]} { set v $day_hash($date_day) }
+    # ps is a day_hash table project_id -> hours of work (of the specific day)
     array unset ps
     array set ps $v
     set p_hours 0
     if {[info exists ps($project_id)]} { set p_hours $ps($project_id) }
     set p_hours [expr $p_hours + $estimated_hours]
     set ps($project_id) $p_hours
-   
-    set hash($month) [array get ps]
+    set day_hash($date_day) [array get ps]
+
+
+    # Sum up per week
+    set v ""
+    if {[info exists week_hash($date_week)]} { set v $week_hash($date_week) }
+    # ps is a week_hash table project_id -> hours of work (of the specific week)
+    array unset ps
+    array set ps $v
+    set p_hours 0
+    if {[info exists ps($project_id)]} { set p_hours $ps($project_id) }
+    set p_hours [expr $p_hours + $estimated_hours]
+    set ps($project_id) $p_hours
+    set week_hash($date_week) [array get ps]
+
+
+    # Sum up per month
+    set v ""
+    if {[info exists month_hash($date_month)]} { set v $month_hash($date_month) }
+    # ps is a month_hash table project_id -> hours of work (of the specific month)
+    array unset ps
+    array set ps $v
+    set p_hours 0
+    if {[info exists ps($project_id)]} { set p_hours $ps($project_id) }
+    set p_hours [expr $p_hours + $estimated_hours]
+    set ps($project_id) $p_hours
+    set month_hash($date_month) [array get ps]
+
 
     # Sum up the work per project
     set v 0
@@ -119,8 +178,8 @@ db_foreach workload $workload_sql {
 
 if {0} {
     set debug ""
-    foreach key [lsort [array names hash]] {
-	set val $hash($key)
+    foreach key [lsort [array names day_hash]] {
+	set val $day_hash($key)
 	append debug "$key - $val\n"
     }
     ad_return_complaint 1 "<pre>$debug</pre>"
@@ -135,38 +194,87 @@ if {0} {
 # Aggregate by day
 # ------------------------------------------------------------
 
-set days [lsort [array names hash]]
+set days [lsort [array names day_hash]]
+set weeks [lsort [array names week_hash]]
+set months [lsort [array names month_hash]]
 
 set pids [list]
 foreach pid [array names project_work_hash] {
    set v $project_work_hash($pid)
    if {$v > 0} { lappend pids $pid }
 }
-
 set pids [lsort $pids]
 set project_count [llength $pids]
+
+
 set data_list [list]
-foreach day $days {
-    array unset ps
-    array set ps $hash($day)
-
-    set data_line "{date: '$day'"
-    foreach pid $pids {
-    	set v 0.0
-	if {[info exists ps($pid)]} { set v $ps($pid) }
-	set v [expr round(1000.0 * $v) / 1000.0]
-	append data_line ", '$project_name_hash($pid)': $v"
+switch $diagram_aggregation_level {
+    day {
+	foreach day $days {
+	    array unset ps
+	    array set ps $day_hash($day)
+	    
+	    set data_line "{date: '$day'"
+	    foreach pid $pids {
+		set v 0.0
+		if {[info exists ps($pid)]} { set v $ps($pid) }
+		set v [expr round(1000.0 * $v) / 1000.0]
+		append data_line ", '$project_name_hash($pid)': $v"
+	    }
+	    
+	    if {"" != $diagram_availability} {
+		append data_line ", 'availability': $diagram_availability"
+	    }
+	    
+	    append data_line "}"
+	    lappend data_list $data_line
+	}
     }
-
-    if {"" != $diagram_availability} {
-	append data_line ", 'availability': $diagram_availability"
+    month {
+	foreach month $months {
+	    array unset ps
+	    array set ps $month_hash($month)
+	    
+	    set data_line "{date: '$month'"
+	    foreach pid $pids {
+		set v 0.0
+		if {[info exists ps($pid)]} { set v $ps($pid) }
+		set v [expr round(1000.0 * $v) / 1000.0]
+		append data_line ", '$project_name_hash($pid)': $v"
+	    }
+	    
+	    if {"" != $diagram_availability} {
+		set av [expr $diagram_availability * 22.0]
+		append data_line ", 'availability': $av"
+	    }
+	    
+	    append data_line "}"
+	    lappend data_list $data_line
+	}
     }
-
-    append data_line "}"
-    lappend data_list $data_line
+    default {
+	foreach week $weeks {
+	    array unset ps
+	    array set ps $week_hash($week)
+	    
+	    set data_line "{date: '$week'"
+	    foreach pid $pids {
+		set v 0.0
+		if {[info exists ps($pid)]} { set v $ps($pid) }
+		set v [expr round(1000.0 * $v) / 1000.0]
+		append data_line ", '$project_name_hash($pid)': $v"
+	    }
+	    
+	    if {"" != $diagram_availability} {
+		set av [expr $diagram_availability * 5.0]
+		append data_line ", 'availability': $av"
+	    }
+	    
+	    append data_line "}"
+	    lappend data_list $data_line
+	}
+    }
 }
-
-
 
 # ------------------------------------------------------------
 # 
@@ -180,6 +288,7 @@ set project_list [list]
 foreach pid $pids {
     lappend project_list "'$project_name_hash($pid)'"
 }
-set project_json [join $project_list ", "]
+set project_fields_json [join $project_list ", "]
 
-# ad_return_complaint 1 "<pre>$data_json</pre>"
+lappend project_list "'availability'"
+set all_fields_json [join $project_list ", "]

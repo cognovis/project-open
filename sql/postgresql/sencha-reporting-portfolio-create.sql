@@ -109,7 +109,7 @@ SELECT im_component_plugin__new (
 	'/intranet/index',				-- page_url
 	null,					-- view_name
 	10,					-- sort_order
-	'sencha_project_timeline'		-- Portlet TCL
+	'sencha_project_timeline -diagram_aggregation_level month'	-- Portlet TCL
 );
 
 
