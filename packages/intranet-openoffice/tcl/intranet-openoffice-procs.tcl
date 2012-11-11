@@ -238,9 +238,11 @@ ad_proc -public -callback im_invoices_index_before_render -impl intranet-openoff
     Depending on the view_type return a spreadsheet in Excel / Openoffice or PDF
 } {
  
+    upvar 1 cost_type_id invoice_type_id
+    set invoice_type [im_category_from_id $invoice_type_id]
     # Only execute for view types which are supported
     if {[lsearch [list xls pdf ods] $view_type] > -1} {
-        intranet_openoffice::spreadsheet -view_name $view_name -sql $sql -output_filename "invoices.$view_type" -table_name "$table_header" -variable_set $variable_set
+        intranet_openoffice::spreadsheet -view_name $view_name -sql $sql -output_filename "${invoice_type}-list.$view_type" -table_name "$table_header" -variable_set $variable_set
         ad_script_abort
     }
 }

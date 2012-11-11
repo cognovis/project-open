@@ -80,7 +80,13 @@ set date_format [im_l10n_sql_date_format]
 set local_url "/intranet-invoices/list"
 set cost_status_created [im_cost_status_created]
 set cost_type [db_string get_cost_type "select category from im_categories where category_id=:cost_type_id" -default [_ intranet-invoices.Costs]]
-set letter [string toupper $letter]
+
+# Support for OpenOffice 
+if {"" == $view_type} {
+    set letter [string toupper $letter]
+} else {
+    set letter "ALL"
+}
 
 if {![im_permission $user_id view_invoices]} {
     ad_return_complaint 1 "<li>You have insufficiente privileges to view this page"
@@ -147,7 +153,8 @@ if {0 == $view_id} {
 set column_sql "
 select	column_name,
 	column_render_tcl,
-	visible_for
+	visible_for,
+        extra_select
 from	im_view_columns
 where	view_id = :view_id
 	and group_id is null
@@ -157,12 +164,17 @@ order by
 # Get the main view
 set column_headers [list]
 set column_vars [list]
+set extra_select_sql ""
 db_foreach column_list_sql $column_sql {
     if {"" == $visible_for || [eval $visible_for]} {
 	lappend column_headers "$column_name"
 	lappend column_vars "$column_render_tcl"
+	if {"" != $extra_select} {
+	    append extra_select_sql ",$extra_select"
+	}
     }
 }
+
 
 # ---------------------------------------------------------------
 # 5. Generate SQL Query
@@ -264,7 +276,6 @@ if { ![empty_string_p $where_clause] } {
 set payment_amount ""
 set payment_currency ""
 
-set extra_select ""
 set extra_from ""
 set extra_where ""
 
@@ -295,7 +306,7 @@ select
 	p.company_name as provider_name,
 	p.company_path as provider_short_name,
 	to_date(:today, :date_format) - (to_date(to_char(i.invoice_date, :date_format),:date_format) + i.payment_days) as overdue
-	$extra_select
+        $extra_select_sql
 from
         im_invoices_active i,
         im_costs ci
@@ -490,7 +501,7 @@ foreach varname [info locals] {
     ns_set put $form_vars $varname $value
 }
 
-callback im_projects_index_before_render -view_name $view_name \
+callback im_invoices_index_before_render -view_name $view_name \
     -view_type $view_type -sql $selection -table_header $page_title -variable_set $form_vars
 
 db_foreach invoices_info_query $selection {
