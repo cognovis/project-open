@@ -312,6 +312,7 @@ ad_form -extend -name $form_id -new_request {
 #    ad_return_complaint 1 $previous_company_id
     # Only check for sub-projects:
     # The user shouldn't change the customer
+    set n_error 0
     if {"" != $parent_id } {
 	if {"" != $previous_company_id && $company_id != $previous_company_id} {
 	    incr n_error
@@ -397,26 +398,7 @@ ad_form -extend -name $form_id -new_request {
             im_workflow_skip_first_transition -case_id $case_id
             
         }
-        
-        # Set the old project type. Used to detect changes in the project
-        # type and therefore the need to display new DynField fields in a
-        # second page.
-	if {0 == $id_count} {
-	    set previous_project_type_id 0
-	    set previous_project_company_id 0
-	} else {
-	    set sql "
-	 	select
-			project_type_id         as previous_project_type_id,
-			company_id              as previous_project_company_id
-		from	im_projects
-		where	project_id = :project_id
-        "
-	    if {![db_0or1row select_orig_values $sql] } {
-		ad_return_complaint 1 "Could not find project with id: $project_id, please get in touch with your System Administrator"
-	    }
-	}
-        
+                
         # -----------------------------------------------------------------
         # Update the Project
         # -----------------------------------------------------------------
@@ -469,7 +451,16 @@ ad_form -extend -name $form_id -new_request {
     
 } -edit_data {
     
-    set previous_project_type_id [db_string prev_ptype {select project_type_id from im_projects where project_id = :project_id} -default 0]	
+    set sql "
+	 	select
+			project_type_id         as previous_project_type_id,
+			company_id              as previous_project_company_id
+		from	im_projects
+		where	project_id = :project_id
+        "
+    if {![db_0or1row select_orig_values $sql] } {
+	ad_return_complaint 1 "Could not find project with id: $project_id, please get in touch with your System Administrator"
+    }
     
     set project_path $project_nr
 	
@@ -584,12 +575,7 @@ ad_form -extend -name $form_id -new_request {
 
     if {[info exists previous_project_type_id]} {
 	if {$project_type_id != $previous_project_type_id} {
-	    
-	    # Check that there is atleast one dynfield. Otherwise
-	    # it's not necessary to show the same page again
-	    if {$field_cnt > 0} {
-		set return_url [export_vars -base "/intranet/projects/new" {project_id return_url}]
-	    }
+	    set return_url [export_vars -base "/intranet/projects/new" {project_id return_url}]
 	}
     }		
 } -after_submit {
