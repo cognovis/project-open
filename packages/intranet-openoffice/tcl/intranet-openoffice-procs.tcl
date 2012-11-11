@@ -125,7 +125,7 @@ ad_proc -public intranet_openoffice::spreadsheet {
     # Set the first row
     append __output "<table:table-row table:style-name=\"ro1\">\n$__header_defs</table:table-row>\n"
     
-    # No create the single rows for each Object
+    # Now create the single rows for each Object
     db_foreach elements $sql {
         append __output "<table:table-row table:style-name=\"ro1\">\n"
         
@@ -148,6 +148,10 @@ ad_proc -public intranet_openoffice::spreadsheet {
                 float {
                     append __output "<table:table-cell office:value-type=\"float\" office:value=\"$value\"></table:table-cell>"
                 }
+		category_pretty {
+		    set category_pretty [im_category_from_id $value]
+		    append __output " <table:table-cell office:value-type=\"string\"><text:p>$category_pretty</text:p></table:table-cell>\n"
+		}
                 default {
                     append __output " <table:table-cell office:value-type=\"string\"><text:p>$value</text:p></table:table-cell>\n"
                 }
@@ -220,6 +224,23 @@ ad_proc -public -callback im_projects_index_before_render -impl intranet-openoff
     # Only execute for view types which are supported
     if {[lsearch [list xls pdf ods] $view_type] > -1} {
         intranet_openoffice::spreadsheet -view_name $view_name -sql $sql -output_filename "projects.$view_type" -table_name "$table_header" -variable_set $variable_set
+        ad_script_abort
+    }
+}
+
+ad_proc -public -callback im_invoices_index_before_render -impl intranet-openoffice-spreadsheet {
+    {-view_name:required}
+    {-view_type:required}
+    {-sql:required}
+    {-table_header ""}
+    {-variable_set ""}
+} {
+    Depending on the view_type return a spreadsheet in Excel / Openoffice or PDF
+} {
+ 
+    # Only execute for view types which are supported
+    if {[lsearch [list xls pdf ods] $view_type] > -1} {
+        intranet_openoffice::spreadsheet -view_name $view_name -sql $sql -output_filename "invoices.$view_type" -table_name "$table_header" -variable_set $variable_set
         ad_script_abort
     }
 }

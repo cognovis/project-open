@@ -719,7 +719,7 @@ set bgcolor(1) " class=rowodd "
 set ctr 0
 set idx $start_idx
 
-callback im_projects_index_before_render -view_name $view_name \
+callback im_invoices_index_before_render -view_name $view_name \
     -view_type $view_type -sql $selection -table_header $page_title -variable_set $form_vars
 
 db_foreach projects_info_query $selection -bind $form_vars {

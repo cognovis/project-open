@@ -565,7 +565,8 @@ ad_proc -public im_costs_navbar {
     next_page_url 
     prev_page_url 
     export_var_list 
-    {select_label ""} 
+    {select_label ""}
+    {navbar_export_var_list ""}
 } {
     Returns rendered HTML code for a horizontal sub-navigation
     bar for /intranet-cost/.
@@ -588,15 +589,24 @@ ad_proc -public im_costs_navbar {
         upvar 1 $var value
         if { [info exists value] } {
             ns_set put $bind_vars $var $value
-            ns_log Notice "im_costs_navbar: $var <- $value"
+            ns_log Debug "im_costs_navbar: $var <- $value"
         }
     }
+
     set alpha_bar [im_alpha_bar -prev_page_url $prev_page_url -next_page_url $next_page_url $base_url $default_letter $bind_vars]
 
     # Get the Subnavbar
+    set navbar_bind_vars [ns_set create]
+    foreach var $navbar_export_var_list {
+        upvar 1 $var value
+        if { [info exists value] } {
+            ns_set put $navbar_bind_vars $var $value
+            ns_log Debug "im_costs_navbar: $var <- $value"
+        }
+    }
     set parent_menu_sql "select menu_id from im_menus where label='finance'"
     set parent_menu_id [util_memoize [list db_string parent_admin_menu $parent_menu_sql -default 0]]
-    set navbar [im_sub_navbar $parent_menu_id "" $alpha_bar "tabnotsel" $select_label]
+    set navbar [im_sub_navbar $parent_menu_id $navbar_bind_vars $alpha_bar "tabnotsel" $select_label]
 
     return $navbar
 }

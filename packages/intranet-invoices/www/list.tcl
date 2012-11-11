@@ -26,7 +26,8 @@ ad_page_contract {
     { end_date "" }
     { start_idx:integer 0 }
     { how_many "" }
-    { view_name "invoice_list" }
+    { view_name "" }
+    { view_type "" }
     { letter:trim "" }
 }
 
@@ -95,7 +96,16 @@ set end_idx [expr $start_idx + $how_many]
 if {"" == $start_date} { set start_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultStartDate -default "2000-01-01"] }
 if {"" == $end_date} { set end_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultEndDate -default "2100-01-01"] }
 
+# Find out if we are looking at customers or providers
 
+set new_document_menu ""
+set parent_menu_label ""
+if {$cost_type_id == [im_cost_type_company_doc] || [im_category_is_a $cost_type_id [im_cost_type_company_doc]]} {
+    set parent_menu_label "invoices_customers"
+}
+if {$cost_type_id == [im_cost_type_provider_doc] || [im_category_is_a $cost_type_id [im_cost_type_provider_doc]]} {
+    set parent_menu_label "invoices_providers"
+}
 
 # ---------------------------------------------------------------
 # 3. Defined Table Fields
@@ -104,6 +114,19 @@ if {"" == $end_date} { set end_date [parameter::get_from_package_key -package_ke
 # Define the column headers and column contents that 
 # we want to show:
 #
+
+if {"" == $view_name} {
+    # Set the default view_name but overwrite in case we have
+    # customers or providers
+    set view_name "invoice_list"
+    if {$cost_type_id == [im_cost_type_company_doc] || [im_category_is_a $cost_type_id [im_cost_type_company_doc]]} {
+	set view_name "invoice_customer_list"
+    }
+    if {$cost_type_id == [im_cost_type_provider_doc] || [im_category_is_a $cost_type_id [im_cost_type_provider_doc]]} {
+	set view_name "invoice_provider_list"
+    }
+}
+
 set view_id [db_string get_view_id "
 	select view_id 
 	from im_views 
@@ -341,15 +364,6 @@ if {[string equal $letter "ALL"]} {
 # 6a. Format the Filter: Get the admin menu
 # ---------------------------------------------------------------
 
-set new_document_menu ""
-set parent_menu_label ""
-if {$cost_type_id == [im_cost_type_company_doc]} {
-    set parent_menu_label "invoices_customers"
-}
-if {$cost_type_id == [im_cost_type_provider_doc]} {
-    set parent_menu_label "invoices_providers"
-}
-
 if {"" != $parent_menu_label} {
     set parent_menu_sql "select menu_id from im_menus where label=:parent_menu_label"
     set parent_menu_id [db_string parent_admin_menu $parent_menu_sql -default ""]
@@ -382,46 +396,40 @@ if {"" != $parent_menu_label} {
 # Note that we use a nested table because im_slider might
 # return a table with a form in it (if there are too many
 # options
-set filter_html "
-	<form method=get action=\"/intranet-invoices/list\">
-	[export_form_vars order_by how_many view_name include_subinvoices_p]
-	<table border=0 cellpadding=1 cellspacing=1>
-	  <tr>
-	    <td>[_ intranet-invoices.Document_Status]</td>
-	    <td>
-              [im_category_select -include_empty_p 1 "Intranet Cost Status" cost_status_id $cost_status_id]
-            </td>
-	  </tr>
-	  <tr>
-	    <td>[_ intranet-invoices.Document_Type]</td>
-	    <td>
-              [im_category_select -include_empty_p 1 "Intranet Cost Type" cost_type_id $cost_type_id]
-            </td>
-	  </tr>
-	  <tr>
-	    <td>[lang::message::lookup "" intranet-invoices.Company "Company"]</td>
-	    <td>
-              [im_company_select -include_empty_p 1 -include_empty_name "All" company_id $company_id]
-            </td>
-	  </tr>
-	  <tr>
-	    <td class=form-label>[_ intranet-core.Start_Date]</td>
-	    <td class=form-widget>
-	      <input type=textfield name=start_date value=$start_date>
-	    </td>
-	  </tr>
-	  <tr>
-	    <td class=form-label>[lang::message::lookup "" intranet-core.End_Date "End Date"]</td>
-	    <td class=form-widget>
-	      <input type=textfield name=end_date value=$end_date>
-	    </td>
-	  </tr>
-	  <tr>
-	    <td></td>
-	    <td><input type=submit value='[_ intranet-invoices.Go]' name=submit></td>
-	  </tr>
-	</table>
-	</form>"
+
+set form_id "invoice_filter"
+set object_type "im_invoice"
+set action_url "/intranet-invoices/list"
+set form_mode "edit"
+set company_options [im_company_options -include_empty_p 1 -include_empty_name "#intranet-core.All#" -type "CustOrIntl" ]
+
+ad_form \
+    -name $form_id \
+    -action $action_url \
+    -mode $form_mode \
+    -method GET \
+    -export {start_idx order_by how_many include_subinvoices_p}\
+    -form {
+	{cost_status_id:text(im_category_tree),optional {label \#intranet-invoices.Document_Status\#} {value $cost_status_id} {custom {category_type "Intranet Cost Status" translate_p 1 include_empty_p 1} } }
+	{cost_type_id:text(im_category_tree),optional {label \#intranet-invoices.Document_Type\#} {value $cost_type_id} {custom {category_type "Intranet Cost Type" translate_p 1 include_empty_p 1} } }
+	{company_id:text(select),optional {label \#intranet-invoices.Company\#} {options $company_options} {value $company_id}}
+	{start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {value "$start_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
+	{end_date:text(text) {label "[_ intranet-timesheet2.End_Date]"} {value "$end_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('end_date', 'y-m-d');" >}}}
+	{view_name:text(select) {label \#intranet-core.View_Name\#} {value "$view_name"} {options {{"Invoice List" invoice_list} {"Customers" invoice_customer_list} {"Providers" invoice_provider_list}}}}
+}
+
+# List to store the view_type_options
+set view_type_options [list [list Tabelle ""]]
+
+# Run callback to extend the filter and/or add items to the view_type_options
+callback im_projects_index_filter -form_id $form_id
+ad_form -extend -name $form_id -form {
+    {view_type:text(select),optional {label "#intranet-openoffice.View_type#"} {options $view_type_options}}
+}
+
+# Compile and execute the formtemplate if advanced filtering is enabled.
+eval [template::adp_compile -string {<formtemplate id="invoice_filter" style="tiny-plain-po"></formtemplate>}]
+set filter_html $__adp_output
 
 # ---------------------------------------------------------------
 # 7. Format the List Table Header
@@ -465,6 +473,25 @@ set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
 set ctr 0
 set idx $start_idx
+
+# Create a ns_set with all local variables in order
+# to pass it to the SQL query
+set form_vars [ns_set create]
+foreach varname [info locals] {
+
+    # Don't consider variables that start with a "_", that
+    # contain a ":" or that are array variables:
+    if {"_" == [string range $varname 0 0]} { continue }
+    if {[regexp {:} $varname]} { continue }
+    if {[array exists $varname]} { continue }
+
+    # Get the value of the variable and add to the form_vars set
+    set value [expr "\$$varname"]
+    ns_set put $form_vars $varname $value
+}
+
+callback im_projects_index_before_render -view_name $view_name \
+    -view_type $view_type -sql $selection -table_header $page_title -variable_set $form_vars
 
 db_foreach invoices_info_query $selection {
 
