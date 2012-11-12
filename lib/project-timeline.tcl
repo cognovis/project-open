@@ -108,7 +108,6 @@ set workload_sql "
 	from	im_projects main_p,
 		im_day_enumerator(:diagram_start_date, :diagram_end_date) day
 	where	main_p.parent_id is null and
-		main_p.project_status_id in (select * from im_sub_categories([im_project_status_open])) and
 		main_p.start_date <= day.day and
 		main_p.end_date >= day.day and
 		main_p.end_date > main_p.start_date
