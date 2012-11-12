@@ -84,7 +84,7 @@ set context [im_context_bar $page_title]
 # Insert default information if the record doesn't exist
 # ------------------------------------------------------------------
 
-set birthdate $today
+if { ![info exists birthdate] || $birthdate == "" } { set birthdate $today }
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 if { "" == $currency } {
     set currency $default_currency
@@ -202,6 +202,7 @@ if {"" == $currency} { set currency $default_currency }
 # -- ------------------------------------------------
 
 set form_id "employee_information"
+set after_html_birthday "<input type=\"button\" style=\"height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');\" onclick =\"return showCalendar('birthdate', 'y-m-d');\" >"
 
 template::form::create $form_id
 template::form::section $form_id ""
@@ -218,7 +219,7 @@ template::element::create $form_id social_security -optional -label $social_secu
 template::element::create $form_id insurance -optional -label $insurance_label -html {size 10} -datatype float
 template::element::create $form_id other_costs -optional -label $other_cost_label -html {size 10} -datatype float
 template::element::create $form_id salary_payments_per_year -optional -label $salary_payments_per_year_label -html {size 10}
-template::element::create $form_id birthdate -optional -label $birthdate_label -html {size 10} -datatype date
+template::element::create $form_id birthdate -optional -label $birthdate_label -html {size 10} -datatype date -after_html $after_html_birthday
 template::element::create $form_id job_title -optional -label $job_title_label -html {size 30} -datatype text
 template::element::create $form_id job_description -optional -datatype text -widget textarea -label $job_description_label -html {rows 5 cols 40}
 template::element::create $form_id start_date -optional -label $start_date_label -html {size 10} -datatype date
