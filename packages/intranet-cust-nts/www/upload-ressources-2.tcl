@@ -178,6 +178,9 @@ foreach csv_line_fields $values_list_of_lists {
 	} else {
 	    set avail ""
 	    foreach month {1201 1202 1203 1204 1205 1206 1207 1208 1209 1210 1211 1212 1301 1302 1303 1304 1305 1306 1307 1308 1309 1310 1311 1312} {
+		if {![info exists $month]} {
+		    continue
+		}
 		set start_date "01$month"
 		set availability [set $month]
 		
@@ -208,11 +211,12 @@ foreach csv_line_fields $values_list_of_lists {
 						  -item_object_id $project_id \
 						  -item_project_phase_id $project_id \
 						  -item_project_member_id $employee_id \
+						  -item_type_id 73103 \
 						  -item_cost_type_id 3718 \
 						  -item_date [db_string date "select to_char(to_date(:start_date,'DDYYMM'),'YYYY-MM-DD')"] \
 						  -item_value $availability]
 		    } else {
-			db_dml "update im_planning_items set item_value = :availability where item_id = :planning_item_id"
+			db_dml update_planning_item "update im_planning_items set item_value = :availability, item_type_id = 73103 where item_id = :planning_item_id"
 		    }
 			
 		    append avail "$start_date - ${availability}% ::"
@@ -224,7 +228,7 @@ foreach csv_line_fields $values_list_of_lists {
                           and item_project_phase_id = :project_id
                           and item_project_member_id = :employee_id"
 		    }
-		    append avail "Removing"
+		    append avail "Removing $start_date"
 		}
 	    }
 	    ns_write "<li>'$employee_id :: $project_id :: $avail</li>"
