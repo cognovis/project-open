@@ -36,10 +36,10 @@ You can finish your configuration process here.<br>
 Additional options:
 </p>
 <ul>
-<li><a href="/acs-admin/auth/authority?authority_id=@auth_id@">See your new authority</a>.
-<li><a href="/acs-admin/auth/">See the list of authorities</a>.
-<li><a href="/register/logout">Logout</a> so that you test the new login screen.
-<li><a href="/intranet-sysconfig/ldap/index">Configure a new LDAP driver</a>.
+<li><a href="/acs-admin/auth/authority?authority_id=@auth_id@" target="_">See your new authority</a>.
+<li><a href="/acs-admin/auth/" target="_">See the list of authorities</a>.
+<li><a href="/register/logout" target="_">Logout</a> so that you test the new login screen.
+<li><a href="/intranet-sysconfig/ldap/index" target="_">Configure a new LDAP driver</a>.
 <li><a href="/">Go to the home page</a>.
 </ul>
 
