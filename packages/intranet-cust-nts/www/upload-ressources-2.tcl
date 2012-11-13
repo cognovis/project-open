@@ -170,16 +170,23 @@ foreach csv_line_fields $values_list_of_lists {
 
     # find the employee and the project
     if {"" != $personnel_nr && "" != $project_name} {
+	set current_availability 0
 	set employee_id [db_string employee "select employee_id from im_employees where personnel_number = :personnel_nr" -default ""]
 	set project_id [db_string project "select project_id from im_projects where project_name = :project_name" -default ""]
 	if {$employee_id eq "" || "" == $project_id} {
 	    ns_write "<li>ERROR $employee_id :: $personnel_nr ---- $project_id :: $project_name</li>"
 	} else {
-	    db_dml cleanup "delete from im_project_assignments where user_id  = :employee_id and project_id = :project_id"
 	    set avail ""
-	    foreach month {1207 1208 1209 1210 1211 1212 1301 1302 1303 1304 1305 1306 1307 1308 1309 1310 1311 1312} {
+	    foreach month {1201 1202 1203 1204 1205 1206 1207 1208 1209 1210 1211 1212 1301 1302 1303 1304 1305 1306 1307 1308 1309 1310 1311 1312} {
 		set start_date "01$month"
 		set availability [set $month]
+		
+		# we need to find out if we update or insert
+		set planning_item_id [db_string planning_item "select item_id from im_planning_items 
+                    where item_date = to_date(:start_date,'DDYYMM')
+                    and item_project_phase_id = :project_id
+                    and item_project_member_id = :employee_id" -default ""]
+		
 		if {"" != $availability} {
 		    # Convert to float numbers
 		    regsub -all "," $availability "." availability
@@ -187,18 +194,37 @@ foreach csv_line_fields $values_list_of_lists {
 		    # Make sure we store percentages
 		    set availability [ expr $availability * 100 ]
 
-		    if {"011211" == $start_date} {
-			# Create the relationship for this month
-			set rel_id [im_biz_object_add_role -percentage $availability $employee_id $project_id 1300]
-		    } else {
-			set rel_id ""
+		    # Find out if we need to create the relationship
+		    set current_date "01"
+		    append current_date [db_string date "select to_char(now(),'YYMM') from dual"]
+		    
+		    if {$current_date == $start_date} {
+			set current_availability $availability
 		    }
-
+		    
+		    if {"" == $planning_item_id} {
+			set planning_item_id [db_string create_planning_item {
+			    select im_planning_item_new(
+							
 		    db_dml insert_availability "insert into im_project_assignments (user_id,project_id,rel_id,start_date,availability) values (:employee_id, :project_id,:rel_id, to_date(:start_date,'DDYYMM'),:availability)"
 		    append avail "$start_date - ${availability}% ::"
+		} else {
+		    if {"" != $planning_item_id} {
+			# We need to update the planning
+			db_dml update_planning "update im_planning_items set item_value = 0 
+                          where item_date = to_date(:start_date,'DDYYMM')
+                          and item_project_phase_id = :project_id
+                          and item_project_member_id = :employee_id"
+		    }
+		    append avail "Removing"
 		}
 	    }
-	    ns_write "<li>'$employee_id :: $project_id :: $rel_id :: $avail</li>"
+	    ns_write "<li>'$employee_id :: $project_id :: $avail</li>"
+	}
+	# Create the rel
+	if {$current_availability > 0} {
+	    # Create the relationship for this month
+	    set rel_id [im_biz_object_add_role -percentage $current_availability $employee_id $project_id 1300]
 	}
     }
 }
