@@ -85,6 +85,8 @@ create table im_planning_items (
 			-- company. So object_id references acs_objects.object_id,
 			-- the supertype of all object types.
 	item_object_id	integer
+			constraint im_planning_object_id_nn
+			not null
 			constraint im_planning_items_object_fk
 			references acs_objects,
 			-- Type can be "Revenues" or "Costs"
