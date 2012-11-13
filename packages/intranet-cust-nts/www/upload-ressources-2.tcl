@@ -202,11 +202,19 @@ foreach csv_line_fields $values_list_of_lists {
 			set current_availability $availability
 		    }
 		    
+		    # Make this an effort
 		    if {"" == $planning_item_id} {
-			set planning_item_id [db_string create_planning_item {
-			    select im_planning_item_new(
-							
-		    db_dml insert_availability "insert into im_project_assignments (user_id,project_id,rel_id,start_date,availability) values (:employee_id, :project_id,:rel_id, to_date(:start_date,'DDYYMM'),:availability)"
+			set planning_item_id [planning_item::new \
+						  -item_object_id $project_id \
+						  -item_project_phase_id $project_id \
+						  -item_project_member_id $employee_id \
+						  -item_cost_type_id 3718 \
+						  -item_date [db_string date "select to_char(to_date(:start_date,'DDYYMM'),'YYYY-MM-DD')"] \
+						  -item_value $availability]
+		    } else {
+			db_dml "update im_planning_items set item_value = :availability where item_id = :planning_item_id"
+		    }
+			
 		    append avail "$start_date - ${availability}% ::"
 		} else {
 		    if {"" != $planning_item_id} {
