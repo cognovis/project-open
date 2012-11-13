@@ -836,11 +836,13 @@ SELECT im_category_new (73002, 'Deleted', 'Intranet Planning Status');
 
 -- Type
 SELECT im_category_new (73100, 'Revenues', 'Intranet Planning Type');
+SELECT im_category_new (73101,'Benefit Estimation','Intranet Planning Type');
 SELECT im_category_new (73102, 'Costs', 'Intranet Planning Type');
+SELECT im_category_new (73103,'Resources','Intranet Planning Type');
 SELECT im_category_new (73121,'Investment Cost','Intranet Planning Type');
 SELECT im_category_new (73122,'One Time Cost','Intranet Planning Type');
 SELECT im_category_new (73123,'Repeating Cost','Intranet Planning Type');
-SELECT im_category_new (73101,'Benefit Estimation','Intranet Planning Type');
+
 
 SELECT im_category_hierarchy_new(73121,73102);
 SELECT im_category_hierarchy_new(73122,73102);
