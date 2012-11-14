@@ -215,7 +215,7 @@ set dynfield_sql "
 		a.widget_name = w.widget_name
 		and a.acs_attribute_id = aa.attribute_id
 		and w.widget in ('select', 'generic_sql', 'im_category_tree', 'im_cost_center_tree', 'checkbox')
-		and aa.object_type in ('im_project','im_company')
+		and aa.object_type in ('im_project','im_company', 'person')
 		-- Exclude the company's default_xxx fields
 		and aa.attribute_name not like 'default%'
 		-- Fix issues with certain duplicate fields. These fields are implemented hard coded.
@@ -232,6 +232,9 @@ db_foreach dynfield_attributes $dynfield_sql {
 	im_company { 
 	    set pretty_name "Customer $pretty_name" 
 	}
+        person {
+            set pretty_name "Employee $pretty_name"
+        }
 	default {
 	    # Do nothing, keep pretty_name like it is.
 	}
