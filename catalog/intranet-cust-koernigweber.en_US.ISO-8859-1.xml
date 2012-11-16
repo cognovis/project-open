@@ -15,4 +15,6 @@ Best regards
   <msg key="TS_WF_Approved">Confirmed</msg>
   <msg key="TS_WF_Not_Yet_Confirmed">To be confirmed</msg>
   <msg key="TS_WF_Remind">Remind</msg>
+  <msg key="No_Price_Found">User %name% can't be assigned to this project: No price record found.</msg>
+  <msg key="Operation_Canceled">Operation canceled</msg>
 </message_catalog>
