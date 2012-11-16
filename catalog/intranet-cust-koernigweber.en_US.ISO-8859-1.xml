@@ -1,17 +1,43 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <message_catalog package_key="intranet-cust-koernigweber" locale="en_US" charset="ISO-8859-1">
-
   <msg key="AbsenceTimeframe">Timeframe</msg>
+  <msg key="All_Projects_From_Customers">All Projects from Customer</msg> 
+
+  <msg key="comment_budget_report_client"></msg>
+  <msg key="comment_budget_report_project_name"></msg>
+  <msg key="comment_budget_report__project_manager"></msg>
+  <msg key="comment_budget_report_end_date"></msg>
+  <msg key="comment_budget_report_percent_completed"></msg>
+  <msg key="comment_budget_report_project_budget_hours"></msg>
+  <msg key="comment_budget_report__hours_logged"></msg>
+  <msg key="comment_budget_report_deviation_target"></msg>
+  <msg key="comment_budget_report_projection_hours"></msg>
+  <msg key="comment_budget_report_delta_projection_hours_budget"></msg>
+  <msg key="comment_budget_report_project_budget"></msg>
+  <msg key="comment_budget_report_costs_matrix"></msg>
+  <msg key="comment_budget_report_delta_budget_costs"></msg>
+  <msg key="comment_budget_report_projection_costs"></msg>
+  <msg key="comment_budget_report_delta_budget_projection"></msg>
   <msg key="Day">Day</msg>
+  <msg key="Delta_Budget_Costs">Delta Budget Costs</msg>
+  <msg key="Delta_Projection_Hours_Budget">Delta Projection Hours Budget</msg> 
+  <msg key="Deviation_Target">Deviation Target</msg> 
   <msg key="Emp_Cust_Costs_Based_On_Price_Matrix">Costs based on Price Matrix</msg>
   <msg key="Emp_Cust_Internal_costs">Internal Costs</msg>
   <msg key="Hour">Hour</msg>
-  <msg key="Mail_Reminder_Log_Hours_Subject">Reminder: Time sheet </msg>
+  <msg key="Hours_logged">Hours logged</msg>
   <msg key="Mail_Reminder_Log_Hours_Text">Please log your hours
 Best regards
-%current_user_name%</msg>
+%current_user_name%
+  </msg>
+  <msg key="Mail_Reminder_Log_Hours_Text">Please log your hours</msg>
+  <msg key="Best regards">Best regards</msg>
   <msg key="No_Price_Found">User %name% can't be assigned to this project: No price record found.</msg>
   <msg key="Operation_Canceled">Operation canceled </msg>
+  <msg key="Output_Format">Output Format</msg>
+  <msg key="PleaseNote"></msg>
+  <msg key="Title_Budget_Report">Budget Report</msg>
+  <msg key="Projection_Hours">Projection Hours</msg> 
   <msg key="TS_WF_Approved">Confirmed</msg>
   <msg key="TS_WF_Not_Yet_Confirmed">To be confirmed</msg>
   <msg key="TS_WF_Remind">Remind</msg>
