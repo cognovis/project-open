@@ -27,7 +27,7 @@ set project_id_from_filter $project_id
 # because it identifies unquely the report's Menu and
 # its permissions.
 
-set menu_label "project_budget"
+set menu_label "project_budget_weber"
 set current_user_id [ad_maybe_redirect_for_registration]
 set read_p [db_string report_perms "
         select  im_object_permission_p(m.menu_id, :current_user_id, 'read')
@@ -923,6 +923,7 @@ template::multirow foreach project_list {
 	# projection_costs (costs_matrix / project_budget / percent_completed * project_budget)
 	if { 0 == $project_budget_hours || 0 == $percent_completed  } {
             template::multirow set project_list $i projection_costs [lang::message::lookup "" intranet-cust-koernigweber.NotComputable  "Not computable"]
+	    set projection_costs 0 
         } else {
 	    set projection_costs [expr $costs_matrix / ($percent_completed/100.0)]
 	    set projection_costs_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $projection_costs+0] $rounding_precision] $format_string $locale]
