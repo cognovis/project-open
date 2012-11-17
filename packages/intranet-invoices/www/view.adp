@@ -141,6 +141,13 @@
 
 
 <if @admin@>
+	<li>
+		<% set blurb [lang::message::lookup $locale intranet-invoices.Copy_Invoice "Copy Invoice"] %>
+		<% set source_invoice_id $invoice_id %>
+		<% set target_cost_type_id [im_cost_type_invoice] %>
+		<% set gen_vars [export_url_vars source_invoice_id target_cost_type_id return_url] %>
+		<A HREF="/intranet-invoices/new-copy?@gen_vars@">@blurb@</A>
+	</li>
 	<if @cost_type_id@ eq @quote_cost_type_id@>
 	<li>
 		<% set blurb [lang::message::lookup $locale intranet-invoices.Generate_Invoice_from_Quote "Generate Invoice from Quote"] %>
