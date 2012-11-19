@@ -262,8 +262,9 @@ ad_proc -public im_price_list {
     # ------------------ PERMISSIONS ------------------------
     set admin_p 0
     if { [im_permission $current_user_id "admin_project_price_list"]} { set admin_p 1 }
+    if { [im_is_user_site_wide_or_intranet_admin $user_id]} { set admin_p 1 }
 
-    if { ![im_is_user_site_wide_or_intranet_admin $user_id] && "im_project" == $object_type } {
+    if { !$admin_p && "im_project" == $object_type } {
 	# Show price list in projects only when user is a Project Manager of the project or member of Technisches Sekretariat
 	if { ![im_biz_object_admin_p $user_id $object_id] && ![im_profile::member_p -profile_id 55437 -user_id $user_id] } {
 	    return ""
