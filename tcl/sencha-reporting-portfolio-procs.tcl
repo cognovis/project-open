@@ -95,10 +95,23 @@ ad_proc -public sencha_project_timeline {
     {-diagram_user_id ""}
     {-diagram_project_status_id ""}
     {-diagram_availability ""}
-    {-diagram_aggregation_level ""}
+    {-diagram_aggregation_level "month"}
+    {-diagram_dimension "projects"}
 } {
     Returns a HTML code with a Sencha project timelinediagram.
     The timeline shows the resource requirements over time.
+
+    @param diagram_width Width of the diagram in px
+    @param diagram_height Height of the diagram in px
+    @param diagram_caption Text above the diagram
+    @param diagram_start_date Start data
+    @param diagram_end_date End date
+    @param diagram_user_id Restrict to a single user? Implies diagram_type = "users".
+    @param diagram_project_status_id Restrict main projects to certain status
+    @param diagram_availability 
+    @param diagram_aggregation_level Aggregate per day, week or month? Default is month.
+    @param diagram_dimension Show what? "users" or "projects"
+
 } {
     # Choose the version and type of the sencha libs
     set version "v407"
@@ -118,6 +131,7 @@ ad_proc -public sencha_project_timeline {
 		    [list diagram_project_status_id $diagram_project_status_id] \
 		    [list diagram_aggregation_level $diagram_aggregation_level] \
 		    [list diagram_availability $diagram_availability] \
+		    [list diagram_dimension $diagram_dimension] \
     ]
 
     set result [ad_parse_template -params $params "/packages/sencha-reporting-portfolio/lib/project-timeline"]

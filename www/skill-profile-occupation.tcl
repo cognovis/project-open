@@ -61,7 +61,7 @@ foreach tuple $skill_profiles {
     set email [lindex $tuple 3]
     set availability [lindex $tuple 4]
 
-    append body "<h2>$first_names $last_name ($skill_profile_id)</h2>\n"
+    append body "<h2>$first_names $last_name</h2>\n"
 
     append body [sencha_project_timeline \
 		     -diagram_user_id $skill_profile_id \

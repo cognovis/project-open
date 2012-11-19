@@ -1,5 +1,3 @@
-<if @project_count@ ge 1>
-
 <div id=@diagram_id@></div>
 <script type='text/javascript'>
 Ext.require(['Ext.chart.*', 'Ext.Window', 'Ext.fx.target.Sprite', 'Ext.layout.container.Fit']);
@@ -20,7 +18,7 @@ Ext.require(['Ext.chart.*', 'Ext.Window', 'Ext.fx.target.Sprite', 'Ext.layout.co
 
 Ext.onReady(function () {
     
-    var project_fields = [@project_fields_json;noquote@];
+    var object_fields = [@object_fields_json;noquote@];
     var all_fields = [@all_fields_json;noquote@];
 
     chart = new Ext.chart.Chart({
@@ -62,12 +60,13 @@ Ext.onReady(function () {
 	    type: 'area',
 	    axis: 'left',
 	    xField: 'name',
-	    yField: project_fields,
+	    yField: object_fields,
 	    highlight: true
 	}]
     }
 )});
 </script>
 
+<if @object_count@ ge 1>
 </if>
 
