@@ -41,18 +41,11 @@ if {"" == $return_url} {
 
 set table_header "
 <tr>
-  <td width=20>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-  <td width=20>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-  <td width=20>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-  <td width=20>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-  <td width=20>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-  <td width=20>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-  <td width=20>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-  <td width=20>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-  <td width=150>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 "
 
 append table_header "
+  <td class=rowtitle align=center>[lang::message::lookup "" intranet-cost.CostCenter "Cost Center Code"]</td>
   <td class=rowtitle align=center>[lang::message::lookup "" intranet-cost.DeptQuest "Dept?"]</td>
   <td class=rowtitle align=center>[lang::message::lookup "" intranet-cost.InheritFrom "Inherit Permsissons From"]</td>
   <td class=rowtitle align=center>[lang::message::lookup "" intranet-cost.Manager "Manager"]</td>
@@ -76,7 +69,9 @@ set main_sql "
 		im_name_from_user_id(m.manager_id) as manager_name,
 		e.employee_id as employee_id,
 		im_name_from_user_id(e.employee_id) as employee_name,
-		acs_object__name(o.context_id) as context
+		acs_object__name(o.context_id) as context,
+                o.tree_sortkey,
+                tree_level(o.tree_sortkey) as tree_level
 	from
 		acs_objects o,
 		im_cost_centers m
@@ -96,23 +91,22 @@ set table ""
 set ctr 0
 set old_package_name ""
 set last_id 0
+set space "&nbsp; &nbsp; &nbsp; "
+
 db_foreach cost_centers $main_sql {
 
     incr ctr
     set object_id $cost_center_id
-
     append table "\n<tr$bgcolor([expr $ctr % 2])>\n"
-    if {0 != $indent_level} {
-	append table "\n<td colspan=$indent_level>&nbsp;</td>"
-    }
-
+    set sub_indent ""
+    for {set i 1} {$i < $tree_level} {incr i} { append sub_indent $space }
     if {$last_id != $cost_center_id} {
-	append table "
-	  <td colspan=$colspan_level>
-	    <nobr>
+        append table "<td>
+    	<nobr>$sub_indent
 	    <A href=$cost_center_url?cost_center_id=$cost_center_id&return_url=$return_url
-	    >$cost_center_code - $cost_center_name</A>
+ 	    >$cost_center_name</A>
 	    </nobr>
+            <td>$cost_center_code</td>
 	  </td>
 	  <td>$department_p</td>
 	  <td>$context</td>
@@ -120,7 +114,11 @@ db_foreach cost_centers $main_sql {
 	"
     } else {
 	append table "
-	  <td colspan=[expr 9+2-$indent_level]></td>
+	       <td></td>
+	       <td></td>
+	       <td></td>
+	       <td></td>
+	       <td></td>
 	"
     }
 
