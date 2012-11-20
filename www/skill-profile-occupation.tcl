@@ -81,20 +81,17 @@ foreach tuple $skill_profiles {
 #
 # ---------------------------------------------------------------
 
-set sub_navbar ""
-set main_navbar_label "projects"
-
-set project_menu ""
-
-# Show the same header as the ProjectListPage
-set letter ""
-set next_page_url ""
-set previous_page_url ""
+set main_navbar_label "resource_management"
 set menu_select_label "skill-profile-use"
-set sub_navbar [im_project_navbar $letter "/intranet/projects/index" $next_page_url $previous_page_url [list start_idx order_by how_many view_name letter project_status_id] $menu_select_label]
-
-
-
+set bind_vars [ns_set create]
+set parent_menu_id [db_string parent_menu "select menu_id from im_menus where label = :main_navbar_label"]
+set sub_navbar [im_sub_navbar \
+                    -base_url "/intranet-resource-management/index" \
+                    -plugin_url "/intranet-resource-management/index" \
+                    -menu_gif_type "none" \
+                    $parent_menu_id \
+		    $bind_vars "" "pagedesriptionbar" $menu_select_label \
+		    ]
 
 
 # ---------------------------------------------------------------

@@ -93,6 +93,7 @@ ad_proc -public sencha_project_timeline {
     {-diagram_start_date ""}
     {-diagram_end_date ""}
     {-diagram_user_id ""}
+    {-diagram_group_id ""}
     {-diagram_project_status_id ""}
     {-diagram_availability ""}
     {-diagram_aggregation_level "month"}
@@ -128,6 +129,7 @@ ad_proc -public sencha_project_timeline {
 		    [list diagram_start_date $diagram_start_date] \
 		    [list diagram_end_date $diagram_end_date] \
 		    [list diagram_user_id $diagram_user_id] \
+		    [list diagram_group_id $diagram_group_id] \
 		    [list diagram_project_status_id $diagram_project_status_id] \
 		    [list diagram_aggregation_level $diagram_aggregation_level] \
 		    [list diagram_availability $diagram_availability] \

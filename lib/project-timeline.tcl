@@ -295,7 +295,7 @@ switch $diagram_aggregation_level {
 }
 
 # ------------------------------------------------------------
-# 
+# Prepare JSON data for diagram
 # ------------------------------------------------------------
 
 set data_json "\[\n"
@@ -308,5 +308,5 @@ foreach oid $oids {
 }
 set object_fields_json [join $object_list ", "]
 
-lappend object_list "'availability'"
+if {"" != $diagram_availability} { lappend object_list "'availability'" }
 set all_fields_json [join $object_list ", "]
