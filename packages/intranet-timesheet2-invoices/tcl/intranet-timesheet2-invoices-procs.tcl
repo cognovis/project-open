@@ -26,7 +26,8 @@ ad_proc im_timesheet_price_component { user_id company_id return_url} {
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
 #    set price_format "000.00"
-    set price_format "%0.2f"
+    set accuracy [parameter::get_from_package_key -package_key intranet-invoices -parameter "AccuracyFinDocItems" -default 2]
+    set price_format "%0.${accuracy}f"
 
     set colspan 7
     set price_list_html "
