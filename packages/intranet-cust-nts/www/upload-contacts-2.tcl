@@ -170,7 +170,7 @@ foreach csv_line_fields $values_list_of_lists {
 #	ns_log notice "upload-contacts: [lindex $csv_header_fields $j] => $var_name => $var_value"	
 
 	set cmd "set $var_name \"$var_value\""
-	ns_log Notice "upload-contacts-2: cmd=$cmd"
+#	ns_log Notice "upload-contacts-2: cmd=$cmd"
 	set result [eval $cmd]
     }
 
@@ -187,25 +187,31 @@ foreach csv_line_fields $values_list_of_lists {
         <pre>$pretty_field_string</pre>"
 	continue
     }
-
-    set employee_id [db_string employee "select person_id from persons where 	lower(first_names) = lower(:first_names) 
+    
+    set employee_id [db_string employee "select employee_id from im_employees where personnel_number = :personnel_number" -default ""]
+    
+    if {"" == $employee_id} {
+	set employee_id [db_string employee "select person_id from persons where 	lower(first_names) = lower(:first_names) 
 			and lower(last_name) = lower(:last_name) and person_id not in (select party_id from parties where email like '%.local')" -default ""]
+    }
 
     if {$employee_id eq ""} {
-    # Find out the employee_id
-    regsub -all {ä} $first_names {ae} first_names
-    regsub -all {ö} $first_names {oe} first_names
-    regsub -all {ü} $first_names {ue} first_names
-    regsub -all {ß} $first_names {ss} first_names
-    regsub -all {ä} $last_name {ae} last_name
-    regsub -all {ö} $last_name {oe} last_name
-    regsub -all {ü} $last_name {ue} last_name
-    regsub -all {ß} $last_name {ss} last_name
-
-    set employee_id [db_string employee "select person_id from persons where 	lower(first_names) = lower(:first_names) 
+	# Find out the employee_id
+	regsub -all {ä} $first_names {ae} first_names
+	regsub -all {ö} $first_names {oe} first_names
+	regsub -all {ü} $first_names {ue} first_names
+	regsub -all {ß} $first_names {ss} first_names
+	regsub -all {ä} $last_name {ae} last_name
+	regsub -all {ö} $last_name {oe} last_name
+	regsub -all {ü} $last_name {ue} last_name
+	regsub -all {ß} $last_name {ss} last_name
+	
+	set employee_id [db_string employee "select person_id from persons where 	lower(first_names) = lower(:first_names) 
 			and lower(last_name) = lower(:last_name) and person_id not in (select party_id from parties where email like '%.local')" -default ""]
-}
-
+    } else {
+	db_dml update_names "update persons set first_names = :first_names, last_name = :last_name where person_id = :employee_id"
+    }
+    
     if {"" == $employee_id} {
 	set username "${first_names}.${last_name}"
 	set email "${username}@neusoft.com"
@@ -220,25 +226,23 @@ foreach csv_line_fields $values_list_of_lists {
     # Deal with the users's profile membership
     #
 
-    set intern_profile_id [db_string profile "select profile_id from im_profiles where profile_gif = 'intern'"]
-    set student_profile_id [db_string profile "select profile_id from im_profiles where profile_gif = 'student'"]
-    switch $profile {
-	"MA" {set profile_id 463}
-	"Praktikum" {set profile_id $intern_profile_id}
-	"ext." {set profile_id 465}
-	"WS" {set profile_id $student_profile_id}
+    # Delete the user from an profiles
+    db_foreach rel_id {select object_id_one as profile_id from acs_rels where object_id_two = :employee_id and object_id_one != -2} {
+	im_exec_dml delete_user "user_group_member_del ($profile_id, $employee_id)"
     }
 
-    ds_comment "$profile :: $profile_id"
+    set rel_id [relation_add -member_state "approved" "membership_rel" "-2" $employee_id]	
 
-    if {0 != $profile_id} {
-        # Make the user a member of the group (=profile)
-        ns_log Notice "upload-contacts-2: => relation_add $profile_id $employee_id"
-        set rel_id [relation_add -member_state "approved" "membership_rel" $profile_id $employee_id]
-        db_dml update_relation "update membership_rels set member_state='approved' where rel_id=:rel_id"
-        ns_write "<li>'$first_names $last_name': Added to group '$profile_id'.\n"
-    } else {
-        ns_write "<li>'$first_names $last_name': Not adding the user to any group.\n"
+    # Now add the user again
+    foreach profile_id [list 459 471 469 585 473 467 36562 10739 36574 463 36568 465] {
+	
+	if {[exists_and_not_null $profile_id]} {
+	    # Make the user a member of the group (=profile)
+	    ns_log Notice "upload-contacts-2: => relation_add $profile_id $employee_id"
+	    set rel_id [relation_add -member_state "approved" "membership_rel" $profile_id $employee_id]
+	    db_dml update_relation "update membership_rels set member_state='approved' where rel_id=:rel_id"
+	    ns_write "<li>'$first_names $last_name': Added to group '$profile_id' :: $rel_id.\n"
+	}
     }
 
     ns_write "<li>
@@ -302,15 +306,50 @@ foreach csv_line_fields $values_list_of_lists {
 	}
     }
 
-    # define the department id
-    if {"" != $level2} {
-	set department_id [db_string department "select cost_center_id from im_cost_centers where cost_center_name = :level2" -default 525]
-    } else {
-	set department_id [db_string department "select cost_center_id from im_cost_centers where cost_center_name = :level1" -default 525]	
+    # Add the last change as note of type 11514
+    if {"" != $change} {
+	set date [string range $change 0 7]
+	set note [string trim [string range $change 8 end]]
+	set duplicate_note_sql "
+                select  count(*)
+                from    im_notes
+                where   object_id = :employee_id and note = :note
+        "
+	if {[db_string dup $duplicate_note_sql -default 0]==0} {
+	    set note_id [db_exec_plsql create_note "	
+		SELECT im_note__new(
+			null,
+			'im_note',
+			to_date(:date,'YYYYMMDD'),
+			:employee_id,
+			'[ad_conn peeraddr]',
+			null,
+			:note,
+			:employee_id,
+			11514,
+			[im_note_status_active]
+		)
+        "]
+	}
     }
 
+    # define the department id
+    if {"" != $level_2} {
+	set department_id [db_string department "select cost_center_id from im_cost_centers where cost_center_name = :level_2" -default 525]
+    } else {
+	set department_id [db_string department "select cost_center_id from im_cost_centers where cost_center_name = :level_1" -default 525]	
+    }
+
+    # deal with the supervisor
+    set supervisor_first [string range $supervisor 0 0]
+    set supervisor_last [string range $supervisor 1 end]
+    set username "${supervisor_first}.$supervisor_last"
+    set supervisor_id [db_string supervisor "select user_id from users where lower(username)=lower(:username)" -default ""]
+
     # Make the department manager the manager for the employee
-    set supervisor_id [db_string manager "select manager_id from im_cost_centers where cost_center_id = :department_id" -default ""]
+    if {"" == $supervisor_id} {
+	set supervisor_id [db_string manager "select manager_id from im_cost_centers where cost_center_id = :department_id" -default ""]
+    }
     if {$supervisor_id eq $employee_id} {
 	set supervisor_id ""
     }
@@ -371,6 +410,9 @@ foreach csv_line_fields $values_list_of_lists {
     }
 
 }
+
+# Remove all permission related entries in the system cache
+im_permission_flush
 
 
 # ------------------------------------------------------------
