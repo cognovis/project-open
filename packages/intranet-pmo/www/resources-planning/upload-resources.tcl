@@ -15,7 +15,7 @@ if {!$user_is_admin_p} {
 }
 
 set page_body "
-<form enctype=multipart/form-data method=POST action=upload-ressources-2.tcl>
+<form enctype=multipart/form-data method=POST action=upload-resources-2.tcl>
 [export_form_vars return_url]
                     <table border=0>
                       <tr> 

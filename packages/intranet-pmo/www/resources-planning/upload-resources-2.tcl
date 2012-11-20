@@ -164,20 +164,37 @@ foreach csv_line_fields $values_list_of_lists {
 #	ns_log notice "upload-contacts: [lindex $csv_header_fields $j] => $var_name => $var_value"	
 
 	set cmd "set $var_name \"$var_value\""
-	ns_log Notice "upload-contacts-2: cmd=$cmd"
+#	ns_log Notice "upload-contacts-2: cmd=$cmd"
 	set result [eval $cmd]
     }
 
+    # Get the first and last month
+    set current_month [db_string first_month "select to_char(min(item_date),'YYMM') from im_planning_items"]
+    set last_month [db_string last_month "select to_char(max(item_date),'YYMM') from im_planning_items"]
+    set months [list]
+    while {$current_month<$last_month} {
+	lappend months $current_month
+	set current_month [db_string current_month "select to_char(to_date(:current_month,'YYMM') + interval '1 month','YYMM') from dual"]
+    }
+    
+    # Add six more months
+    set i 0
+    while {$i<7} {
+	incr i
+	lappend months $current_month
+	set current_month [db_string current_month "select to_char(to_date(:current_month,'YYMM') + interval '1 month','YYMM') from dual"]
+    }
+    
     # find the employee and the project
-    if {"" != $personnel_nr && "" != $project_name} {
+    if {"" != $personnel_number && "" != $project_name} {
 	set current_availability 0
-	set employee_id [db_string employee "select employee_id from im_employees where personnel_number = :personnel_nr" -default ""]
+	set employee_id [db_string employee "select employee_id from im_employees where personnel_number = :personnel_number" -default ""]
 	set project_id [db_string project "select project_id from im_projects where project_name = :project_name" -default ""]
 	if {$employee_id eq "" || "" == $project_id} {
-	    ns_write "<li>ERROR $employee_id :: $personnel_nr ---- $project_id :: $project_name</li>"
+	    ns_write "<li>ERROR $employee_id :: $personnel_number ---- $project_id :: $project_name</li>"
 	} else {
 	    set avail ""
-	    foreach month {1201 1202 1203 1204 1205 1206 1207 1208 1209 1210 1211 1212 1301 1302 1303 1304 1305 1306 1307 1308 1309 1310 1311 1312} {
+	    foreach month $months {
 		if {![info exists $month]} {
 		    continue
 		}
@@ -219,7 +236,6 @@ foreach csv_line_fields $values_list_of_lists {
 			db_dml update_planning_item "update im_planning_items set item_value = :availability, item_type_id = 73103 where item_id = :planning_item_id"
 		    }
 			
-		    append avail "$start_date - ${availability}% ::"
 		} else {
 		    if {"" != $planning_item_id} {
 			# We need to update the planning
@@ -228,10 +244,8 @@ foreach csv_line_fields $values_list_of_lists {
                           and item_project_phase_id = :project_id
                           and item_project_member_id = :employee_id"
 		    }
-		    append avail "Removing $start_date"
 		}
 	    }
-	    ns_write "<li>'$employee_id :: $project_id :: $avail</li>"
 	}
 	# Create the rel
 	if {$current_availability > 0} {
@@ -244,5 +258,5 @@ foreach csv_line_fields $values_list_of_lists {
 
 # ------------------------------------------------------------
 # Render Report Footer
-
+ns_write "We are finished. You can <a href=\"index\">Return</a> now."
 ns_write [im_footer]
