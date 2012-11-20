@@ -27,6 +27,8 @@ if {"" == $diagram_end_date} { set diagram_end_date [db_string diagram_end_date 
 if {"" == $diagram_caption} { set diagram_caption [lang::message::lookup "" sencha-reporting-portfolio.List_of_projects_over_time "Projects Over Time"] }
 if {"" == $diagram_aggregation_level} { set diagram_aggregation_level "month" }
 if {"" == $diagram_dimension} { set diagram_dimension "projects" }
+if {"" == $diagram_group_id && "" == $diagram_user_id} { set diagram_group_id [im_profile_skill_profile] }
+
 
 
 # Create a random ID for the diagram
@@ -39,6 +41,8 @@ set diameter 5
 set title ""
 
 
+# ad_return_complaint 1 $diagram_dimension
+
 # -----------------------------------------------------------------------
 # Build the SQL
 # -----------------------------------------------------------------------
@@ -48,93 +52,16 @@ if {"" != $diagram_project_status_id} {
     set project_status_sql "and main_p.project_status_id in (select * from im_sub_categories(:diagram_project_status_id))"
 }
 
+set user_group_sql ""
+if {"" != $diagram_group_id} {
+    set user_group_sql "and p.person_id in (select member_id from group_distinct_member_map where group_id = :diagram_group_id)"
+}
+if {"" != $diagram_user_id} {
+    set user_group_sql "and p.person_id in (:diagram_user_id)"
+}
 
-switch $diagram_dimension {
-    projects {
-	# Calculate estimated hours. Simple case: No users to take into account:
-	set estimated_hours_sql "
-			(select	coalesce(sum(planned_units * uom_factor), 0.0) from (
-				select	t.planned_units / (extract(epoch from sub_p.end_date - sub_p.start_date) / 3600.0 / 24.0) as planned_units,
-					CASE WHEN t.uom_id = 321 THEN 8.0 ELSE 1.0 END as uom_factor
-				from	im_projects sub_p,
-					im_timesheet_tasks t
-				where	sub_p.project_id = t.task_id and
-					sub_p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
-					sub_p.start_date <= day.day and
-					sub_p.end_date >= day.day
-			UNION
-				select	project_budget_hours / (extract(epoch from sub_p.end_date - sub_p.start_date) / 3600.0 / 24.0) as planned_units,
-					1.0 as uom_factor
-				from	im_projects sub_p
-				where	sub_p.project_id = main_p.project_id and
-					project_budget_hours is not null and
-					not exists (select p.* from im_projects p where p.parent_id = sub_p.project_id)
-	
-			) t) as estimated_hours
-	"
-	
-	# Calculate estimated hours for a specific user:
-	if {"" != $diagram_user_id} { 
-	    set estimated_hours_sql "
-			(select	coalesce(sum(planned_units * uom_factor), 0.0) from (
-				select	t.planned_units / (extract(epoch from sub_p.end_date - sub_p.start_date) / 3600.0 / 24.0) * bom.percentage / 100.0 as planned_units,
-					CASE WHEN t.uom_id = 321 THEN 8.0 ELSE 1.0 END as uom_factor
-				from	im_projects sub_p,
-					im_timesheet_tasks t,
-					acs_rels r,
-					im_biz_object_members bom
-				where	sub_p.project_id = t.task_id and
-					sub_p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
-					sub_p.start_date <= day.day and
-					sub_p.end_date >= day.day and
-					r.object_id_one = t.task_id and
-					r.object_id_two = :diagram_user_id and
-					r.rel_id = bom.rel_id
-			UNION
-				select	project_budget_hours / (extract(epoch from sub_p.end_date - sub_p.start_date) / 3600.0 / 24.0) * bom.percentage / 100.0 as planned_units,
-					1.0 as uom_factor
-				from	im_projects sub_p,
-					acs_rels r,
-					im_biz_object_members bom
-				where	sub_p.project_id = main_p.project_id and
-					r.object_id_one = sub_p.project_id and
-					r.object_id_two = :diagram_user_id and
-					r.rel_id = bom.rel_id and
-					project_budget_hours is not null and
-					not exists (select p.* from im_projects p where p.parent_id = sub_p.project_id)
-					
-			) t) as estimated_hours
-	    "
-	}
-	
-	
-	set workload_sql "
-	    	select	day.day,
-			to_char(day.day, 'YY-MM-DD') as date_day,
-			to_char(day.day, 'YY-IW') as date_week,
-			to_char(day.day, 'YY-MM') as date_month,
-			main_p.project_id as object_id,
-			main_p.project_name as object_name,
-			$estimated_hours_sql
-		from	im_projects main_p,
-			im_day_enumerator(:diagram_start_date, :diagram_end_date) day
-		where	main_p.parent_id is null and
-			main_p.start_date <= day.day and
-			main_p.end_date >= day.day and
-			main_p.end_date > main_p.start_date and
-			main_p.project_status_id not in (select * from im_sub_categories([im_project_status_closed]))
-			$project_status_sql
-		order by day.day
-	"
 
-    }
-    users {
-
-	# ------------------------------------------------------
-	# workload per skill profile
-	# ------------------------------------------------------
-	
-	set workload_inner_sql "
+set workload_base_sql "
 	    	select	day.day,
 			to_char(day.day, 'YY-MM-DD') as date_day,
 			to_char(day.day, 'YY-IW') as date_week,
@@ -152,6 +79,7 @@ switch $diagram_dimension {
 					sub_p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
 					sub_p.start_date <= day.day and
 					sub_p.end_date >= day.day and
+					extract(epoch from sub_p.end_date - sub_p.start_date) > 0 and
 					r.object_id_one = t.task_id and
 					r.object_id_two = p.person_id and
 					r.rel_id = bom.rel_id
@@ -166,8 +94,26 @@ switch $diagram_dimension {
 			p.person_id in (select member_id from group_distinct_member_map where group_id = [im_profile_skill_profile]) and
 			main_p.project_status_id not in (select * from im_sub_categories([im_project_status_closed]))
 			$project_status_sql
+			$user_group_sql
+"
+
+
+
+switch $diagram_dimension {
+    projects {
+	set workload_sql "
+	    	select	date_day,
+			date_week,
+			date_month,
+			t.project_id as object_id,
+			acs_object__name(t.project_id) as object_name,
+			sum(estimated_hours) as estimated_hours
+		from	($workload_base_sql) t
+		group by
+			t.project_id, date_day, date_week, date_month
 	"
-	
+    }
+    users {
 	set workload_sql "
 	    	select	date_day,
 			date_week,
@@ -175,7 +121,7 @@ switch $diagram_dimension {
 			t.person_id as object_id,
 			im_name_from_user_id(t.person_id) as object_name,
 			sum(estimated_hours) as estimated_hours
-		from	($workload_inner_sql) t
+		from	($workload_base_sql) t
 		group by
 			t.person_id, date_day, date_week, date_month
 	"
