@@ -73,8 +73,7 @@ if { [wf_graphviz_installed_p] } {
 	set size {}
     }
 
-    set dot_text [wf_generate_dot_representation -size $size workflow]
-    
+    set dot_text [lang::util::localize [wf_generate_dot_representation -size $size workflow]]
 
     # Retry getting the GIF, as graphviz is protected by a semaphore
     set cnt 0
