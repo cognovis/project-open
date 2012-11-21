@@ -238,11 +238,8 @@ foreach csv_line_fields $values_list_of_lists {
 			
 		} else {
 		    if {"" != $planning_item_id} {
-			# We need to update the planning
-			db_dml update_planning "update im_planning_items set item_value = 0 
-                          where item_date = to_date(:start_date,'DDYYMM')
-                          and item_project_phase_id = :project_id
-                          and item_project_member_id = :employee_id"
+			db_dml delete_planning_item "delete from im_planning_items where item_id = :planning_item_id"
+			db_dml delete_planning_item "delete from acs_objects where object_id = :planning_item_id"
 		    }
 		}
 	    }
