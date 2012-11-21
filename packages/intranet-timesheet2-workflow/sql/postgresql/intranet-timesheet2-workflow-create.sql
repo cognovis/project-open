@@ -424,3 +424,1066 @@ SELECT  im_component_plugin__new (
 -- end;' language 'plpgsql';
 -- select inline_0 ();
 -- drop function inline_0 ();
+
+-- upgrade-4.0.3.0.0-4.0.3.0.1.sql
+
+SELECT acs_log__debug('/packages/intranet-timesheet2-workflow/sql/postgresql/upgrade/upgrade-4.0.3.0.0-4.0.3.0.1.sql','');
+
+CREATE OR REPLACE FUNCTION im_absence_notify_applicant_not_approved(integer, character varying, character varying)
+  RETURNS integer AS
+$BODY$
+declare
+        p_case_id               alias for $1;
+        p_transition_key        alias for $2;
+	p_custom_arg            alias for $3;
+
+        v_task_id               integer;        v_case_id               integer;
+        v_creation_ip           varchar;        v_creation_user         integer;
+        v_object_id             integer;        v_object_type           varchar;
+        v_journal_id            integer;        v_name_creation_user    varchar;
+        v_transition_key        varchar;        v_workflow_key          varchar;
+        v_group_id              integer;        v_group_name            varchar;
+        v_task_owner            integer;
+
+	v_absence_id		integer;
+
+	v_start_date		text;		 
+	v_end_date		text;
+	v_description		text;
+
+	v_url			text;
+	v_base_url		text;
+
+        v_object_name           text;
+        v_party_from            parties.party_id%TYPE;
+        v_party_to              parties.party_id%TYPE;
+        v_subject               text;
+        v_body                  text;
+        v_request_id            integer;
+
+        v_locale                text;
+        v_count                 integer;
+
+begin
+        RAISE NOTICE 'im_absence_notify_applicant_not_approved: enter - p_case_id=%, p_transition_key=%, p_custom_arg=%', p_case_id, p_transition_key, p_custom_arg;
+
+        -- Select out some frequently used variables of the environment
+        select  c.object_id, c.workflow_key, co.creation_user, task_id, c.case_id, co.object_type, co.creation_ip
+        into    v_object_id, v_workflow_key, v_creation_user, v_task_id, v_case_id, v_object_type, v_creation_ip
+        from    wf_tasks t, wf_cases c, acs_objects co
+        where   c.case_id = p_case_id
+                and c.case_id = co.object_id
+                and t.case_id = c.case_id
+                and t.workflow_key = c.workflow_key
+                and t.transition_key = p_transition_key;
+
+        v_party_from := -1;
+
+        -- Get locale of user
+        select  language_preference into v_locale
+        from    user_preferences
+        where   user_id = v_creation_user;
+
+	IF v_locale IS NULL THEN
+		v_locale := 'en_US';
+	END IF; 
+
+        -- ------------------------------------------------------------
+        -- Try with specific translation first
+        v_subject := 'Notification_Subject_Notify_Applicant_Absence_Not_Approved';
+        v_subject := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow', v_subject);
+
+        -- Fallback to generic (no transition key) translation
+        IF substring(v_subject from 1 for 7) = 'MISSING' THEN
+                v_subject := 'Your application for an absence';
+        END IF;
+
+        -- Replace variables
+        -- v_subject := replace(v_subject, '%object_name%', v_object_name);
+        -- v_subject := replace(v_subject, '%transition_name%', v_transition_name);
+
+        -- ------------------------------------------------------------
+        -- Try with specific translation first
+        v_body := 'Notification_Body_Notify_Applicant_Absence_Not_Approved';
+        v_body := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow', v_body);
+
+        -- Fallback to generic (no transition key) translation
+        IF substring(v_body from 1 for 7) = 'MISSING' THEN
+                v_body := 'Your application for an absence has not been approved:';
+        END IF;
+
+        -- Replace variables
+        -- v_body := replace(v_body, '%object_name%', v_object_name);
+        -- v_body := replace(v_body, '%transition_name%', v_transition_name);
+
+	-- get absence_id 
+	select object_id into v_absence_id from wf_cases where case_id = p_case_id; 
+
+	-- get URL of absence
+	select 	attr_value 
+	into 	v_base_url 
+	from 
+		apm_parameter_values pv,
+		apm_parameters p
+	where 
+                p.package_key = 'acs-kernel' and
+                p.parameter_name = 'SystemURL' and
+                pv.parameter_id = p.parameter_id;
+
+	v_url := v_base_url || 'intranet-timesheet2/absences/new?form_mode=display&absence_id=' || v_absence_id;
+
+	-- get info about absence 
+       	select
+                to_char(start_date,'YYYY-MM-DD'),
+                to_char(end_date,'YYYY-MM-DD'),
+		COALESCE(v_description, '(none)')
+       	into v_start_date, v_end_date, v_description
+       	from im_user_absences where absence_id = v_absence_id;
+
+	v_body := v_body || '\n\n' || v_start_date || '-' || v_end_date || ': ' || v_description || '\n' || v_url || '\n\n';	
+	v_party_to := v_creation_user;
+
+	-- Custom argument might contain user_id different from owner
+	-- Notification to HR   	
+	if p_custom_arg <> '' THEN
+		select into v_name_creation_user im_name_from_id(v_creation_user);
+		v_subject := v_subject || ' ' || v_name_creation_user;
+		v_party_to := p_custom_arg;	
+	END IF;
+
+        RAISE NOTICE 'im_absence_notify_applicant_not_approved: Subject=%, Body=%', v_subject, v_body;
+
+        v_request_id := acs_mail_nt__post_request (
+		v_party_from,                 -- party_from
+		v_party_to,                   -- party_to
+		'f',                          -- expand_group
+		v_subject,                    -- subject
+		v_body,                       -- message
+		0                             -- max_retries
+        );
+        return 0;
+end;$BODY$
+  LANGUAGE 'plpgsql' VOLATILE;
+
+
+
+
+CREATE OR REPLACE FUNCTION im_absence_notify_applicant_approved(integer, character varying, character varying)
+  RETURNS integer AS
+$BODY$
+declare
+        p_case_id               alias for $1;
+        p_transition_key        alias for $2;
+	p_custom_arg            alias for $3;
+
+        v_task_id               integer;        v_case_id               integer;
+        v_creation_ip           varchar;        v_creation_user         integer;
+        v_object_id             integer;        v_object_type           varchar;
+        v_journal_id            integer;	v_name_creation_user    varchar;
+        v_transition_key        varchar;        v_workflow_key          varchar;
+        v_group_id              integer;        v_group_name            varchar;
+        v_task_owner            integer;
+
+	v_absence_id		integer;
+
+	v_start_date		text;		 
+	v_end_date		text;
+	v_description		text;
+
+	v_url			text;
+	v_base_url		text;
+
+        v_object_name           text;
+        v_party_from            parties.party_id%TYPE;
+        v_party_to              parties.party_id%TYPE;
+        v_subject               text;
+        v_body                  text;
+        v_request_id            integer;
+
+        v_locale                text;
+        v_count                 integer;
+
+begin
+        RAISE NOTICE 'im_absence_notify_applicant_approved: enter - p_case_id=%, p_transition_key=%, p_custom_arg=%', p_case_id, p_transition_key, p_custom_arg;
+
+        -- Select out some frequently used variables of the environment
+        select  c.object_id, c.workflow_key, co.creation_user, task_id, c.case_id, co.object_type, co.creation_ip
+        into    v_object_id, v_workflow_key, v_creation_user, v_task_id, v_case_id, v_object_type, v_creation_ip
+        from    wf_tasks t, wf_cases c, acs_objects co
+        where   c.case_id = p_case_id
+                and c.case_id = co.object_id
+                and t.case_id = c.case_id
+                and t.workflow_key = c.workflow_key
+                and t.transition_key = p_transition_key;
+
+        v_party_from := -1;
+
+        -- Get locale of user
+        select  language_preference into v_locale
+        from    user_preferences
+        where   user_id = v_creation_user;
+
+        IF v_locale IS NULL THEN
+                v_locale := 'en_US';
+        END IF;
+
+        -- ------------------------------------------------------------
+        -- Try with specific translation first
+        v_subject := 'Notification_Subject_Notify_Applicant_Absence_Approved';
+        v_subject := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow', v_subject);
+
+        -- Fallback to generic (no transition key) translation
+        IF substring(v_subject from 1 for 7) = 'MISSING' THEN
+                v_subject := 'Your application for an absence:';
+        END IF;
+
+        -- Replace variables
+        -- v_subject := replace(v_subject, '%object_name%', v_object_name);
+        -- v_subject := replace(v_subject, '%transition_name%', v_transition_name);
+
+        -- ------------------------------------------------------------
+        -- Try with specific translation first
+        v_body := 'Notification_Body_Notify_Applicant_Absence_Approved';
+        v_body := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow', v_body);
+
+        -- Fallback to generic (no transition key) translation
+        IF substring(v_body from 1 for 7) = 'MISSING' THEN
+                v_body := 'Your application for an absence has been approved';
+        END IF;
+
+        -- Replace variables
+        -- v_body := replace(v_body, '%object_name%', v_object_name);
+        -- v_body := replace(v_body, '%transition_name%', v_transition_name);
+
+	-- get absence_id 
+	select object_id into v_absence_id from wf_cases where case_id = p_case_id; 
+
+	-- get URL of absence
+	select 	attr_value 
+	into 	v_base_url 
+	from 
+		apm_parameter_values pv,
+		apm_parameters p
+	where 
+		p.package_key = 'acs-kernel' and
+		p.parameter_name = 'SystemURL' and 
+		pv.parameter_id = p.parameter_id; 
+
+	v_url := v_base_url || 'intranet-timesheet2/absences/new?form_mode=display&absence_id=' || v_absence_id;
+
+        -- get info about absence
+        select
+                to_char(start_date,'YYYY-MM-DD'),
+                to_char(end_date,'YYYY-MM-DD'),
+                COALESCE(v_description, '(none)')
+        into v_start_date, v_end_date, v_description
+        from im_user_absences where absence_id = v_absence_id;
+
+        -- v_body := v_body || '\n\n' || v_description || '\n\n' || v_start_date || '\n\n' || v_end_date || '\n\n' || v_url || '\n\n';
+        v_body := v_body || '\n\n' || v_start_date || '-' || v_end_date || ': ' || v_description || '\n' || v_url || '\n\n';
+        v_party_to := v_creation_user;
+
+        -- Custom argument might contain user_id different from owner
+        -- Notification to HR
+        if p_custom_arg <> '' THEN
+                select into v_name_creation_user im_name_from_id(v_creation_user);
+                v_subject := v_subject || ' ' || v_name_creation_user;
+                v_party_to := p_custom_arg;
+        END IF;
+
+        RAISE NOTICE 'im_absence_notify_applicant_not_approved: Subject=%, Body=%', v_subject, v_body;
+
+        v_request_id := acs_mail_nt__post_request (
+                v_party_from,                 -- party_from
+                v_party_to,                   -- party_to
+                'f',                          -- expand_group
+                v_subject,                    -- subject
+                v_body,                       -- message
+                0                             -- max_retries
+        );
+        return 0;
+end;$BODY$
+  LANGUAGE 'plpgsql' VOLATILE;
+-- upgrade-4.0.3.0.1-4.0.3.0.2.sql
+
+SELECT acs_log__debug('/packages/intranet-timesheet2-workflow/sql/postgresql/upgrade/upgrade-4.0.3.0.1-4.0.3.0.2.sql','');
+
+create or replace function inline_0 ()
+returns integer as '
+declare
+        v_count         integer;
+begin
+        select count(*) into v_count from information_schema.columns where
+              table_name = ''im_timesheet_conf_objects''
+              and column_name = ''comment'';
+
+        IF v_count > 0 THEN return 1; END IF;
+
+	alter table im_timesheet_conf_objects add column comment text default '''';
+
+        RETURN 0;
+
+end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+create or replace function im_ts_approval__add_comment(int4,varchar,varchar) returns int4 as '
+    declare
+            p_case_id               alias for $1;
+            p_transition_key        alias for $2;
+            p_custom_arg            alias for $3;
+    
+            v_task_id               integer;        v_case_id               integer;
+            v_creation_ip           varchar;        v_user_id               integer;
+            v_creation_user         integer;        v_conf_id               integer;
+            v_object_id             integer;        v_object_type           varchar;
+            v_journal_id            integer;
+            v_transition_key        varchar;        v_workflow_key          varchar;
+            v_group_id              integer;        v_group_name            varchar;
+            v_task_owner            integer;
+    
+            v_description           text;
+            v_msg                   text;
+    
+            v_object_name           text;
+            v_locale                text;
+            v_action_pretty         text;
+    
+    begin
+            RAISE NOTICE ''im_ts_approval__add_comment: enter - p_case_id=%, p_transition_key=%, p_custom_arg=%'', p_case_id, p_transition_key, p_custom_arg;
+    
+            -- Select out some frequently used variables of the environment
+            select  c.object_id, c.workflow_key, co.creation_user, task_id, c.case_id, co.object_type, co.creation_ip
+            into    v_object_id, v_workflow_key, v_creation_user, v_task_id, v_case_id, v_object_type, v_creation_ip
+            from    wf_tasks t, wf_cases c, acs_objects co
+            where   c.case_id = p_case_id
+                    and c.case_id = co.object_id
+                    and t.case_id = c.case_id
+                    and t.workflow_key = c.workflow_key
+                    and t.transition_key = p_transition_key;
+    
+    
+            -- set object_id
+            v_conf_id := v_object_id;
+            RAISE NOTICE ''im_ts_approval__add_comment: v_conf_id:% '', v_conf_id;
+   
+            -- get comment
+            v_action_pretty := p_custom_arg || '' finish'';
+            select msg into v_msg from journal_entries where object_id = v_case_id and action_pretty = v_action_pretty;
+    
+            update im_timesheet_conf_objects set comment = v_msg where conf_id = v_conf_id;
+    
+            return 0;
+end;' language 'plpgsql';
+
+
+create or replace function im_workflow__remove_conf_item_timesheet(int4,text,text) returns int4 as '
+         declare
+                p_task_id               alias for $1;
+                p_custom_arg            alias for $2;
+                p_custom_arg_1          alias for $3;
+        
+                v_transition_key        varchar;
+                v_object_type           varchar;
+                v_case_id               integer;
+                v_object_id             integer;
+                v_creation_user         integer;
+                v_creation_ip           varchar;
+                v_project_manager_id    integer;
+                v_project_manager_name  varchar;
+        
+                v_journal_id            integer;
+        
+         begin
+                RAISE NOTICE ''im_workflow__remove_conf_item_timesheet:alias_1 =%, alias_2 =%, alias3 =%, v_case_id=%'', p_task_id, p_custom_arg, p_custom_arg_1, v_case_id;
+                update im_hours set conf_object_id = NULL where conf_object_id in (select object_id from wf_cases where case_id = p_task_id);
+                return 0;
+end;' language 'plpgsql';
+
+-- upgrade-4.0.3.0.2-4.0.3.0.3.sql
+
+SELECT acs_log__debug('/packages/intranet-timesheet2-workflow/sql/postgresql/upgrade/upgrade-4.0.3.0.2-4.0.3.0.3.sql','');
+
+CREATE OR REPLACE FUNCTION im_absence_notify_applicant_not_approved(integer, character varying, character varying)
+  RETURNS integer AS
+$BODY$
+declare
+        p_case_id               alias for $1;
+        p_transition_key        alias for $2;
+	p_custom_arg            alias for $3;
+
+        v_task_id               integer;        v_case_id               integer;
+        v_creation_ip           varchar;        v_creation_user         integer;
+        v_object_id             integer;        v_object_type           varchar;
+        v_journal_id            integer;        v_name_creation_user    varchar;
+        v_transition_key        varchar;        v_workflow_key          varchar;
+        v_group_id              integer;        v_group_name            varchar;
+        v_task_owner            integer;
+
+	v_absence_id		integer;
+
+	v_start_date		text;		 
+	v_end_date		text;
+	v_description		text;
+
+	v_url			text;
+	v_base_url		text;
+
+        v_object_name           text;
+        v_party_from            parties.party_id%TYPE;
+        v_party_to              parties.party_id%TYPE;
+        v_subject               text;
+        v_body                  text;
+        v_request_id            integer;
+
+        v_locale                text;
+        v_count                 integer;
+
+begin
+        RAISE NOTICE 'im_absence_notify_applicant_not_approved: enter - p_case_id=%, p_transition_key=%, p_custom_arg=%', p_case_id, p_transition_key, p_custom_arg;
+
+        -- Select out some frequently used variables of the environment
+        select  c.object_id, c.workflow_key, co.creation_user, task_id, c.case_id, co.object_type, co.creation_ip
+        into    v_object_id, v_workflow_key, v_creation_user, v_task_id, v_case_id, v_object_type, v_creation_ip
+        from    wf_tasks t, wf_cases c, acs_objects co
+        where   c.case_id = p_case_id
+                and c.case_id = co.object_id
+                and t.case_id = c.case_id
+                and t.workflow_key = c.workflow_key
+                and t.transition_key = p_transition_key;
+
+        v_party_from := -1;
+
+        -- Get locale of user
+        select  locale into v_locale
+        from    user_preferences
+        where   user_id = v_creation_user;
+
+	IF v_locale IS NULL THEN
+		v_locale := 'en_US';
+	END IF; 
+
+        -- ------------------------------------------------------------
+        -- Try with specific translation first
+        v_subject := 'Notification_Subject_Notify_Applicant_Absence_Not_Approved';
+        v_subject := acs_lang_lookup_message(v_locale, 'intranet-timesheet2', v_subject);
+
+        -- Fallback to generic (no transition key) translation
+        IF substring(v_subject from 1 for 7) = 'MISSING' THEN
+                v_subject := 'Your application for an absence';
+        END IF;
+
+        -- Replace variables
+        -- v_subject := replace(v_subject, '%object_name%', v_object_name);
+        -- v_subject := replace(v_subject, '%transition_name%', v_transition_name);
+
+        -- ------------------------------------------------------------
+        -- Try with specific translation first
+        v_body := 'Notification_Body_Notify_Applicant_Absence_Not_Approved';
+        v_body := acs_lang_lookup_message(v_locale, 'intranet-timesheet2', v_body);
+
+        -- Fallback to generic (no transition key) translation
+        IF substring(v_body from 1 for 7) = 'MISSING' THEN
+                v_body := 'Your application for an absence has not been approved:';
+        END IF;
+
+        -- Replace variables
+        -- v_body := replace(v_body, '%object_name%', v_object_name);
+        -- v_body := replace(v_body, '%transition_name%', v_transition_name);
+
+	-- get absence_id 
+	select object_id into v_absence_id from wf_cases where case_id = p_case_id; 
+
+	-- get URL of absence
+	select 	attr_value 
+	into 	v_base_url 
+	from 
+		apm_parameter_values pv,
+		apm_parameters p
+	where 
+                p.package_key = 'acs-kernel' and
+                p.parameter_name = 'SystemURL' and
+                pv.parameter_id = p.parameter_id;
+
+	v_url := v_base_url || 'intranet-timesheet2/absences/new?form_mode=display&absence_id=' || v_absence_id;
+
+	-- get info about absence 
+       	select
+                to_char(start_date,'YYYY-MM-DD'),
+                to_char(end_date,'YYYY-MM-DD'),
+		COALESCE(v_description, '(none)')
+       	into v_start_date, v_end_date, v_description
+       	from im_user_absences where absence_id = v_absence_id;
+
+	v_body := v_body || '\n\n' || v_start_date || '-' || v_end_date || ': ' || v_description || '\n' || v_url || '\n\n';	
+	v_party_to := v_creation_user;
+
+	-- Custom argument might contain user_id different from owner
+	-- Notification to HR   	
+	if p_custom_arg <> '' THEN
+		select into v_name_creation_user im_name_from_id(v_creation_user);
+		v_subject := v_subject || ' ' || v_name_creation_user;
+		v_party_to := p_custom_arg;	
+	END IF;
+
+        RAISE NOTICE 'im_absence_notify_applicant_not_approved: Subject=%, Body=%', v_subject, v_body;
+
+        v_request_id := acs_mail_nt__post_request (
+		v_party_from,                 -- party_from
+		v_party_to,                   -- party_to
+		'f',                          -- expand_group
+		v_subject,                    -- subject
+		v_body,                       -- message
+		0                             -- max_retries
+        );
+        return 0;
+end;$BODY$
+  LANGUAGE 'plpgsql' VOLATILE;
+
+
+
+
+CREATE OR REPLACE FUNCTION im_absence_notify_applicant_approved(integer, character varying, character varying)
+  RETURNS integer AS
+$BODY$
+declare
+        p_case_id               alias for $1;
+        p_transition_key        alias for $2;
+	p_custom_arg            alias for $3;
+
+        v_task_id               integer;        v_case_id               integer;
+        v_creation_ip           varchar;        v_creation_user         integer;
+        v_object_id             integer;        v_object_type           varchar;
+        v_journal_id            integer;	v_name_creation_user    varchar;
+        v_transition_key        varchar;        v_workflow_key          varchar;
+        v_group_id              integer;        v_group_name            varchar;
+        v_task_owner            integer;
+
+	v_absence_id		integer;
+
+	v_start_date		text;		 
+	v_end_date		text;
+	v_description		text;
+
+	v_url			text;
+	v_base_url		text;
+
+        v_object_name           text;
+        v_party_from            parties.party_id%TYPE;
+        v_party_to              parties.party_id%TYPE;
+        v_subject               text;
+        v_body                  text;
+        v_request_id            integer;
+
+        v_locale                text;
+        v_count                 integer;
+
+begin
+        RAISE NOTICE 'im_absence_notify_applicant_approved: enter - p_case_id=%, p_transition_key=%, p_custom_arg=%', p_case_id, p_transition_key, p_custom_arg;
+
+        -- Select out some frequently used variables of the environment
+        select  c.object_id, c.workflow_key, co.creation_user, task_id, c.case_id, co.object_type, co.creation_ip
+        into    v_object_id, v_workflow_key, v_creation_user, v_task_id, v_case_id, v_object_type, v_creation_ip
+        from    wf_tasks t, wf_cases c, acs_objects co
+        where   c.case_id = p_case_id
+                and c.case_id = co.object_id
+                and t.case_id = c.case_id
+                and t.workflow_key = c.workflow_key
+                and t.transition_key = p_transition_key;
+
+        v_party_from := -1;
+
+        -- Get locale of user
+        select  locale into v_locale
+        from    user_preferences
+        where   user_id = v_creation_user;
+
+        IF v_locale IS NULL THEN
+                v_locale := 'en_US';
+        END IF;
+
+        -- ------------------------------------------------------------
+        -- Try with specific translation first
+        v_subject := 'Notification_Subject_Notify_Applicant_Absence_Approved';
+        v_subject := acs_lang_lookup_message(v_locale, 'intranet-timesheet2', v_subject);
+
+        -- Fallback to generic (no transition key) translation
+        IF substring(v_subject from 1 for 7) = 'MISSING' THEN
+                v_subject := 'Your application for an absence:';
+        END IF;
+
+        -- Replace variables
+        -- v_subject := replace(v_subject, '%object_name%', v_object_name);
+        -- v_subject := replace(v_subject, '%transition_name%', v_transition_name);
+
+        -- ------------------------------------------------------------
+        -- Try with specific translation first
+        v_body := 'Notification_Body_Notify_Applicant_Absence_Approved';
+        v_body := acs_lang_lookup_message(v_locale, 'intranet-timesheet2', v_body);
+
+        -- Fallback to generic (no transition key) translation
+        IF substring(v_body from 1 for 7) = 'MISSING' THEN
+                v_body := 'Your application for an absence has been approved';
+        END IF;
+
+        -- Replace variables
+        -- v_body := replace(v_body, '%object_name%', v_object_name);
+        -- v_body := replace(v_body, '%transition_name%', v_transition_name);
+
+	-- get absence_id 
+	select object_id into v_absence_id from wf_cases where case_id = p_case_id; 
+
+	-- get URL of absence
+	select 	attr_value 
+	into 	v_base_url 
+	from 
+		apm_parameter_values pv,
+		apm_parameters p
+	where 
+		p.package_key = 'acs-kernel' and
+		p.parameter_name = 'SystemURL' and 
+		pv.parameter_id = p.parameter_id; 
+
+	v_url := v_base_url || 'intranet-timesheet2/absences/new?form_mode=display&absence_id=' || v_absence_id;
+
+        -- get info about absence
+        select
+                to_char(start_date,'YYYY-MM-DD'),
+                to_char(end_date,'YYYY-MM-DD'),
+                COALESCE(v_description, '(none)')
+        into v_start_date, v_end_date, v_description
+        from im_user_absences where absence_id = v_absence_id;
+
+        -- v_body := v_body || '\n\n' || v_description || '\n\n' || v_start_date || '\n\n' || v_end_date || '\n\n' || v_url || '\n\n';
+        v_body := v_body || '\n\n' || v_start_date || '-' || v_end_date || ': ' || v_description || '\n' || v_url || '\n\n';
+        v_party_to := v_creation_user;
+
+        -- Custom argument might contain user_id different from owner
+        -- Notification to HR
+        if p_custom_arg <> '' THEN
+                select into v_name_creation_user im_name_from_id(v_creation_user);
+                v_subject := v_subject || ' ' || v_name_creation_user;
+                v_party_to := p_custom_arg;
+        END IF;
+
+        RAISE NOTICE 'im_absence_notify_applicant_not_approved: Subject=%, Body=%', v_subject, v_body;
+
+        v_request_id := acs_mail_nt__post_request (
+                v_party_from,                 -- party_from
+                v_party_to,                   -- party_to
+                'f',                          -- expand_group
+                v_subject,                    -- subject
+                v_body,                       -- message
+                0                             -- max_retries
+        );
+        return 0;
+end;$BODY$
+  LANGUAGE 'plpgsql' VOLATILE;
+
+-- upgrade-4.0.3.0.3-4.0.3.0.4.sql
+
+-- finally not used, removal of absence causes deletion of wf case which is not desired 
+-- maybe useful in the future ... 
+
+SELECT acs_log__debug('/packages/intranet-timesheet2-workflow/sql/postgresql/upgrade/upgrade-4.0.3.0.3-4.0.3.0.4.sql','');
+
+CREATE OR REPLACE FUNCTION im_user_absence_wf__delete(integer, character varying, character varying)
+  RETURNS integer AS
+$BODY$
+declare
+        p_case_id               alias for $1;
+        p_transition_key        alias for $2;
+	p_custom_arg            alias for $3;
+
+        v_task_id               integer;        v_case_id               integer;
+        v_creation_ip           varchar;        v_creation_user         integer;
+        v_object_id             integer;        v_object_type           varchar;
+        v_journal_id            integer;        v_name_creation_user    varchar;
+        v_transition_key        varchar;        v_workflow_key          varchar;
+        v_group_id              integer;        v_group_name            varchar;
+        v_task_owner            integer;
+
+	v_absence_id		integer;
+	v_start_date		date;
+	v_end_date 		date;
+	v_description 		varchar;
+	v_absence_type_id 	integer;
+	v_absence_name 		varchar;
+	v_duration_days		numeric;
+begin
+        RAISE NOTICE 'im_user_absence_wf__delete: enter - p_case_id=%, p_transition_key=%, p_custom_arg=%', p_case_id, p_transition_key, p_custom_arg;
+
+        -- Select out some frequently used variables of the environment
+        select  c.object_id, c.workflow_key, co.creation_user, task_id, c.case_id, co.object_type, co.creation_ip
+        into    v_object_id, v_workflow_key, v_creation_user, v_task_id, v_case_id, v_object_type, v_creation_ip
+        from    wf_tasks t, wf_cases c, acs_objects co
+        where   c.case_id = p_case_id
+                and c.case_id = co.object_id
+                and t.case_id = c.case_id
+                and t.workflow_key = c.workflow_key
+                and t.transition_key = p_transition_key;
+
+	-- get absence_id 
+	select object_id into v_absence_id from wf_cases where case_id = p_case_id; 
+	
+	-- Get absence attributes  
+	select	start_date, end_date, description, absence_type_id, absence_name, duration_days 
+	into 	v_start_date, v_end_date, v_description, v_absence_type_id, v_absence_name, v_duration_days 
+	from 	im_user_absences 
+	where 	absence_id = v_absence_id; 
+
+	-- remove absence 
+	PERFORM im_user_absence__delete(v_absence_id);  
+
+	v_journal_id := journal_entry__new(
+	    null, v_case_id, v_transition_key, v_transition_key, now(), v_creation_user, v_creation_ip, 
+	    'Removed Absence ID:' || v_absence_id || '(' || 
+	    v_start_date || '<br>' || 
+	    v_end_date || '<br>' || 
+	    v_description || '<br>' || 
+	    v_absence_type_id || '<br>' || 
+	    v_absence_name || '<br>' || 
+	    v_duration_days || ')'    
+	);
+        return 0;
+
+end;$BODY$
+  LANGUAGE 'plpgsql' VOLATILE;
+
+
+
+CREATE OR REPLACE FUNCTION im_absences__cleanup()
+  RETURNS INTEGER AS
+	-- There should be no start_date with '00:00:00 in order to avoid problems with  
+	-- constraint im_user_absences::owner_and_start_date_unique UNIQUE, btree (owner_id, absence_type_id, start_date)
+        -- Example: Absence WF - Absence has been rejected in the first place, but a new inquiry with same dates and type is made. 
+$BODY$
+
+declare
+        r                       record;
+        v_owner_id              integer;
+        v_absence_type_id       integer;
+        v_start_date            timestamp;
+        v_count        		integer;
+	v_interval_str		interval;
+	v_counter		integer;
+	
+begin
+        -- Select out some frequently used variables of the environment
+        FOR r IN
+                select  absence_id, owner_id, absence_type_id, start_date
+                from    im_user_absences
+                where   absence_status_id = 16002 OR
+                        absence_status_id = 16006
+                order by owner_id, absence_type_id, start_date
+        LOOP
+                IF      position('00:00:00' in r.start_date) > 1  THEN
+                        RAISE NOTICE 'im_absences__cleanup :: Found absence_id %', absence_id;
+			v_counter := 1; 
+			FOR i IN 1..300 LOOP				
+				v_interval_str := v_counter || ' seconds';
+				RAISE NOTICE 'r.start_date: %, v_interval_str: % ', r.start_date, v_interval_str;
+				v_start_date := r.start_date::timestamp + v_interval_str;
+				select 
+					count(*) 
+				into 
+					v_count            
+				from 
+					im_user_absences 
+				where 
+					absence_type_id = r.absence_type_id and 
+					owner_id = r.owner_id and
+					start_date = v_start_date;
+
+				IF v_count = 0 THEN 
+					update im_user_absences set start_date = v_start_date where absence_id = r.absence_id;  
+					RAISE NOTICE 'im_absences__cleanup :: Changed absence_id: % to %', r.absence_id, v_start_date;
+					EXIT;
+				END IF; 
+				-- v_interval_str := v_interval_str +1;
+			END LOOP;
+                END IF;
+        END LOOP;
+	return 0;
+end;$BODY$
+
+LANGUAGE 'plpgsql' VOLATILE;
+-- upgrade-4.0.3.0.4-4.0.3.0.5.sql
+
+SELECT acs_log__debug('/packages/intranet-timesheet2-workflow/sql/postgresql/upgrade/upgrade-4.0.3.0.4-4.0.3.0.5.sql','');
+
+CREATE OR REPLACE FUNCTION im_ts_notify_applicant_not_approved(integer, character varying, character varying)
+  RETURNS integer AS
+$BODY$
+declare
+        p_case_id               alias for $1;
+        p_transition_key        alias for $2;
+	p_custom_arg            alias for $3;
+
+        v_task_id               integer;        v_case_id               integer;
+        v_creation_ip           varchar;        v_creation_user         integer;
+        v_object_id             integer;        v_object_type           varchar;
+        v_journal_id            integer;        v_name_creation_user    varchar;
+        v_transition_key        varchar;        v_workflow_key          varchar;
+        v_group_id              integer;        v_group_name            varchar;
+        v_task_owner            integer;
+
+	v_description		text;
+
+	v_project_nr 		text;		v_project_name          text;
+	v_project_manager	text;
+
+	v_project_nr_label 	text;		v_project_name_label    text;
+	v_project_manager_label	text;
+	
+	v_url			text;
+	v_base_url		text;
+
+        v_object_name           text;
+        v_party_from            parties.party_id%TYPE;
+        v_party_to              parties.party_id%TYPE;
+        v_subject               text;
+        v_body                  text;
+        v_request_id            integer;
+
+        v_locale                text;
+        v_count                 integer;
+
+begin
+        RAISE NOTICE 'im_ts_notify_applicant_not_approved: enter - p_case_id=%, p_transition_key=%, p_custom_arg=%', p_case_id, p_transition_key, p_custom_arg;
+
+        -- Select out some frequently used variables of the environment
+        select  c.object_id, c.workflow_key, co.creation_user, task_id, c.case_id, co.object_type, co.creation_ip
+        into    v_object_id, v_workflow_key, v_creation_user, v_task_id, v_case_id, v_object_type, v_creation_ip
+        from    wf_tasks t, wf_cases c, acs_objects co
+        where   c.case_id = p_case_id
+                and c.case_id = co.object_id
+                and t.case_id = c.case_id
+                and t.workflow_key = c.workflow_key
+                and t.transition_key = p_transition_key;
+
+        v_party_from := -1;
+
+        -- Get locale of user
+        select  locale into v_locale
+        from    user_preferences
+        where   user_id = v_creation_user;
+
+	IF v_locale IS NULL THEN
+		v_locale := 'en_US';
+	END IF; 
+
+        -- ------------------------------------------------------------
+        -- Try with specific translation first
+        v_subject := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow', 'Notification_Subject_Notify_Applicant_TS_Not_Approved');
+
+        -- Fallback to generic (no transition key) translation
+        IF substring(v_subject from 1 for 7) = 'MISSING' THEN
+                v_subject := 'Notification about your Timesheet Approval Workflow';
+        END IF;
+
+        -- ------------------------------------------------------------
+        -- Try with specific translation first
+        v_body := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow','Notification_Body_Notify_Applicant_TS_Not_Approved');
+        RAISE NOTICE 'im_ts_notify_applicant_not_approved: Body=%', v_body;
+
+        -- Fallback to generic (no transition key) translation
+        IF substring(v_body from 1 for 7) = 'MISSING' THEN
+                v_body := 'Your hours logged hours have not been approved:';
+        END IF;
+
+        -- get project_name, project_nr und PM 
+	select 
+		p.project_nr,
+		p.project_name,
+		im_name_from_id(p.project_lead_id)
+	into
+		v_project_nr,
+		v_project_name,
+		v_project_manager 
+	from 
+		im_projects p, 
+		wf_cases c, 
+		im_timesheet_conf_objects co
+	where 
+                c.case_id = p_case_id and
+		c.object_id = co.conf_id and  
+                co.conf_project_id = p.project_id
+	;
+
+	-- get labels 
+	v_project_nr_label := acs_lang_lookup_message(v_locale, 'intranet-core', 'Project_Nr');
+	v_project_name_label := acs_lang_lookup_message(v_locale, 'intranet-core', 'Project_Name');
+	v_project_manager_label := acs_lang_lookup_message(v_locale, 'intranet-core', 'Project_Manager');	
+		
+	-- get Base URL
+	select 	attr_value 
+	into 	v_base_url 
+	from 
+		apm_parameter_values pv,
+		apm_parameters p
+	where 
+                p.package_key = 'acs-kernel' and
+                p.parameter_name = 'SystemURL' and
+                pv.parameter_id = p.parameter_id;
+
+	v_url := v_base_url || 'acs-workflow/task?return_url=%2fintranet%2f&task_id=' || v_task_id;
+	 
+	v_body := v_body || '\n\n' || v_project_nr_label || ': ' || v_project_nr || '\n';
+	v_body := v_body || v_project_name_label || ': ' || v_project_name || '\n';
+	v_body := v_body || v_project_manager_label || ': ' || v_project_manager || '\n\n';
+ 	v_body := v_body || v_url || '\n\n';	
+
+	v_party_to := v_creation_user;
+
+        v_request_id := acs_mail_nt__post_request (
+		v_party_from,                 -- party_from
+		v_party_to,                   -- party_to
+		'f',                          -- expand_group
+		v_subject,                    -- subject
+		v_body,                       -- message
+		0                             -- max_retries
+        );
+        return 0;
+end;$BODY$
+  LANGUAGE 'plpgsql' VOLATILE;
+
+
+
+CREATE OR REPLACE FUNCTION im_ts_notify_applicant_approved(integer, character varying, character varying)
+  RETURNS integer AS
+$BODY$
+declare
+        p_case_id               alias for $1;
+        p_transition_key        alias for $2;
+	p_custom_arg            alias for $3;
+
+        v_task_id               integer;        v_case_id               integer;
+        v_creation_ip           varchar;        v_creation_user         integer;
+        v_object_id             integer;        v_object_type           varchar;
+        v_journal_id            integer;        v_name_creation_user    varchar;
+        v_transition_key        varchar;        v_workflow_key          varchar;
+        v_group_id              integer;        v_group_name            varchar;
+        v_task_owner            integer;
+
+	v_description		text;
+
+	v_project_nr 		text;		v_project_name          text;
+	v_project_manager	text;
+
+	v_project_nr_label 	text;		v_project_name_label    text;
+	v_project_manager_label	text;
+	
+	v_url			text;
+	v_base_url		text;
+
+        v_object_name           text;
+        v_party_from            parties.party_id%TYPE;
+        v_party_to              parties.party_id%TYPE;
+        v_subject               text;
+        v_body                  text;
+        v_request_id            integer;
+
+        v_locale                text;
+        v_count                 integer;
+
+begin
+        RAISE NOTICE 'im_ts_notify_applicant_approved: enter - p_case_id=%, p_transition_key=%, p_custom_arg=%', p_case_id, p_transition_key, p_custom_arg;
+
+        -- Select out some frequently used variables of the environment
+        select  c.object_id, c.workflow_key, co.creation_user, task_id, c.case_id, co.object_type, co.creation_ip
+        into    v_object_id, v_workflow_key, v_creation_user, v_task_id, v_case_id, v_object_type, v_creation_ip
+        from    wf_tasks t, wf_cases c, acs_objects co
+        where   c.case_id = p_case_id
+                and c.case_id = co.object_id
+                and t.case_id = c.case_id
+                and t.workflow_key = c.workflow_key
+                and t.transition_key = p_transition_key;
+
+        v_party_from := -1;
+
+        -- Get locale of user
+        select  locale into v_locale
+        from    user_preferences
+        where   user_id = v_creation_user;
+
+	IF v_locale IS NULL THEN
+		v_locale := 'en_US';
+	END IF; 
+
+        -- ------------------------------------------------------------
+        -- Try with specific translation first
+        v_subject := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow', 'Notification_Subject_Notify_Applicant_TS_Approved');
+
+        -- Fallback to generic (no transition key) translation
+        IF substring(v_subject from 1 for 7) = 'MISSING' THEN
+                v_subject := 'Notification about your Timesheet Approval Workflow';
+        END IF;
+
+        -- ------------------------------------------------------------
+        -- Try with specific translation first
+        v_body := acs_lang_lookup_message(v_locale, 'intranet-timesheet2-workflow','Notification_Body_Notify_Applicant_TS_Approved');
+
+        -- Fallback to generic (no transition key) translation
+        IF substring(v_body from 1 for 7) = 'MISSING' THEN
+                v_body := 'Your hours logged hours have been approved:';
+        END IF;
+
+        -- get project_name, project_nr und PM 
+	select 
+		p.project_nr,
+		p.project_name,
+		im_name_from_id(p.project_lead_id)
+	into
+		v_project_nr,
+		v_project_name,
+		v_project_manager 
+	from 
+		im_projects p, 
+		wf_cases c, 
+		im_timesheet_conf_objects co
+	where 
+                c.case_id = p_case_id and
+		c.object_id = co.conf_id and  
+                co.conf_project_id = p.project_id
+	;
+
+	-- get labels 
+	v_project_nr_label := acs_lang_lookup_message(v_locale, 'intranet-core', 'Project_Nr');
+	v_project_name_label := acs_lang_lookup_message(v_locale, 'intranet-core', 'Project_Name');
+	v_project_manager_label := acs_lang_lookup_message(v_locale, 'intranet-core', 'Project_Manager');	
+		
+
+	-- get Base URL
+	select 	attr_value 
+	into 	v_base_url 
+	from 
+		apm_parameter_values pv,
+		apm_parameters p
+	where 
+                p.package_key = 'acs-kernel' and
+                p.parameter_name = 'SystemURL' and
+                pv.parameter_id = p.parameter_id;
+
+	v_url := v_base_url || 'acs-workflow/task?return_url=%2fintranet%2f&task_id=' || v_task_id;
+	 
+	v_body := v_body || '\n\n' || v_project_nr_label || ': ' || v_project_nr || '\n';
+	v_body := v_body || v_project_name_label || ': ' || v_project_name || '\n';
+	v_body := v_body || v_project_manager_label || ': ' || v_project_manager || '\n\n';
+ 	v_body := v_body || v_url || '\n\n';	
+
+	v_party_to := v_creation_user;
+
+        v_request_id := acs_mail_nt__post_request (
+		v_party_from,                 -- party_from
+		v_party_to,                   -- party_to
+		'f',                          -- expand_group
+		v_subject,                    -- subject
+		v_body,                       -- message
+		0                             -- max_retries
+        );
+        return 0;
+end;$BODY$
+  LANGUAGE 'plpgsql' VOLATILE;
+
