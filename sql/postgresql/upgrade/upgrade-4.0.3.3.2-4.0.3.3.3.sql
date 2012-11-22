@@ -4,7 +4,7 @@ SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-4.
 
 create or replace function inline_0 () returns integer as $BODY$ 
     DECLARE
-	v_plugin_id		varchar;
+	v_plugin_id		integer;
     BEGIN
    
 	select  plugin_id
