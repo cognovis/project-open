@@ -60,8 +60,7 @@ foreach ticket_id $tid {
 	set body [lang::message::lookup "" intranet-helpdesk.Body_Prio_Change "A priority of a ticket has been changed:\n\n"]
 	set base_url  [parameter::get -package_id [apm_package_id_from_key acs-kernel] -parameter "SystemURL" -default 60]
 	set ticket_name [db_string get_ticket_name "select project_name from im_projects where project_id = :ticket_id" -default 0]
-	append body "$ticket_name \n set to prio: $ticket_prio \n $base_url/intranet-helpdesk/view?ticket_id=$ticket_id" 
-	
+	append body "$ticket_name \n set to prio: [im_category_from_id $ticket_prio] \n $base_url/intranet-helpdesk/new?form_mode=display&ticket_id=$ticket_id" 
 	set sql "select acs_mail_nt__post_request (:current_user_id, :ticket_assignee_id, 'f', :subject, :body, 0)"
 
 	set err ""
