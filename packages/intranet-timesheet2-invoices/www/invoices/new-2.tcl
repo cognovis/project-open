@@ -196,7 +196,7 @@ ad_form \
     -form {
         {start_date:text(text),optional {label "Start Date"}}
         {end_date:text(text),optional {label "End Date"}}
-        {task_status_id:text(im_category_tree) {label "[_ intranet-timesheet2-tasks.Status]"} {custom {category_type "Intranet Timesheet Task Status"}}}
+        {task_status_id:text(im_category_tree),optional {label "[_ intranet-timesheet2-tasks.Status]"} {custom {category_type "Intranet Timesheet Task Status"}}}
     }
 
 template::element::set_value $form_id start_date $start_date
