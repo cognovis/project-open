@@ -293,7 +293,7 @@ ad_form -extend -name $form_id -new_request {
     ns_log Notice "Name :: $project_name :: $project_nr"
     # Check if the project_nr already exists, if yes, create a new one
     if {"" == $project_nr} {
-	set project_nr [im_next_project_nr -customer_id $company_id -parent_id $parent_id]
+	set project_nr [im_next_project_nr -customer_id $company_id -parent_id $parent_id -user_project_path]
     }
     if {"" == $project_name} {
 	set project_name $project_nr
