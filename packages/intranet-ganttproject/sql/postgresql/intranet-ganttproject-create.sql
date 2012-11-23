@@ -455,6 +455,33 @@ SELECT acs_permission__grant_permission(
 );
 
 
+----------------------------------------------------------------
+-- Show Skill Profile Select in member-add pager
+--
+SELECT im_component_plugin__new (
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Skill Profiles',		-- plugin_name
+	'intranet-ganttproject',	-- package_name
+	'bottom',			-- location
+	'/intranet/member-add',		-- page_url
+	null,				-- view_name
+	10,				-- sort_order
+	'im_skill_profile_select_component -object_id $object_id',
+	'lang::message::lookup "" intranet-ganttproject.Skill_Profiles "Skill Profiles"'
+);
+
+SELECT acs_permission__grant_permission(
+	(select plugin_id from im_component_plugins where plugin_name = 'Skill Profiles'),
+	(select group_id from groups where group_name = 'Employees'),
+	'read'
+);
+
+
 
 create or replace function inline_0 ()
 returns integer as $body$

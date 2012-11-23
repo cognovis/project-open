@@ -26,10 +26,10 @@ ad_page_contract {
 set user_id [ad_maybe_redirect_for_registration]
 set user_name [im_name_from_user_id [ad_get_user_id]]
 
-set action_name [im_category_from_id $action_id]
-set action_forbidden_msg [lang::message::lookup "" intranet-riskmanagement.Action_Forbidden "<b>Unable to execute action</b>:<br>You don't have the permissions to execute the action '%action_name%'."]
+if {"" != $action_id} { set action [im_category_from_id -translate_p 0 $action_id] }
+set action_forbidden_msg [lang::message::lookup "" intranet-riskmanagement.Action_Forbidden "<b>Unable to execute action</b>:<br>You don't have the permissions to execute the action '%action%'."]
 
-switch $action {
+switch [string tolower $action] {
     delete {
 	# Delete
 	foreach rid [array names risk_id] {
@@ -54,7 +54,7 @@ switch $action {
 	    foreach risk_id $risk_id { append redirect_url "&risk_id=$risk_id"}
 	    ad_returnredirect $redirect_url
 	} else {
-	    ad_return_complaint 1 "Unknown Risk action: $action_id='[im_category_from_id $action_id]'"
+	    ad_return_complaint 1 "Unknown Risk action: $action_id='$action'"
 	}
     }
 }

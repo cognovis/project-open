@@ -88,19 +88,19 @@ create table im_planning_items (
 			not null
 			constraint im_planning_items_object_fk
 			references acs_objects,
---			-- Type can be "Revenues" or "Costs"
---	item_type_id	integer 
---			constraint im_planning_item_type_nn
---			not null
---			constraint im_planning_item_type_fk
---			references im_categories,
---			-- Status of the planned row. May be "Active", "Approved"
---			-- or "Deleted". Could be controlled by a workflow.
---	item_status_id	integer 
---			constraint im_planning_item_status_nn
---			not null
---			constraint im_planning_item_status_fk
---			references im_categories,
+			-- Type can be "Revenues", "Costs" or "Hours"
+	item_type_id	integer 
+			constraint im_planning_item_type_nn
+			not null
+			constraint im_planning_item_type_fk
+			references im_categories,
+			-- Status of the planned row. May be "Active", "Approved"
+			-- or "Deleted". Could be controlled by a workflow.
+	item_status_id	integer 
+			constraint im_planning_item_status_nn
+			not null
+			constraint im_planning_item_status_fk
+			references im_categories,
 			-- Project phase dimension
 			-- for planning on project phases.
 	item_project_phase_id integer
@@ -264,6 +264,7 @@ SELECT im_category_new (73002, 'Deleted', 'Intranet Planning Status');
 -- Type
 SELECT im_category_new (73100, 'Revenues', 'Intranet Planning Type');
 SELECT im_category_new (73102, 'Costs', 'Intranet Planning Type');
+SELECT im_category_new (73104, 'Hours', 'Intranet Planning Type');
 
 -- Time Dimension
 SELECT im_category_new (73200, 'Quarter', 'Intranet Planning Time Dimension');

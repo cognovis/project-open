@@ -1,14 +1,7 @@
 # /packages/intranet-cogonovis/www/projects/project-ae.tcl
 #
-# Copyright (c) 2011, cognovís GmbH, Hamburg, Germany
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# Copyright (C) 1998-2012 various parties
+# The software is based on ArsDigita ACS 3.4
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see
@@ -163,7 +156,6 @@ ad_form -name $form_id -action /intranet/projects/new -cancel_url $return_url -f
     project_id:key
 }
 
-
 # ------------------------------------------------------
 # Dynamic Fields
 # ------------------------------------------------------
@@ -288,6 +280,49 @@ ad_form -extend -name $form_id -new_request {
     if {[info exists project_nr]} {
         set project_nr [string tolower [string trim $project_nr]]
     }
+	
+    if {$percent_completed > 100 || $percent_completed < 0} {
+	template::element::set_error $form_id percent_completed "Number must be in range (0 .. 100)"
+	incr n_error
+    }
+    if {[template::util::date::compare $end $start] == -1} {
+	template::element::set_error $form_id end "[_ intranet-core.lt_End_date_must_be_afte]"
+	incr n_error
+    }
+
+    # Make sure the project name has a minimum length
+    if { [string length $project_nr] < $project_nr_field_min_len} {
+	incr n_error
+	template::element::set_error $form_id project_nr "[_ intranet-core.lt_The_project_nr_that] <br>
+	   [_ intranet-core.lt_Please_use_a_project_nr_]"
+    }
+	
+    # Check for project number duplicates
+    set project_nr_exists [db_string project_nr_exists "
+	select 	count(*)
+	from	im_projects
+	where	project_nr = :project_nr
+	        and project_id <> :project_id
+    "]
+     if {$project_nr_exists} {
+	 # We have found a duplicate project_nr, now check how to deal with this case:
+	 if {$auto_increment_project_nr_p} {
+	     # Just increment to the next free number. 
+	     set project_nr [im_next_project_nr -customer_id $company_id -parent_id $parent_id]
+	 } else {
+	     # Report an error
+	     incr n_error
+	     template::element::set_error $form_id project_nr "[_ intranet-core.lt_The_specified_project]"
+	 }
+     }
+
+    # Make sure the project name has a minimum length
+    if { [string length $project_name] < $project_name_field_min_len} {
+	incr n_error
+	template::element::set_error $form_id project_name "[_ intranet-core.lt_The_project_name_that] <br>
+	   [_ intranet-core.lt_Please_use_a_project_]"
+    }
+
 } -new_data {
     
     

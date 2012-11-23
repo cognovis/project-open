@@ -106,6 +106,7 @@ db_foreach cost_centers $main_sql {
 	    <A href=$cost_center_url?cost_center_id=$cost_center_id&return_url=$return_url
 	    >$cost_center_name</A>
 	    </nobr>
+            <td>$cost_center_code</td>
 	  </td>
           <td>$cost_center_code</td>
 	  <td>$department_p</td>
@@ -114,11 +115,11 @@ db_foreach cost_centers $main_sql {
 	"
     } else {
 	append table "
-	  <td></td>
-	  <td></td>
-	  <td></td>
-	  <td></td>
-	  <td></td>
+	       <td></td>
+	       <td></td>
+	       <td></td>
+	       <td></td>
+	       <td></td>
 	"
     }
 

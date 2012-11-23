@@ -672,6 +672,8 @@ ad_proc -public im_forum_render_thread { topic_id user_id object_id object_name 
     Returns a formatted HTML representing the child postings
     of the specified topic.
 } {
+
+    # !!! This sql is ignored because of sql located in .xql file  
     set topic_sql "
 	select
 		t.*,
@@ -706,6 +708,7 @@ ad_proc -public im_forum_render_thread { topic_id user_id object_id object_name 
 		and t.topic_status_id=fts.category_id(+)
     "
 
+
     # -------------- Setup the outer table with indents-----------------------
 
     # outer table with 10 columns for indenting
@@ -722,10 +725,18 @@ ad_proc -public im_forum_render_thread { topic_id user_id object_id object_name 
  <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
  <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
  <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
+ <td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </td>
 </tr>
 "
-
-
     # -------------- Render all TIND elements -----------------------
 
     set msg_ctr 1
@@ -733,7 +744,6 @@ ad_proc -public im_forum_render_thread { topic_id user_id object_id object_name 
 
 	# skip the first message, displayed above.
 	if {$msg_ctr != 1} {
-
 	    # position table within the outer indent-table
 	    append thread_html "<tr>"
 	    if {$indent_level > 0} {
@@ -741,13 +751,33 @@ ad_proc -public im_forum_render_thread { topic_id user_id object_id object_name 
 	    }
 	    append thread_html "
 		  <td colspan=$colspan_level>
-		     <table border=0 cellpadding=0 bgcolor=#E0E0E0>"
-
+		     <table border=0 cellpadding=0 bgcolor=#E0E0E0>
+	    "
 	    # don't show received updates for everything but the main message
 	    set receive_updates ""
-
-	    append thread_html " [im_forum_render_tind $topic_id 0 $topic_type_id $topic_type $topic_status_id $topic_status $owner_id $asignee_id $owner_name $asignee_name $user_id $object_id $object_name $object_admin $subject $message $posting_date $due_date $priority $scope $receive_updates $return_url]
-
+	    append thread_html " [im_forum_render_tind \
+					$topic_id 0 \
+					$topic_type_id \
+					$topic_type \
+					$topic_status_id \
+					$topic_status \
+					$owner_id \
+					$asignee_id \
+					$owner_name \
+					$asignee_name \
+					$user_id \
+					$object_id \
+					$object_name \
+					$object_admin \
+					$subject \
+					$message \
+					$posting_date \
+					$due_date \
+					$priority \
+					$scope \
+					$receive_updates \
+					$return_url \
+				]
 		    </table>
 		  </td>
 		</tr>\n"

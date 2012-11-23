@@ -20,7 +20,7 @@
 	
 	<p>
 	This page lists all &#93;project-open&#91; 
-	<a href="http://www.project-open.org/documentation/list_object_types">object types</a> that are exposed
+	<a href="http://www.project-open.org/en/list_object_types">object types</a> that are exposed
 	through this REST Web-Service API, together with the implementation
 	status of CRUL (Create, Read, Update and List) operations (see below) for each object type and a 
 	link to the &#93;project-open&#91; Documentation Wiki.

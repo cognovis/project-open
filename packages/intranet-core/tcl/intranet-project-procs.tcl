@@ -1320,8 +1320,6 @@ ad_proc -public im_project_personal_active_projects_component {
 }
 
 
-
-
 ad_proc -public im_project_hierarchy_component {
     -project_id
     {-return_url "" }
@@ -1333,8 +1331,7 @@ ad_proc -public im_project_hierarchy_component {
     sub-projects.
 } {
     if {"" == $return_url} { set return_url [im_url_with_query] }
-    set params [list  [list base_url "/intranet-core/"]  [list project_id $project_id] [list subproject_status_id "none"] [list view_name "project_hierarchy"] [list return_url $return_url]]
-
+    set params [list [list base_url "/intranet-core/"] [list project_id $project_id] [list subproject_status_id $subproject_status_id] [list view_name "project_hierarchy"] [list return_url $return_url]]
     set result [ad_parse_template -params $params "/packages/intranet-core/lib/project-hierarchy"]
     return [string trim $result]
 }
@@ -1672,6 +1669,7 @@ ad_proc im_project_clone_hierarchy_hash {
 	    set id_nr_hash($project_id) 0
 	    set nr_id_hash(0) $project_id
 	} else {
+	    if { ![info exists id_nr_hash($parent_id)] } { set id_nr_hash($parent_id) "" }
 	    set project_nr_list $id_nr_hash($parent_id)
 	    lappend project_nr_list $project_nr
 	    set id_nr_hash($project_id) $project_nr_list
@@ -2355,8 +2353,8 @@ ad_proc im_project_clone_files {parent_project_id new_project_id} {
 	# "cp -a" preserves the ownership information of
 	# the original file, so permissions should be OK.
 	#
-#	exec /bin/mkdir -p $parent_base_path
-#	exec /bin/mkdir -p $new_base_path
+	exec /bin/mkdir -p $parent_base_path
+	exec /bin/mkdir -p $new_base_path
 	exec /bin/cp -a $parent_base_path $new_base_path
 
     } err_msg] } {

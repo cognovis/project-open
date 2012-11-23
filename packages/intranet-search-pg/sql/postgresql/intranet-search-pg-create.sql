@@ -437,8 +437,7 @@ begin
 
 	v_string2 := '''';
 	IF column_exists(''im_projects'', ''company_project_nr'') THEN
-		select	coalesce(company_project_nr, '''') || '' '' ||
-			coalesce(final_company, '''')
+		select	coalesce(company_project_nr, '''')
 		into	v_string2
 		from	im_projects
 		where	project_id = new.project_id;
@@ -466,7 +465,7 @@ begin
 
 	v_string2 := '''';
 	if column_exists(''im_projects'', ''company_project_nr'') then
-		select 	coalesce(company_project_nr, '''') || '' '' || coalesce(final_company, '''')
+		select 	coalesce(company_project_nr, '''')
 		into	v_string2
 		from	im_projects where project_id = new.project_id;
 		v_string := v_string || '' '' || v_string2;

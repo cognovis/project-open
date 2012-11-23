@@ -392,7 +392,7 @@ switch $format {
 	
 	    set wiki_key "object_type_$object_type"
 	    set wiki "Wiki"
-	    set object_wiki_url "http://www.project-open.org/documentation/object_type_$object_type"
+	    set object_wiki_url "http://www.project-open.org/en/object_type_$object_type"
 	    if {![info exists wiki_hash($wiki_key)]} {
 		set wiki ""
 		set object_wiki_url ""

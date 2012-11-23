@@ -3404,6 +3404,73 @@ ad_proc im_freelance_gantt_resource_select_component {
 
 
 
+ad_proc im_skill_profile_select_multiple { select_name { defaults "" } { size "6"} {multiple ""}} {
+    set bind_vars [ns_set create]
+    set skill_profile_id [im_profile_skill_profile]
+    set name_order [parameter::get -package_id [apm_package_id_from_key intranet-core] -parameter "NameOrder" -default 1]
+    set sql "
+	select
+		u.user_id,
+		im_name_from_user_id(u.user_id, $name_order) as employee_name
+	from
+		registered_users u,
+		group_distinct_member_map gm
+	where
+		u.user_id = gm.member_id
+		and gm.group_id = $skill_profile_id
+	order by lower(im_name_from_user_id(u.user_id, $name_order))
+    "
+    return [im_selection_to_list_box -translate_p "0" $bind_vars category_select $sql $select_name $defaults $size $multiple]
+}    
+
+
+ad_proc im_skill_profile_select_component {
+    {-return_url ""}
+    -object_id:required
+} {
+    Component that returns a formatted HTML table that allows
+    to select a skill profile.
+} {
+    set current_url [im_url_with_query]
+    if {"" == $return_url} { set return_url $current_url }
+
+    # Get the list of all skill profiles
+    set skill_profile_select [im_skill_profile_select_multiple user_id_from_search "" 12 multiple]
+    set role_id 1300
+    set notify_checked ""
+
+    set select_form "
+	<form method=POST action=/intranet/member-add-2>
+	[export_entire_form]
+	<input type=hidden name=target value=\"[im_url_stub]/member-add-2\">
+	<input type=hidden name=passthrough value=\"object_id role_id return_url also_add_to_object_id\">
+	<table cellpadding=0 cellspacing=2 border=0>
+	  <tr> 
+	    <td class=rowtitle align=middle>[_ intranet-core.Employee]</td>
+	  </tr>
+	  <tr> 
+	    <td>
+	$skill_profile_select
+	    </td>
+	  </tr>
+	  <tr> 
+	    <td>[_ intranet-core.add_as] 
+	[im_biz_object_roles_select role_id $object_id $role_id]
+	    </td>
+	  </tr>
+	  <tr> 
+	    <td>
+	      <input type=submit value=\"[_ intranet-core.Add]\">
+	      <input type=checkbox name=notify_asignee value=1 $notify_checked>[_ intranet-core.Notify]
+	    </td>
+	  </tr>
+	</table>
+	</form>
+    "
+
+    return $select_form
+}
+
 
 
 
