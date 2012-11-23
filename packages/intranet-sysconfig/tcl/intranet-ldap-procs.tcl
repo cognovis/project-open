@@ -31,7 +31,7 @@ ad_proc -public im_sysconfig_ldap_check_port_open {
 
     set debug ""
     if {[catch {
-	set fp [open "|[im_bash_command] -c \"$cmd\"" "r"]
+	set fp [open "|bash -c \"$cmd\"" "r"]
 	set debug ""
 	while {[gets $fp line] >= 0} {
 	    append debug "$line\n"
@@ -83,7 +83,7 @@ ad_proc -public im_sysconfig_ldap_check_bind {
 
     set debug ""
     if {[catch {
-	set fp [open "|[im_bash_command] -c \"$cmd\"" "r"]
+	set fp [open "|bash -c \"$cmd\"" "r"]
 	set debug ""
 	while {[gets $fp line] >= 0} {
 	    append debug "$line\n"
@@ -121,7 +121,7 @@ ad_proc -public im_sysconfig_ldap_get_info {
     
     set connect_perl "[acs_root_dir]/packages/intranet-sysconfig/perl/connect.perl"
     set cmd "perl $connect_perl"
-    set fp [open "|[im_bash_command] -c \"$cmd\"" "r"]
+    set fp [open "|bash -c \"$cmd\"" "r"]
 
     set debug ""
     while {[gets $fp line] >= 0} {

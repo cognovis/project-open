@@ -14,11 +14,10 @@
 
 ad_page_contract {
     Returns a key-value list of combo elements 
-    in either JSON or XML format that can be used to update 
-    an arbitrary form combo
-
-    Page is WIP. Support for new combinations will be added
-    on user request. 
+    in either JSON or XML format to be used to update 
+    an arbitrary form combo boxes.  
+    
+    This work is WIP. Support for new combinations will be added on request. 
  
     @author klaus.hofeditz@project-open.com
 
@@ -47,13 +46,14 @@ foreach parameter_key_value $parameters {
     eval $cmd
 }
 
+
 switch $object_type {
 	im_project { 
-
 		# Project defaults 
 	    	if { ![info exists exclude_subprojects_p] } { set exclude_subprojects_p 0 }
 	    	if { ![info exists include_empty] } { set include_empty 0 }
 	    	if { ![info exists include_empty_name] } { set include_empty_name "" }
+	    	if { ![info exists exclude_status_id] } { set exclude_status_id "" }
 
 		if { "customer_id" == $source_form_element_name } {
 			if { [im_permission $current_user_id "view_projects_all"] } {
@@ -63,6 +63,7 @@ switch $object_type {
 					    -include_project_ids 1 \
 					    -exclude_subprojects_p $exclude_subprojects_p \
 					    -exclude_tasks_p 1 \
+					    -exclude_status_id $exclude_status_id \
 					    -company_id $source_form_element_value \
 					]
  
@@ -73,6 +74,7 @@ switch $object_type {
                                             -include_project_ids 1 \
                                             -exclude_subprojects_p $exclude_subprojects_p \
                                             -exclude_tasks_p 1 \
+					    -exclude_status_id $exclude_status_id \
 					    -member_user_id $current_user_id \
 					    -company_id $source_form_element_value \
                                         ]

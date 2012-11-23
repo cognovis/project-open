@@ -39,7 +39,6 @@ ad_page_contract {
     { auto_login "" }
     { employee_cost_center_id "" }
     { only_uncompleted_tasks_p ""}
-    { only_uncompleted_tasks_p ""}
     { start_date_form ""}
     { end_date_form ""}
     { project_id_form ""}
@@ -356,10 +355,6 @@ foreach project_id $main_project_ids {
 	set extra_from [join $extra_froms ",\n\t"]
 	if { ![empty_string_p $extra_from] } { set extra_from ",\n\t$extra_from" }
 
-        if { 1 == $only_uncompleted_tasks_p } {
-                lappend extra_wheres "child.percent_completed < 100 "
-        }
-
         if { "" != $employee_cost_center_id && 0 != $employee_cost_center_id } {
         	lappend extra_wheres "t.task_id in (select object_id_one from acs_rels where object_id_two in (select employee_id from im_employees where department_id = :employee_cost_center_id))"
         }
@@ -552,7 +547,7 @@ foreach project_id $main_project_ids {
         	set parents_hash($child_parent_id) 1
 	}
 	# Sort the tree according to the specified sort order
-	multirow_sort_tree task_list_multirow project_id parent_id sort_order
+	# multirow_sort_tree task_list_multirow project_id parent_id sort_order
 
 
     # ----------------------------------------------------
@@ -602,6 +597,11 @@ foreach project_id $main_project_ids {
 	# Render the list of tasks
 
 	template::multirow foreach task_list_multirow {
+
+                # Handle 'Only uncompleted tasks'
+                if { [info exists only_uncompleted_tasks_p] && "" != $only_uncompleted_tasks_p } {
+                       if { "100" == $percent_completed_rounded } { continue }
+                }
 
 		# Skip this entry completely if the parent of this project is closed
 		if {[info exists closed_projects_hash($child_parent_id)]} { continue }
