@@ -9,7 +9,7 @@
 # indicate incompatibilites, while changes in
 # the minor number mean upgrades.
 #
-# Please see www.project-open.org/documentation/rest_version_history
+# Please see www.project-open.org/en/rest_version_history
 
 
 set version [im_rest_version]
