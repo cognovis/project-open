@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-sencha-ticket-tracker" locale="eu_ES" charset="ISO-8859-1">
-
-  <msg key="Female">Neska</msg>
-  <msg key="Male">Mutil</msg>
-</message_catalog>
