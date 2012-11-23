@@ -84,7 +84,7 @@ set main_sql "
 		) e ON (e.department_id = m.cost_center_id)
 	where
 		o.object_id = m.cost_center_id
-	order by cost_center_code,employee_name
+	order by o.tree_sortkey,employee_name
 "
 
 set table ""
@@ -101,13 +101,14 @@ db_foreach cost_centers $main_sql {
     set sub_indent ""
     for {set i 1} {$i < $tree_level} {incr i} { append sub_indent $space }
     if {$last_id != $cost_center_id} {
-        append table "<td>
-    	<nobr>$sub_indent
+	append table "<td>
+	    <nobr>$sub_indent
 	    <A href=$cost_center_url?cost_center_id=$cost_center_id&return_url=$return_url
- 	    >$cost_center_name</A>
+	    >$cost_center_name</A>
 	    </nobr>
             <td>$cost_center_code</td>
 	  </td>
+          <td>$cost_center_code</td>
 	  <td>$department_p</td>
 	  <td>$context</td>
 	  <td><a href=[export_vars -base "/intranet/users/view" -override {{user_id $manager_id}}]>$manager_name</a></td>

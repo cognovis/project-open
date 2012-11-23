@@ -69,7 +69,12 @@ db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql "
     }
 
     if {$attribute_name eq "material_id"} {
-	set value [db_string material_name "select material_name from im_materials where material_id = $task(material_id)"]
+	set material_id $task(material_id)
+	if {[string is integer $material_id]} {
+	    set value [db_string material_name "select material_name from im_materials where material_id = $task(material_id)"]
+	} else {
+	    set value $material_id
+	}
     }
 
 }

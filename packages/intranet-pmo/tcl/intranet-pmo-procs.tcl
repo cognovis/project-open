@@ -305,3 +305,54 @@ ad_proc -public im_project_assignment_component {
     set result [ad_parse_template -params $params "/packages/intranet-pmo/lib/project-assignment"]
     return [string trim $result]
 }
+
+# -----------------
+# Planning items
+# ----------------
+
+namespace eval planning_item {
+
+    ad_proc -public new {
+        -item_object_id
+	{-item_type_id "73102"}
+	{-item_status_id "73000"}
+	{-item_project_phase_id ""}
+	{-item_project_member_id ""}
+	{-item_project_member_hourly_cost ""}
+	{-item_cost_type_id ""}
+	{-item_date ""}
+	{-item_value ""}
+	{-item_note ""}
+	{ -creation_date "" }
+	{ -creation_user "" }
+	{ -creation_ip "" }
+	{ -context_id "" }
+
+    } {
+	Creates a new planning item.
+
+	@author malte.sussdorff@cognovis.de
+	@return <code>item_id</code> of the newly created planning_item
+	        or 0 in case of an error.
+    } {
+
+	# The context of this planning item by default is the item_object_id
+	if {"" == $context_id} {
+	    set context_id $item_object_id
+	}
+
+        if { [empty_string_p $creation_date] } {
+	    set creation_date [db_string get_sysdate "select sysdate from dual" -default 0]
+        }
+        if { [empty_string_p $creation_user] } {
+            set creation_user [auth::get_user_id]
+        }
+        if { [empty_string_p $creation_ip] } {
+            set creation_ip [ns_conn peeraddr]
+        }
+
+        set item_id [db_exec_plsql create_new_planning_item ""]
+
+        return $item_id
+    }
+}

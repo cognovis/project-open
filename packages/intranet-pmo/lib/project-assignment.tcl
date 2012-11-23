@@ -7,7 +7,7 @@ ad_page_contract {
 set user_assignment_html ""
 set old_user_id 0
 db_foreach assignments {
-    select user_id,im_name_from_id(user_id) as username, availability, start_date,to_char(start_date,'YYMM') as start_date_pretty from im_project_assignments where project_id = :project_id order by username,start_date
+    select item_project_member_id as user_id,im_name_from_id(item_project_member_id) as username, item_value as availability, item_date as start_date,to_char(item_date,'YYMM') as start_date_pretty from im_planning_items where item_project_phase_id = :project_id order by username,start_date
 } {
     if {$user_id ne $old_user_id} {
 	set user "<a href=\"/intranet/users/view?user_id=$user_id\">$username</a>"
