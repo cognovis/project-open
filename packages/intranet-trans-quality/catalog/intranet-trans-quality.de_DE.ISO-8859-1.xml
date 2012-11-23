@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-trans-quality" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="Allowed_Err">Erlaubte Fehler</msg>
+  <msg key="Del">Löschen</msg>
+  <msg key="lt_There_are_currently_n">Keine Berichte gefunden</msg>
+  <msg key="Quality">Qualität</msg>
+  <msg key="Quality_Reports">Qualitätsberichte</msg>
+  <msg key="Report">Bericht</msg>
+  <msg key="Save">Speichern</msg>
+  <msg key="Source">Quelle</msg>
+  <msg key="Target">Ziel</msg>
+  <msg key="Task_Name">Aufgabenname</msg>
+  <msg key="Total_Err">Fehler gesamt</msg>
+  <msg key="Units">Einheiten</msg>
+</message_catalog>

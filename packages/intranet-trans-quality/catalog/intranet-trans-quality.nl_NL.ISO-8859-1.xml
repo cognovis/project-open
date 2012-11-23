@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-trans-quality" package_version="3.4.0.7.0" locale="nl_NL" charset="ISO-8859-1">
+
+  <msg key="Allowed_Err">Toegestane fout</msg>
+  <msg key="Del">Verwijder</msg>
+  <msg key="lt_There_are_currently_n">Er zijn geen rapporten die aan uw selectie voldoen</msg>
+  <msg key="Quality">Kwaliteit</msg>
+  <msg key="Quality_Reports">Kwaliteitsrapportage</msg>
+  <msg key="Report">Rapport</msg>
+  <msg key="Save">Bewaar</msg>
+  <msg key="Source">Bron</msg>
+  <msg key="Target">Doel</msg>
+  <msg key="Task_Name">Taaknaam</msg>
+  <msg key="Total_Err">Totale fout</msg>
+  <msg key="Units">Eenheden</msg>
+</message_catalog>

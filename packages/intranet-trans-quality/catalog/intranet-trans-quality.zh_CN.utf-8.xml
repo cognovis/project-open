@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="intranet-trans-quality" package_version="3.4.0.7.0" locale="zh_CN" charset="utf-8">
+
+  <msg key="Allowed_Err">允许错误</msg>
+  <msg key="Del">删除</msg>
+  <msg key="lt_There_are_currently_n">当前没有报告匹配您的条件</msg>
+  <msg key="Quality">质量</msg>
+  <msg key="Quality_Reports">质量报告</msg>
+  <msg key="Report">报告</msg>
+  <msg key="Save">保存</msg>
+  <msg key="Source">来源</msg>
+  <msg key="Target">目标</msg>
+  <msg key="Task_Name">任务名字</msg>
+  <msg key="Total_Err">所有错误</msg>
+  <msg key="Units">单元</msg>
+</message_catalog>
