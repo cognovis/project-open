@@ -1,0 +1,100 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel='stylesheet' href='/intranet-sencha/css/example.css' type='text/css' media='screen'>
+    <script type="text/javascript" src="/intranet-sencha/js/bootstrap.js"></script> 
+    <link rel='stylesheet' href='/intranet-sencha/css/ext-all.css' type='text/css' media='screen'>
+</head>
+
+<body id="docbody"> 
+<h1>Live Updated Chart</h1> 
+
+<script type="text/javascript">
+
+Ext.require([
+    'Ext.form.*',
+    'Ext.layout.container.Column',
+    'Ext.tab.Panel'
+]);
+
+Ext.onReady(function () {
+
+    Ext.QuickTips.init();
+    var bd = Ext.getBody();
+    bd.createChild({tag: 'h2', html: 'Form 1 - Very Simple'});
+
+    var simple = Ext.create('Ext.form.Panel', {
+        url:'simple-form-save',
+	stanardsubmit:false,
+        frame:true,
+        title: 'Simple Form',
+        bodyStyle:'padding:5px 5px 0',
+        width: 350,
+        fieldDefaults: {
+            msgTarget: 'side',
+            labelWidth: 75
+        },
+        defaultType: 'textfield',
+        defaults: {
+            anchor: '100%'
+        },
+
+        items: [{
+            fieldLabel: 'First Name',
+            name: 'first',
+            allowBlank:false
+        },{
+            fieldLabel: 'Last Name',
+            name: 'last'
+        },{
+            fieldLabel: 'Company',
+            name: 'company'
+        }, {
+            fieldLabel: 'Email',
+            name: 'email',
+            vtype:'email'
+        }, {
+            xtype: 'timefield',
+            fieldLabel: 'Time',
+            name: 'time',
+            minValue: '8:00am',
+            maxValue: '6:00pm'
+        }],
+
+        buttons: [{
+            text: 'Save'
+        },{
+            text: 'Cancel',
+	    handler: function() {
+		this.up('form').getForm().reset();
+	    }
+        },{
+	        text: 'Submit',
+	        formBind: true, //only enabled once the form is valid
+	        disabled: true,
+	        handler: function() {
+	            var form = this.up('form').getForm();
+	            if (form.isValid()) {
+	                form.submit({
+	                    success: function(form, action) {
+	                       Ext.Msg.alert('Success', action.result.msg);
+	                    },
+	                    failure: function(form, action) {
+	                        Ext.Msg.alert('Failed', action.result.msg);
+	                    }
+	                });
+	            }
+	        }
+	}]
+    });
+
+    simple.render(document.body);
+
+});
+
+
+</script>
+
+</body>
+</html>
+
