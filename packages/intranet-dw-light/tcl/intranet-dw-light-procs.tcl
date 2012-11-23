@@ -151,7 +151,7 @@ ad_proc im_companies_csv1 {
 
     # Add DynField variables to the view
     # The function returns two lists, for "headers" and "vars"
-    set lol [im_dynfield::append_attributes_to_im_view -object_type "im_company"]
+    set lol [im_dynfield::append_attributes_to_im_view -object_type "im_company" -table_prefix "c."]
     set column_headers [concat $column_headers [lindex $lol 0]]
     set column_vars [concat $column_vars [lindex $lol 1]]
     set derefs [lindex $lol 2]
@@ -223,7 +223,7 @@ ad_proc im_companies_csv1 {
 	# Generate a header line for CSV export. Header uses the
 	# non-localized text so that it's identical in all languages.
 	if {"" != $csv_header} { append csv_header $csv_separator }
-	append csv_header "\"[ad_quotehtml $col]\""
+	append csv_header "\"[ad_quotehtml [lang::util::localize $col]]\""
 	
     }
     
@@ -361,7 +361,7 @@ ad_proc im_projects_csv1 {
 
     # Add DynField variables to the view
     # The function returns two lists, for "headers" and "vars"
-    set project_lol [im_dynfield::append_attributes_to_im_view -object_type "im_project"]
+    set project_lol [im_dynfield::append_attributes_to_im_view -object_type "im_project" -table_prefix "p."]
     set project_column_headers	[lindex $project_lol 0]
     set project_column_vars	[lindex $project_lol 1]
     set project_derefs		[lindex $project_lol 2]
