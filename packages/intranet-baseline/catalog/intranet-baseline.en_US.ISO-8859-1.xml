@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-baseline" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Active">Active</msg>
+  <msg key="Baseline">Baseline</msg>
+  <msg key="Baseline_Creation_Date">Baseline Creation Date</msg>
+  <msg key="Baseline_Name">Baseline Name</msg>
+  <msg key="Baseline_Status">Baseline Status</msg>
+  <msg key="Baseline_Type">Baseline Type</msg>
+  <msg key="Baseline_values">Baseline Values</msg>
+  <msg key="Baselines_Baseline">Baseline</msg>
+  <msg key="Budget">Budget</msg>
+  <msg key="Budget_Hours">Budget Hours</msg>
+  <msg key="Comparison_of_baseline_vs_current_budget">Baseline vs. Current Budget</msg>
+  <msg key="Create_new_Baseline">Create a new Baseline</msg>
+  <msg key="Current_values">Current Values</msg>
+  <msg key="Delete_Baselines">Delete Baselines</msg>
+  <msg key="End_Date">End Date</msg>
+  <msg key="Project_Baselines">Project Baselines</msg>
+  <msg key="Project_Proposal">Project Proposal</msg>
+  <msg key="Start_Date">Start Date</msg>
+  <msg key="Undef">&lt;undef&gt;</msg>
+</message_catalog>
