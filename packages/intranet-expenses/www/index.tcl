@@ -175,7 +175,7 @@ template::list::create \
     -actions $action_list \
     -bulk_action_method post \
     -bulk_actions $bulk_action_list \
-    -bulk_action_export_vars { start_date end_date return_url user_id_from_search} \
+    -bulk_action_export_vars { start_date end_date return_url user_id_from_search return_url} \
     -row_pretty_plural "[_ intranet-expenses.Expenses_Items]" \
     -elements {
 	expense_chk {
