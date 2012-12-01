@@ -86,6 +86,8 @@ if {"" == $view_type} {
     set letter [string toupper $letter]
 } else {
     set letter "ALL"
+    set start_idx 0
+    set how_many 100000000
 }
 
 if {![im_permission $user_id view_invoices]} {
@@ -310,11 +312,8 @@ select
 from
         im_invoices_active i,
         im_costs ci
-	LEFT OUTER JOIN im_projects pr on (ci.project_id = pr.project_id),
-	acs_objects o,
-        im_companies c,
-        im_companies p,
-	(	select distinct
+	LEFT OUTER JOIN im_projects pr on (ci.project_id = pr.project_id)
+	left outer join (	select distinct
 			cc.cost_center_id,
 			ct.cost_type_id
 		from	im_cost_centers cc,
@@ -330,15 +329,17 @@ from
 			and m.member_id = :user_id
 			and p.privilege = h.privilege
 			and p.grantee_id = m.party_id
-	) readable_ccs
+	) readable_ccs on (ci.cost_center_id = readable_ccs.cost_center_id
+	and ci.cost_type_id = readable_ccs.cost_type_id),
+	acs_objects o,
+        im_companies c,
+        im_companies p
 	$extra_from
 where
 	i.invoice_id = o.object_id
 	and i.invoice_id = ci.cost_id
  	and i.customer_id=c.company_id
         and i.provider_id=p.company_id
-	and ci.cost_center_id = readable_ccs.cost_center_id
-	and ci.cost_type_id = readable_ccs.cost_type_id
 	$company_where
         $where_clause
 	$extra_where
