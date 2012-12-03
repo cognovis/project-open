@@ -330,7 +330,7 @@ if {"" != $start_date} {
     lappend criteria "p.end_date >= :start_date::timestamptz"
 }
 if {"" != $end_date} {
-    lappend criteria "p.start_date < :end_date::timestamptz"
+    lappend criteria "p.start_date < :end_date::timestamptz + interval '1 day'"
 }
 if { ![empty_string_p $upper_letter] && [string compare $upper_letter "ALL"] != 0 && [string compare $upper_letter "SCROLL"] != 0 } {
     lappend criteria "im_first_letter_default_to_a(p.project_name)=:upper_letter"
