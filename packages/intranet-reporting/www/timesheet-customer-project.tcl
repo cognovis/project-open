@@ -400,38 +400,9 @@ set start_years {2000 2000 2001 2001 2002 2002 2003 2003 2004 2004 2005 2005 200
 set start_months {01 Jan 02 Feb 03 Mar 04 Apr 05 May 06 Jun 07 Jul 08 Aug 09 Sep 10 Oct 11 Nov 12 Dec}
 set start_weeks {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31 32 32 33 33 34 34 35 35 36 36 37 37 38 38 39 39 40 40 41 41 42 42 43 43 44 44 45 45 46 46 47 47 48 48 49 49 50 50 51 51 52 52}
 set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 13 13 14 14 15 15 16 16 17 17 18 18 19 19 20 20 21 21 22 22 23 23 24 24 25 25 26 26 27 27 28 28 29 29 30 30 31 31}
-set levels {1 "Customer Only" 2 "Customer+Project" 3 "Customer+Project+Sub" 4 "Customer+Project+Sub+User" 5 "All Details"} 
-set truncate_note_options {4000 "Full Length" 80 "Standard (80)" 20 "Short (20)"} 
-
-set invoiced_status_options [list "" "All" "invoiced" "Only invoiced hours" "not-invoiced" "Only not invoiced hours"]
-
 # ------------------------------------------------------------
 # Start formatting the page
 #
-
-set report_options_html ""
-if {$level_of_detail > 3} {
-    append report_options_html "
-	<tr>
-	  <td class=form-label>Size of Note Field</td>
-	  <td class=form-widget>
-	    [im_select -translate_p 0 truncate_note_length $truncate_note_options $truncate_note_length]
-	  </td>
-	</tr>
-    "
-}
-
-if {[info exists task_id]} {
-    append report_options_html "
-	<tr>
-	  <td class=form-label></td>
-	  <td class=form-widget>
-	    <input type=hidden name=task_id value=\"$task_id\">
-	  </td>
-	</tr>
-    "
-}
-
 
 
 # ------------------------------------------------------------
@@ -441,6 +412,66 @@ if {[info exists task_id]} {
 im_report_write_http_headers -output_format $output_format
 
 set project_id $org_project_id
+
+set form_id "timesheet_filter"
+set action_url "/intranet-reporting/timesheet-customer-project"
+set form_mode "edit"
+set company_options [im_company_options -include_empty_p 1 -include_empty_name "[_ intranet-core.All]" -type "CustOrIntl" ]
+set project_options [im_project_options -include_empty 1 -exclude_subprojects_p 0 -include_empty_name [lang::message::lookup "" intranet-core.All "All"]]
+set cost_center_options [im_cost_center_options -include_empty 1 -include_empty_name [lang::message::lookup "" intranet-core.All "All"] -department_only_p 1]
+set user_options [im_profile::user_options -profile_ids [list [im_employee_group_id] [im_freelance_group_id]]]
+set user_options [linsert $user_options 0 [list [lang::message::lookup "" intranet-core.All "All"] ""]]
+set levels {{"Customer Only" 1} {"Customer+Project" 2} {"Customer+Project+Sub" 3} {"Customer+Project+Sub+User" 4} {"All Details" 5}} 
+set truncate_note_options {{"Full Length" 4000} {"Standard (80)" 80} {"Short (20)" 20}} 
+set invoiced_status_options {{"All" ""} {"Only invoiced hours" "invoiced"} {"Only not invoiced hours" "not-invoiced"}}
+
+
+ad_form \
+    -name $form_id \
+    -action $action_url \
+    -mode $form_mode \
+    -method GET \
+    -export {invoice_id} \
+    -form {
+	{level_of_detail:text(select) {label "Level of Details"} {options $levels} {value $level_of_detail}}
+	{start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {value "$start_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
+	{end_date:text(text) {label "[_ intranet-timesheet2.End_Date]"} {value "$end_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('end_date', 'y-m-d');" >}}}
+	{company_id:text(select),optional {label \#intranet-core.Customer\#} {options $company_options} {value $company_id}}
+        {project_id:text(select),optional {label \#intranet-cost.Project\#} {options $project_options} {value $project_id}}
+    }
+
+
+if {$view_hours_all_p} {
+    ad_form -extend -name $form_id -form {
+        {cost_center_id:text(select),optional {label "User's Department"} {options $cost_center_options} {value $cost_center_id}}
+        {user_id:text(select),optional {label "User"} {options $user_options} {value $user_id}}
+	{invoiced_status:text(select) {label "Invoiced Status"} {options $invoiced_status_options} {value $invoiced_status}}
+    }
+}
+
+if {$level_of_detail > 3} {
+    ad_form -extend -name $form_id -form {
+	{truncate_note_length:text(select) {label "Size of Note Field"} {options $truncate_note_options} {value $truncate_note_length}}
+    }
+}
+
+if {[info exists task_id]} {
+    ad_form -extend -name $form_id -form {
+	{task_id:text(hidden),optional}
+    }
+}
+
+# List to store the output_format_options
+set output_format_options [list [list HTML "html"] [list CSV "csv"]]
+
+# Run callback to extend the filter and/or add items to the output_format_options
+#callback im_timesheet_report_filter -form_id $form_id
+ad_form -extend -name $form_id -form {
+    {output_format:text(select),optional {label "#intranet-openoffice.View_type#"} {options $output_format_options}}
+}
+
+eval [template::adp_compile -string {<formtemplate id="$form_id" style="tiny-plain-po"></formtemplate>}]
+set filter_html $__adp_output
 
 switch $output_format {
     html {
@@ -455,86 +486,7 @@ switch $output_format {
 	<div class=\"filter\">
 	<div class=\"filter-block\">
 
-	<form>
-	[export_form_vars invoice_id]
-	<table border=0 cellspacing=1 cellpadding=1>
-	<tr valign=top><td>
-		<table border=0 cellspacing=1 cellpadding=1>
-		<tr>
-		  <td class=form-label>Level of Details</td>
-		  <td class=form-widget>
-		    [im_select -translate_p 0 level_of_detail $levels $level_of_detail]
-		  </td>
-		</tr>
-		<tr>
-		  <td class=form-label>Start Date</td>
-		  <td class=form-widget>
-		    <input type=textfield name=start_date value=$start_date>
-		  </td>
-		</tr>
-		<tr>
-		  <td class=form-label>End Date</td>
-		  <td class=form-widget>
-		    <input type=textfield name=end_date value=$end_date>
-		  </td>
-		</tr>
-		<tr>
-		  <td class=form-label>Customer</td>
-		  <td class=form-widget>
-		    [im_company_select -include_empty_name [lang::message::lookup "" intranet-core.All "All"] company_id $company_id]
-		  </td>
-		</tr>
-		<tr>
-		  <td class=form-label>Project</td>
-		  <td class=form-widget>
-		    [im_project_select -include_empty_p 1 -exclude_subprojects_p 0 -include_empty_name [lang::message::lookup "" intranet-core.All "All"] project_id $project_id]
-		  </td>
-		</tr>
-	"
-
-	if {$view_hours_all_p} {
-	    ns_write "
-		<tr>
-		  <td class=form-label>User's Department</td>
-		  <td class=form-widget>
-		    [im_cost_center_select -include_empty 1 -include_empty_name [lang::message::lookup "" intranet-core.All "All"] -department_only_p 1 cost_center_id $cost_center_id]
-		  </td>
-		</tr>
-		<tr>
-		  <td class=form-label>User</td>
-		  <td class=form-widget>
-		    [im_user_select -include_empty_p 1 -group_id [list [im_employee_group_id] [im_freelance_group_id]] -include_empty_name [lang::message::lookup "" intranet-core.All "All"] user_id $user_id] 
-		</td>
-		</tr>
-		<tr>
-		  <td class=form-label>
-			[lang::message::lookup "" intranet-core.Invoiced_Status "Invoiced Status"]
-		  </td>
-		  <td class=form-widget>
-		    [im_select invoiced_status $invoiced_status_options $invoiced_status]
-		</td>
-		</tr>
-	    "
-	}
-
-	ns_write "
-		$report_options_html
-
-		<tr>
-		  <td class=form-label>Format</td>
-		  <td class=form-widget>
-		    [im_report_output_format_select output_format "" $output_format]
-		  </td>
-		</tr>
-		<tr>
-		  <td class=form-label></td>
-		  <td class=form-widget><input type=submit value=Submit></td>
-		</tr>
-		</table>
-
-	</td></tr>
-	</table>
-	</form>
+$filter_html
 
 	</div>
 	</div>
@@ -573,6 +525,10 @@ im_report_render_row \
 set footer_array_list [list]
 set last_value_list [list]
 set class "rowodd"
+
+# callback im_timesheet_customer_project_before_render -view_name $view_name \
+#    -view_type $view_type -sql $sql -table_header $page_title -variable_set $form_vars
+
 db_foreach sql $sql {
 
 	# Does the user prefer to read project_name instead of project_nr? (Genedata...)
