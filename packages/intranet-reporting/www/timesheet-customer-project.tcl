@@ -408,9 +408,6 @@ set start_days {01 1 02 2 03 3 04 4 05 5 06 6 07 7 08 8 09 9 10 10 11 11 12 12 1
 # ------------------------------------------------------------
 # Start Formatting the HTML Page Contents
 
-# Write out HTTP header, considering CSV/MS-Excel formatting
-im_report_write_http_headers -output_format $output_format
-
 set project_id $org_project_id
 
 set form_id "timesheet_filter"
@@ -465,13 +462,37 @@ if {[info exists task_id]} {
 set output_format_options [list [list HTML "html"] [list CSV "csv"]]
 
 # Run callback to extend the filter and/or add items to the output_format_options
-#callback im_timesheet_report_filter -form_id $form_id
+callback im_timesheet_report_filter -form_id $form_id
 ad_form -extend -name $form_id -form {
     {output_format:text(select),optional {label "#intranet-openoffice.View_type#"} {options $output_format_options}}
 }
 
 eval [template::adp_compile -string {<formtemplate id="$form_id" style="tiny-plain-po"></formtemplate>}]
 set filter_html $__adp_output
+
+
+# Create a ns_set with all local variables in order
+# to pass it to the SQL query
+set form_vars [ns_set create]
+foreach varname [info locals] {
+
+    # Don't consider variables that start with a "_", that
+    # contain a ":" or that are array variables:
+    if {"_" == [string range $varname 0 0]} { continue }
+    if {[regexp {:} $varname]} { continue }
+    if {[array exists $varname]} { continue }
+
+    # Get the value of the variable and add to the form_vars set
+    set value [expr "\$$varname"]
+    ns_set put $form_vars $varname $value
+}
+
+callback im_timesheet_report_before_render -view_name "timesheet_csv" \
+    -view_type $output_format -sql $sql -table_header $page_title -variable_set $form_vars
+
+# Write out HTTP header, considering CSV/MS-Excel formatting
+im_report_write_http_headers -output_format $output_format
+
 
 switch $output_format {
     html {
@@ -525,9 +546,6 @@ im_report_render_row \
 set footer_array_list [list]
 set last_value_list [list]
 set class "rowodd"
-
-# callback im_timesheet_customer_project_before_render -view_name $view_name \
-#    -view_type $view_type -sql $sql -table_header $page_title -variable_set $form_vars
 
 db_foreach sql $sql {
 
