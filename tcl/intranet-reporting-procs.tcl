@@ -20,7 +20,6 @@ ad_proc -public im_report_status_deleted {} { return 15002 }
 ad_proc -public im_report_type_simple_sql {} { return 15100 }
 ad_proc -public im_report_type_indicator {} { return 15110 }
 
-
 # -------------------------------------------------------
 # Package Procs
 # -------------------------------------------------------
@@ -570,9 +569,6 @@ ad_proc im_report_display_footer {
 }
 
 
-
-
-
 ad_proc im_report_update_counters {
     -counters
 } {
@@ -988,3 +984,279 @@ ad_proc -public im_reporting_form_update_ajax {
 
     template::head::add_javascript -src "/intranet-reporting/js/ajax_update_select_box.js?$par_str" -order "999"
 }
+
+
+ad_proc im_report_render_absences {
+    -group_def
+    -last_value_array_list
+    -report_year_month
+    {-encoding ""}
+    {-output_format "html"}
+    {-row_class ""}
+    {-cell_class ""}
+    {-level_of_detail 999}
+    {-debug 0}
+} {
+    Renders the footer stack of a single row in a project-open report. 
+    The procedure acts similar to im_report_render_header,
+    but returns a list of results instead of writing the results
+    to the web page immediately.
+    This is done, because the decision what footer lines to display
+    can only be taken when the next row is displayed.
+    Returns a list of report lines, each together with the group_var.
+    A group_var with a value different from the current one is the
+    trigger to display the footer line.
+} {
+    if {$debug} { ns_log Notice "render_footer:" }
+    array set last_value_array $last_value_array_list
+    # ns_log NOTICE "intranet-reporting-procs::im_report_render_absences:: =============================================================="
+    # ns_log NOTICE "intranet-reporting-procs::im_report_render_absences:: group_def: $group_def"
+    # ns_log NOTICE "intranet-reporting-procs::im_report_render_absences:: last_value_array_list: $last_value_array_list"
+
+    # Split group_def and assign to an array for reverse access
+    set group_level 1
+    while {[llength $group_def] > 0} {
+	set group_def_array($group_level) $group_def
+	if {$debug} { ns_log Notice "render_footer: group_def_array($group_level) = ..." }
+	array set group_array $group_def
+        set group_def {}
+        if {[info exists group_array(content)]} {
+            set group_def $group_array(content)
+        }
+        incr group_level
+    }
+    set group_level [expr $group_level - 1]
+
+    while {$group_level > 0} {
+	if {$debug} { ns_log Notice "render_footer: level=$group_level" }
+
+	# -------------------------------------------------------
+	# Extract the definition of the current level from the definition
+	array set group_array $group_def_array($group_level)
+	set group_var $group_array(group_by)
+	set footer $group_array(footer)
+	set content $group_array(content)
+
+        # -------------------------------------------------------
+        # Determine the new value for the current group_level
+        set new_value ""
+        if {$group_var != ""} {
+            upvar $group_var $group_var
+            if {![info exists $group_var]} {
+                ad_return_complaint 1 "Header: Level $group_level: Group var '$group_var' doesn't exist"
+            }
+            set cmd "set new_value \"\$$group_var\""
+            eval $cmd
+            if {$debug} { ns_log Notice "render_footer: level=$group_level, new_value='$new_value'" }
+        }
+
+	# -------------------------------------------------------
+	# Get absences for user 
+	# -------------------------------------------------------
+	# Determine month 
+	# ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::group_var: $group_var"
+        if { $group_var == "user_id" } {
+	    set report_year [string range $report_year_month 0 3]
+	    set report_month [string range $report_year_month 5 6 ]
+	    # ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::get-absences: new_value: $new_value, report_month: $report_month, report_year: $report_year,"
+	    set column_sql "select * from im_absences_month_absence_type_new (:new_value, :report_month, :report_year, null) AS (days date, total_days numeric)"
+	    db_foreach col $column_sql {
+		# ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::setting absence_arr($days)"
+		set absence_arr($days) 1
+	    }
+	}
+
+	# -------------------------------------------------------
+	# Write out absences to an array
+	# -------------------------------------------------------
+	set absence_line [list]
+	set ctr 0
+	foreach field $footer {
+	    # ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::field: $field"
+	    set position_day_str [string first "(day" [string tolower $field]]
+            # ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::position found: $position_day_str"
+
+	    if { "-1" != $position_day_str } {
+		set calendar_day [string range $field [expr $position_day_str + 4] [expr $position_day_str + 5]] 
+		# ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::calendar_day: $calendar_day"
+		set report_year [string range $report_year_month 0 3]
+		set report_month [string range $report_year_month 5 6 ]
+		set date_ansi_key "$report_year-$report_month-$calendar_day"
+		# ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::looking up key: $date_ansi_key"
+		if { [info exists absence_arr($date_ansi_key)] && 1 == $absence_arr($date_ansi_key) } {	    
+		    # ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::found absence"
+		    if { "html" == $output_format } {
+			set value "<a href='/intranet-timesheet2/absences?view_name=absence_list_home&user_selection=$new_value&timescale=start_stop&start_date=$date_ansi_key&end_date=$date_ansi_key'><strong>A</strong></a>"
+		    } else {
+			set value "ABS"
+		    }
+		} else {
+		    # ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::did not found absence in array"
+                    set value "&nbsp;"
+		}
+	    } else { 
+		# ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::No day column"		
+		if { 0 == $ctr } {
+		    set value <strong>[lang::message::lookup "" intranet-core.Absences "Absences"]</strong>
+		} else {
+		    set value ""
+		}
+	    }
+	    lappend absence_line $value
+	    incr ctr
+	}
+
+	set footer_record [list \
+	    line $absence_line \
+	    new_value $new_value
+	]
+	# Store the result for display later
+	set footer_array($group_level) $footer_record
+
+	set group_level [expr $group_level - 1]
+    }
+    if {$debug} { ns_log Notice "render_footer: after group_by footers" }
+
+    return [array get footer_array]
+}
+
+
+ad_proc im_report_display_absences {
+    -group_def
+    -footer_array_list
+    -last_value_array_list
+    {-encoding ""}
+    {-output_format "html"}
+    {-display_all_footers_p 0}
+    {-level_of_detail 999}
+    {-cell_class ""}
+    {-row_class ""}
+    {-debug 0}
+} {
+    
+} {
+    if {$debug} { ns_log Notice "display_footer:" }
+    array set last_value_array $last_value_array_list
+    array set footer_array $footer_array_list
+
+    # -------------------------------------------------------
+    # Abort if there are no footer values, because this
+    # is probably the first time that this routine is executed
+    if {[llength $footer_array_list] == 0} {
+	return
+    }
+
+    set group_def_org $group_def
+
+    # -------------------------------------------------------
+    # Determine the "return_group_level" to which we have to go _back_.
+    # This level determines the number of footers that we need to write out.
+    #
+    set return_group_level 1
+    while {[llength $group_def] > 0} {
+
+	# -------------------------------------------------------
+	# Extract the definition of the current level from the definition
+	array set group_array $group_def
+	set group_var $group_array(group_by)
+	set header $group_array(header)
+	set content $group_array(content)
+	if {$debug} { ns_log Notice "display_footer: level=$return_group_level, group_var=$group_var" }
+
+	# -------------------------------------------------------
+	# 
+	set footer_record_list $footer_array($return_group_level)
+	array set footer_record $footer_record_list
+	set new_record_value $footer_record(new_value)
+
+	# -------------------------------------------------------
+	# Determine new value for the current group return_group_level
+	set new_value ""
+	if {$group_var != ""} {
+	    upvar $group_var $group_var
+	    set cmd "set new_value \"\$$group_var\""
+	    eval $cmd
+	}
+
+	# -------------------------------------------------------
+	# Check if new_value != new_record_value.
+	# In this case we have found the first level in which the
+	# results differ. This is the level where we have to return.
+	if {$debug} { ns_log Notice "display_footer: level=$return_group_level, group_var=$group_var, new_record_value=$new_record_value, new_value=$new_value" }
+	if {![string equal $new_value $new_record_value]} {
+	    # leave the while loop
+	    break
+	}
+
+	# -------------------------------------------------------
+	# Prepare the next iteration of the while loop:
+	# continue with the "row" part of the current level
+	set group_def {}
+	if {[info exists group_array(content)]} {
+	    set group_def $group_array(content)
+	}
+	incr return_group_level
+
+    }
+
+    # Restore the group_def destroyed by the previous while loop
+    set group_def $group_def_org
+
+
+    # -------------------------------------------------------
+    # Calculate the maximum level in the report definition
+    set max_group_level 1
+    while {[llength $group_def] > 0} {
+	set group_def_array($max_group_level) $group_def
+	if {$debug} { ns_log Notice "display_footer: group_def_array($max_group_level) = ..." }
+	array set group_array $group_def
+        set group_def {}
+        if {[info exists group_array(content)]} {
+            set group_def $group_array(content)
+        }
+        incr max_group_level
+    }
+    set max_group_level [expr $max_group_level - 2]
+
+
+    if {$display_all_footers_p} { set return_group_level 1 }
+    if {$max_group_level > $level_of_detail} { set max_group_level $level_of_detail }
+
+    # -------------------------------------------------------
+    # Now let's display all footers between max_group_level and
+    # return_group_level.
+    #
+    if {$debug} { ns_log Notice "display_footer: max_group_level=$max_group_level, return_group_level=$return_group_level" }
+    for {set group_level $max_group_level} { $group_level >= $return_group_level} { set group_level [expr $group_level-1]} {
+
+	# -------------------------------------------------------
+	# Extract the absence_line
+	#
+	set footer_record_list $footer_array($group_level)
+	array set footer_record $footer_record_list
+	set new_record_value $footer_record(new_value)
+	set absence_line $footer_record(line)
+
+	# -------------------------------------------------------
+	# Write out the header if last_value != new_value
+
+	if {$debug} { ns_log Notice "display_footer: writing footer for group_level=$group_level" }
+
+	switch $output_format {
+	    html - printer { ns_write "<tr>\n" }
+	    csv {  }
+	}
+
+	foreach field $absence_line {
+	    im_report_render_cell -encoding $encoding -output_format $output_format -cell $field -cell_class $cell_class
+	}
+
+	switch $output_format {
+	    html - printer { ns_write "</tr>\n" }
+	    csv { ns_write "\n" }
+	}
+
+    }
+}
+
+
