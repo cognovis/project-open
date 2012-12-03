@@ -200,7 +200,7 @@ if {"" != $start_date} {
     lappend criteria "i.effective_date >= :start_date::timestamptz"
 }
 if {"" != $end_date} {
-    lappend criteria "i.effective_date < :end_date::timestamptz"
+    lappend criteria "i.effective_date <= :end_date::timestamptz + interval '1 day'"
 }
 
 
