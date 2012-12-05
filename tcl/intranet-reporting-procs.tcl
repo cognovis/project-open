@@ -1093,7 +1093,7 @@ ad_proc im_report_render_absences {
 		    # ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::found absence"
 		    if { "html" == $output_format } {
 			set value "<a href='/intranet-timesheet2/absences?view_name=absence_list_home&user_selection=$new_value"
-			append value "&timescale=start_stop&start_date=$date_ansi_key&end_date=$date_ansi_key' title='[regsub -all {<([^<])*>} $s {} $absence_arr($date_ansi_key)]'><strong>A</strong></a>"
+			append value "&timescale=start_stop&start_date=$date_ansi_key&end_date=$date_ansi_key' title='$absence_arr($date_ansi_key)'><strong>A</strong></a>"
 		    } else {
 			set value "ABS"
 		    }
