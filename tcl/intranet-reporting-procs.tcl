@@ -1059,10 +1059,16 @@ ad_proc im_report_render_absences {
 	    set report_year [string range $report_year_month 0 3]
 	    set report_month [string range $report_year_month 5 6 ]
 	    # ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::get-absences: new_value: $new_value, report_month: $report_month, report_year: $report_year,"
-	    set column_sql "select * from im_absences_month_absence_type_new (:new_value, :report_month, :report_year, null) AS (days date, total_days numeric)"
+	    set column_sql "select * from im_absences_month_absence_duration_type (:new_value, :report_month, :report_year, null) AS (days date, total_days numeric, absence_type_id integer)"
 	    db_foreach col $column_sql {
 		# ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::setting absence_arr($days)"
-		set absence_arr($days) 1
+		set duration_absence_type_list [list]
+		lappend duration_absence_type_list [list $total_days [im_category_from_id $absence_type_id]]
+		if { [info exists absence_arr($days)] } {
+		    set absence_arr($days) [list $absence_arr($days) $duration_absence_type_list]
+		} else { 
+		    set absence_arr($days) $duration_absence_type_list 
+		}
 	    }
 	}
 
@@ -1083,10 +1089,11 @@ ad_proc im_report_render_absences {
 		set report_month [string range $report_year_month 5 6 ]
 		set date_ansi_key "$report_year-$report_month-$calendar_day"
 		# ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::looking up key: $date_ansi_key"
-		if { [info exists absence_arr($date_ansi_key)] && 1 == $absence_arr($date_ansi_key) } {	    
+		if { [info exists absence_arr($date_ansi_key)] } {	    
 		    # ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::found absence"
 		    if { "html" == $output_format } {
-			set value "<a href='/intranet-timesheet2/absences?view_name=absence_list_home&user_selection=$new_value&timescale=start_stop&start_date=$date_ansi_key&end_date=$date_ansi_key'><strong>A</strong></a>"
+			set value "<a href='/intranet-timesheet2/absences?view_name=absence_list_home&user_selection=$new_value"
+			append value "&timescale=start_stop&start_date=$date_ansi_key&end_date=$date_ansi_key' title='[regsub -all {<([^<])*>} $s {} $absence_arr($date_ansi_key)]'><strong>A</strong></a>"
 		    } else {
 			set value "ABS"
 		    }
