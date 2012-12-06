@@ -253,6 +253,7 @@ ad_proc -public im_sysconfig_load_configuration { file } {
 		    CvsPath
 		    UtilCurrentLocationRedirect
 		    FilenameCharactersSupported
+		    SuppressHttpPort
 		}
 		if {[lsearch $os_parameters $key] >= 0} { set exclude_p 1 }
 
