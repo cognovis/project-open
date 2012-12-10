@@ -179,6 +179,12 @@ set day_header ""
 
 for { set i 1 } { $i < $duration + 1 } { incr i } {
     if { 1 == [string length $i]} { set day_double_digit 0$i } else { set day_double_digit $i }
+
+    # Validate date
+    if { [catch { set end_date_ansi [clock format [clock scan "$report_year-$report_month-$day_double_digit"] -format %Y-%m-%d] } ""] } {
+        ad_return_complaint 1 "Found wrong date, please contact your System Administrator"
+    }
+
     lappend inner_sql_list "sum((select sum(hours) from im_hours h where
             h.user_id = s.user_id
             and h.project_id in (
@@ -199,7 +205,13 @@ for { set i 1 } { $i < $duration + 1 } { incr i } {
 	END) as day$day_double_digit
     " 
     append day_placeholders "\\" "\$day$day_double_digit "
-    append day_header \"$day_double_digit\"
+
+    set dow [clock format [clock scan "$report_year-$report_month-$day_double_digit"] -format %w]
+    if { 0 == $dow || 6 == $dow } {
+        append day_header "\"<span style='color:#800000'>$day_double_digit</span>\""
+    } else {
+        append day_header \"$day_double_digit\"
+    }
     append day_header " "
 }
 
