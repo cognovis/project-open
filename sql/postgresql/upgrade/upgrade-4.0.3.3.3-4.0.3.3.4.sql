@@ -6,23 +6,22 @@ create or replace function inline_0 ()
 returns integer as $body$
 declare
         v_count  	integer;
-        v_count_0  	integer;
-
 begin
-	-- delete column 'ignore_max_hours_per_day_p' if it hasn't been used
+	-- Sanity check if column exists        
+	select count(*) into v_count from user_tab_columns
+	where lower(table_name) = 'im_offices' and lower(column_name) = 'ignore_max_hours_per_day_p';
+	IF v_count = 0 THEN
+		return 1;
+	END IF;
+
+	-- delete column ignore_max_hours_per_day_p if it has not been used
         select count(*) into v_count from im_offices
         where ignore_max_hours_per_day_p != 'f';
 
         IF v_count = 0 THEN
-			-- Sanity check if column exists        
-			select count(*) into v_count_0 from user_tab_columns
-		        where lower(table_name) = 'im_offices' and lower(column_name) = 'ignore_max_hours_per_day_p';
-		        IF v_count_0 = 1 THEN
-		                alter table im_offices drop column ignore_max_hours_per_day_p; 
-			END IF;
-			
-			delete from im_view_columns where column_id = 8192 and view_id = 81;
+		alter table im_offices drop column ignore_max_hours_per_day_p; 
         END IF;
+	delete from im_view_columns where column_id = 8192;
 
         return 0;
 end;$body$ language 'plpgsql';
