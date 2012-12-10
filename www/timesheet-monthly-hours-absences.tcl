@@ -432,13 +432,12 @@ switch $output_format {
 	</td>
 	<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
 	<td valign='top' width='600px'>
-	    	<!-- 
 	    	<ul>
-	        	<li>Up to two project levels are shown (Main Project/Sub Project), levels underneath are accumulated</strong></li>
-			<li>Report shows only content for days where the logged hours pass a threshold as defined in filter: <strong>'Daily hours'</strong></li>
+	        	<li>Please note: Report does not show absences for Saturday and Sunday</li>
+		    	<!-- 
 			<li>Hours logged on sub-projects are accumulated</li>
+			--> 
 		</ul>
-		--> 
 	</td>
 	</tr>
 	</table>
