@@ -195,11 +195,13 @@ if {$level_of_detail == 5} {
     set sql "
 select  start_date::date as date,
         100 as availability,
-        (select count(distinct absence_query.days) * $hours_per_day from (select * from im_absences_month_absence_type (owner_id, :month, :year, absence_type_id) AS (days date)) absence_query) as hours,
+        (select count(distinct absence_query.days) * $hours_per_day from 
+		(select * from im_absences_month_absence_duration_type (owner_id, :month, :year, absence_type_id) AS (days date, total_days numeric, absence_type_id integer)) absence_query) as hours,
         0 as hours_intl,
         0 as hours_extl,
         0 as hours_no_assignment,
-        (select count(distinct absence_query.days) * $hours_per_day from (select * from im_absences_month_absence_type (owner_id, :month, :year, absence_type_id) AS (days date)) absence_query) as hours_absence,
+        (select count(distinct absence_query.days) * $hours_per_day from 
+		(select * from im_absences_month_absence_duration_type (owner_id, :month, :year, absence_type_id) AS (days date, total_days numeric, absence_type_id integer)) absence_query) as hours_absence,
         owner_id as user_id,
         im_name_from_user_id(owner_id) as user_name,
         absence_type_id as project_id,
@@ -255,11 +257,13 @@ UNION
 
 select  start_date::date as date,
         100 as availability,
-        (select count(distinct absence_query.days) * $hours_per_day from (select * from im_absences_month_absence_type (owner_id, :month, :year, absence_type_id) AS (days date)) absence_query) as hours,
+        (select count(distinct absence_query.days) * $hours_per_day from 
+		(select * from im_absences_month_absence_duration_type (owner_id, :month, :year, absence_type_id) AS (days date, total_days numeric, absence_type_id integer)) absence_query) as hours,
         0 as hours_intl,
         0 as hours_extl,
         0 as hours_no_assignment,
-        (select count(distinct absence_query.days) * $hours_per_day from (select * from im_absences_month_absence_type (owner_id, :month, :year, absence_type_id) AS (days date)) absence_query) as hours_absence,
+        (select count(distinct absence_query.days) * $hours_per_day from 
+		(select * from im_absences_month_absence_duration_type (owner_id, :month, :year, absence_type_id) AS (days date, total_days numeric, absence_type_id integer)) absence_query) as hours_absence,
         owner_id as user_id,
         im_name_from_user_id(owner_id) as user_name,
         absence_type_id as project_id,
