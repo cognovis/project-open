@@ -34,8 +34,8 @@ Ext.onReady(function () {
 		dateFormat: 'M Y',
 		constrain: false,
 		step: [Ext.Date.MONTH, 2],
-		fromDate: @audit_start_date_js;noquote@,
-		toDate: @audit_end_date_js;noquote@
+		fromDate: @start_date_js;noquote@,
+		toDate: @end_date_js;noquote@
 	}],
 	series: [@series_json@]
     }

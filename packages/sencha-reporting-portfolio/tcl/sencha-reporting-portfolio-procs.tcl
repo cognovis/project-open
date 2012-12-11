@@ -92,9 +92,27 @@ ad_proc -public sencha_project_timeline {
     {-diagram_caption "Project Timeline" }
     {-diagram_start_date ""}
     {-diagram_end_date ""}
+    {-diagram_user_id ""}
+    {-diagram_group_id ""}
+    {-diagram_project_status_id ""}
+    {-diagram_availability ""}
+    {-diagram_aggregation_level "month"}
+    {-diagram_dimension "projects"}
 } {
     Returns a HTML code with a Sencha project timelinediagram.
     The timeline shows the resource requirements over time.
+
+    @param diagram_width Width of the diagram in px
+    @param diagram_height Height of the diagram in px
+    @param diagram_caption Text above the diagram
+    @param diagram_start_date Start data
+    @param diagram_end_date End date
+    @param diagram_user_id Restrict to a single user? Implies diagram_type = "users".
+    @param diagram_project_status_id Restrict main projects to certain status
+    @param diagram_availability 
+    @param diagram_aggregation_level Aggregate per day, week or month? Default is month.
+    @param diagram_dimension Show what? "users" or "projects"
+
 } {
     # Choose the version and type of the sencha libs
     set version "v407"
@@ -110,8 +128,89 @@ ad_proc -public sencha_project_timeline {
 		    [list diagram_caption $diagram_caption] \
 		    [list diagram_start_date $diagram_start_date] \
 		    [list diagram_end_date $diagram_end_date] \
+		    [list diagram_user_id $diagram_user_id] \
+		    [list diagram_group_id $diagram_group_id] \
+		    [list diagram_project_status_id $diagram_project_status_id] \
+		    [list diagram_aggregation_level $diagram_aggregation_level] \
+		    [list diagram_availability $diagram_availability] \
+		    [list diagram_dimension $diagram_dimension] \
     ]
 
     set result [ad_parse_template -params $params "/packages/sencha-reporting-portfolio/lib/project-timeline"]
     return [string trim $result]
 }
+
+
+
+
+
+ad_proc -public sencha_project_eva {
+    -project_id:required
+    {-diagram_width 1000 }
+    {-diagram_height 400 }
+    {-diagram_caption "Project EVA" }
+} {
+    Returns a HTML code with a Sencha EVA diagram.
+} {
+    # Choose the version and type of the sencha libs
+    set version "v407"
+    set ext "ext-all-debug-w-comments.js"
+
+    # Make sure the Sencha library is loaded
+    template::head::add_css -href "/sencha-$version/ext-all.css" -media "screen" -order 1
+    template::head::add_javascript -src "/sencha-$version/$ext" -order 2
+
+    set params [list \
+		    [list main_project_id $project_id] \
+		    [list diagram_width $diagram_width] \
+		    [list diagram_height $diagram_height] \
+		    [list diagram_caption $diagram_caption]
+    ]
+
+    set result [ad_parse_template -params $params "/packages/sencha-reporting-portfolio/lib/project-eva"]
+    return [string trim $result]
+}
+
+
+
+ad_proc -public sencha_main_project_colors {
+} {
+    Returns a hash with random RGB colors for every main project
+} {
+    return [util_memoize sencha_main_project_colors_helper 1200]
+}
+
+
+ad_proc -public sencha_main_project_colors_helper {
+} {
+    Returns a hash with random RGB colors for every main project
+} {
+    set hex_list {0 1 2 3 4 5 6 7 8 9 A B C D E F}
+
+    set main_project_ids [db_list main_project_ids "
+	select	p.project_id
+	from	im_projects p
+	where	p.parent_id is null and
+		p.project_type_id not in ([im_project_type_task], [im_project_type_ticket])
+	order by p.project_id
+    "]
+
+    foreach pid $main_project_ids {
+	set r [expr int(random() * 256)]
+	set g [expr int(random() * 256)]
+	set b [expr int(random() * 256)]
+	
+	# Convert the RGB values back into a hex color string
+	set color ""
+	append color [lindex $hex_list [expr $r / 16]]
+	append color [lindex $hex_list [expr $r % 16]]
+	append color [lindex $hex_list [expr $g / 16]]
+	append color [lindex $hex_list [expr $g % 16]]
+	append color [lindex $hex_list [expr $b / 16]]
+	append color [lindex $hex_list [expr $b % 16]]
+
+	set hash($pid) $color
+    }
+    return [array get hash]
+}
+

@@ -11,6 +11,11 @@
 -- Portlets
 ----------------------------------------------------
 
+
+-- ------------------------------------------------------------
+-- Project List Page
+-- ------------------------------------------------------------
+
 SELECT im_component_plugin__new (
 	null,					-- plugin_id
 	'im_component_plugin',			-- object_type
@@ -77,6 +82,10 @@ SELECT im_component_plugin__new (
 
 
 
+-- ------------------------------------------------------------
+-- Project View Page
+-- ------------------------------------------------------------
+
 SELECT im_component_plugin__new (
 	null,					-- plugin_id
 	'im_component_plugin',			-- object_type
@@ -94,6 +103,45 @@ SELECT im_component_plugin__new (
 );
 
 
+SELECT im_component_plugin__new (
+	null,					-- plugin_id
+	'im_component_plugin',			-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+	'EVA Diagram',				-- plugin_name
+	'sencha-reporting-portfolio',		-- package_name
+	'bottom',				-- location
+	'/intranet/projects/view',		-- page_url
+	null,					-- view_name
+	20,					-- sort_order
+	'sencha_project_eva -project_id $project_id'	-- Portlet TCL
+);
+
+
+
+-- ------------------------------------------------------------
+-- Resource Management Page
+-- ------------------------------------------------------------
+
+
+SELECT im_component_plugin__new (
+	null,					-- plugin_id
+	'im_component_plugin',			-- object_type
+	now(),					-- creation_date
+	null,					-- creation_user
+	null,					-- creation_ip
+	null,					-- context_id
+	'Skill Profiles Timeline',			-- plugin_name
+	'sencha-reporting-portfolio',		-- package_name
+	'bottom',				-- location
+	'/intranet-resource-management/index',	-- page_url
+	null,					-- view_name
+	10,					-- sort_order
+	'sencha_project_timeline -diagram_aggregation_level month -diagram_dimension users'	-- Portlet TCL
+);
+
 
 
 SELECT im_component_plugin__new (
@@ -106,9 +154,10 @@ SELECT im_component_plugin__new (
 	'Project Timeline',			-- plugin_name
 	'sencha-reporting-portfolio',		-- package_name
 	'bottom',				-- location
-	'/intranet/index',				-- page_url
+	'/intranet-resource-management/index',	-- page_url
 	null,					-- view_name
-	10,					-- sort_order
-	'sencha_project_timeline'		-- Portlet TCL
+	20,					-- sort_order
+	'sencha_project_timeline -diagram_aggregation_level month -diagram_dimension projects -diagram_height 300'	-- Portlet TCL
 );
+
 
