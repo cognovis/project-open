@@ -222,6 +222,72 @@ ad_proc -public im_sysconfig_load_configuration { file } {
 		}
 	    }
 	    parameter {
+
+		set exclude_p 0
+
+		# Exclude parameters including "PathUnix" in their name
+		if {[regexp {PathUnix} $key match]} { set exclude_p 1 }
+		
+		# Exclude parameters for specified packages entirely
+		if {"acs-mail-lite" == $package_key} { set exclude_p 1 }
+
+		# Parameter specific to LDAP and Authentication
+		set ldap_parameters {
+		    RegisterAuthority
+		    EnableUsersAuthorityP
+		    EnableUsersUsernameP
+		}
+		if {[lsearch $ldap_parameters $key] >= 0} { set exclude_p 1 }
+
+		# Parameters related to the operating system
+		set os_parameters {
+		    ImageMagickConvertBinary
+		    SystemCommandPaths
+		    HtmlDocBin
+		    graphviz_dot_path
+		    tmp_path
+		    ArchiveCommand
+		    FindCmd
+		    GzipCmd
+		    TarCmd
+		    CvsPath
+		    UtilCurrentLocationRedirect
+		    FilenameCharactersSupported
+		    SuppressHttpPort
+		}
+		if {[lsearch $os_parameters $key] >= 0} { set exclude_p 1 }
+
+		# Ownership related parameters
+		set owner_parameters {
+		    OutgoingSender
+		    PublisherName
+		    AdminOwner
+		    HostAdministrator
+		    SystemName
+		    SystemOwner
+		    SystemURL
+		    SystemTimezone
+		    SiteWideLocale
+		    NewRegistrationEmailAddress
+		    SystemLogo
+		    SystemLogoLink
+		    HelpdeskOwner
+		}
+		if {[lsearch $owner_parameters $key] >= 0} { set exclude_p 1 }
+
+		# Performance related parameters
+		set performance_parameters {
+		    DBCacheSize
+		    PerformanceModeP
+		    TestDemoDevServer
+		}
+		if {[lsearch $performance_parameters $key] >= 0} { set exclude_p 1 }
+
+		if {$exclude_p} { 
+		    append html "<li>line=$cnt, type='$type', key='$key': Excluded parameter because it is a system, performance, authorization or ownership related parameter\n"
+		    continue
+		}
+
 		set parameter_id [db_string param "select parameter_id from apm_parameters where package_key = :package_key and lower(parameter_name) = lower(:key)" -default 0]
 		if {0 == $parameter_id} {
 		    append html "<li>line=$cnt, $type: Did not find parameter with package_key='$package_key' and name='$key'.\n"
