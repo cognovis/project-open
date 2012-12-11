@@ -317,7 +317,7 @@ ad_proc -private im_report_display_absences {
 # ------------------------------------------------------------
 
 # Label: Provides the security context for this report
-set menu_label "timesheet-productivity-calendar-view-workdays-simple"
+set menu_label "timesheet-monthly-hours-absences"
 
 set current_user_id [ad_maybe_redirect_for_registration]
 
@@ -357,7 +357,7 @@ if { [im_is_user_site_wide_or_intranet_admin $current_user_id] } { set view_hour
 
 set timesheet_hours_per_day [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2] -parameter "TimesheetHoursPerDay" -default 8]
 
-set page_title [lang::message::lookup "" intranet-reporting.Timesheet_Logging_Report___Monthly_View___Simple "Timesheet Productivity Report - Monthly View - Simple"]
+set page_title [lang::message::lookup "" intranet-reporting.TimesheetMonthlyViewIncludingAbsences "Timesheet - Monthly View including Absences"]
 set context_bar [im_context_bar $page_title]
 set context ""
 set todays_date [db_string todays_date "select to_char(now(), :date_format) from dual" -default ""]
@@ -730,10 +730,10 @@ switch $output_format {
 	<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
 	<td valign='top' width='600px'>
 	    	<ul>
-	        	<li>Please note: Report does not show absences for Saturday and Sunday</li>
-		    	<!-- 
-			<li>Hours logged on sub-projects are accumulated</li>
-			--> 
+			<li>Report shows max two project/task levels. Hours tracked on projects and tasks of lower level will be accumulated</li>
+	        	<li>Report never shows absence entries for Saturday and Sunday</li>
+			<li>Report assumes that absences with duration > 1 day are always \"Full day\" absences</li>
+			<li>For partial absences to be considered correctly, start date and end date of an absence need to be equal</li>
 		</ul>
 	</td>
 	</tr>
