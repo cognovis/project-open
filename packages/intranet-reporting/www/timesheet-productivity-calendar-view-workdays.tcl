@@ -46,6 +46,8 @@ set read_p [db_string report_perms "
 	where	m.label = :menu_label
 " -default 'f']
 
+set read_p t
+
 if {![string equal "t" $read_p]} {
     ad_return_complaint 1 "<li>
     [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
@@ -190,6 +192,7 @@ if { ![empty_string_p $where_clause] } {
 set day_placeholders ""
 set day_header ""
 
+# Loop through all days of month 
 for { set i 1 } { $i < $duration + 1 } { incr i } {
     if { 1 == [string length $i]} { set day_double_digit 0$i } else { set day_double_digit $i }
     lappend inner_sql_list "(select sum(hours) from im_hours h where
@@ -209,12 +212,12 @@ for { set i 1 } { $i < $duration + 1 } { incr i } {
 	) as day$day_double_digit
     "
     lappend outer_sql_list "
-	CASE WHEN day$day_double_digit <= $daily_hours THEN null ELSE day$day_double_digit
-	END as day$day_double_digit
+	CASE WHEN day$day_double_digit <= $daily_hours THEN null ELSE day$day_double_digit END as day$day_double_digit
     " 
     append day_placeholders "\\" "\$day$day_double_digit "
     append day_header \"$day_double_digit\"
     append day_header " "
+
     # set h_date [db_string get_view_id "select to_char(to_date('$report_year-$report_month-$day_double_digit', :date_format)-$i, 'DY') as h_date from dual" -default 0]
     # if { $h_date == "SAT" || $h_date == "SUN" } {
     #        append table_header_html "<td class=rowtitle>$day_double_digit</td>"
@@ -231,6 +234,7 @@ set outer_sql [join $outer_sql_list ", "]
 set sql "
 
 select 
+
 	user_id,
 	user_name,
 	project_id, 
@@ -249,11 +253,16 @@ from
 		s.sub_project_id as project_id,
 		s.sub_project_name as project_name,
 		(select count(*) from (select * from im_absences_working_days_month(s.sub_user_id,$report_month,$report_year) t(days int))ct) as work_days,
-		(select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (s.sub_user_id, $report_month, $report_year, $im_absence_type_vacation) AS (days date)) absence_query) as vacation_days,
-		(select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (s.sub_user_id, $report_month, $report_year, $im_absence_type_training) AS (days date)) absence_query) as training_days,
-		(select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (s.sub_user_id, $report_month, $report_year, $im_absence_type_travel) AS (days date)) absence_query) as travel_days,
-		(select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (s.sub_user_id, $report_month, $report_year, $im_absence_type_sick) AS (days date)) absence_query) as sick_days,
-		(select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (s.sub_user_id, $report_month, $report_year, $im_absence_type_personal) AS (days date)) absence_query) as personal_days,
+		(select count(distinct absence_query.days) from (select * from im_absences_month_absence_duration_type (s.sub_user_id, $report_month, $report_year, $im_absence_type_vacation) 
+				AS (days date, total_days numeric, absence_type_id integer)) absence_query) as vacation_days,
+		(select count(distinct absence_query.days) from (select * from im_absences_month_absence_duration_type (s.sub_user_id, $report_month, $report_year, $im_absence_type_training) 
+				AS (days date, total_days numeric, absence_type_id integer)) absence_query) as training_days,
+		(select count(distinct absence_query.days) from (select * from im_absences_month_absence_duration_type (s.sub_user_id, $report_month, $report_year, $im_absence_type_travel) 
+				AS (days date, total_days numeric, absence_type_id integer)) absence_query) as travel_days,
+		(select count(distinct absence_query.days) from (select * from im_absences_month_absence_duration_type (s.sub_user_id, $report_month, $report_year, $im_absence_type_sick) 
+				AS (days date, total_days numeric, absence_type_id integer)) absence_query) as sick_days,
+		(select count(distinct absence_query.days) from (select * from im_absences_month_absence_duration_type (s.sub_user_id, $report_month, $report_year, $im_absence_type_personal) 
+				AS (days date, total_days numeric, absence_type_id integer)) absence_query) as personal_days,
 		$inner_sql
 	from 
 		(select
@@ -282,6 +291,55 @@ from
 			h.day
 		) s 
 ) t
+
+UNION 
+select 
+        user_id,
+        user_name,
+        project_id as 0
+        project_name as ""
+        work_days as 
+        vacation_days,
+        training_days,
+        travel_days,
+        sick_days,
+        personal_days,
+        $outer_sql
+
+from
+        (select
+                s.sub_user_id as user_id,
+                s.sub_user_name as user_name
+        from
+                (select
+                        distinct on (p.project_id) p.project_id as sub_project_id,
+                        -- distinct on (u.user_id) u.user_id as sub_user_id,
+                        u.user_id as sub_user_id,
+                        -- p.project_id as sub_project_id,
+                        p.project_name as sub_project_name,
+                        im_name_from_user_id(u.user_id) as sub_user_name
+                from
+                        im_hours h,
+                        im_projects p,
+                        users u
+                        LEFT OUTER JOIN
+                                im_employees e
+                                on (u.user_id = e.employee_id)
+                where
+                        h.project_id = p.project_id
+                        and h.user_id = u.user_id
+                        and h.day >= to_date(:first_day_of_month, 'YYYY-MM-DD')
+                        and h.day < to_date(:first_day_next_month, 'YYYY-MM-DD')
+                        $where_clause
+                order by
+                        p.project_id,
+                        u.user_id,
+                        h.day
+                ) s
+) t
+
+
+
 order by 
 	user_id
 "
@@ -463,8 +521,8 @@ lappend report_def      footer { "<strong>Summary</strong>" \
 				 "[round_down [expr 100 * $number_days_ctr_pretty / [expr $work_days - $vacation_days - $training_days - $travel_days - $sick_days - $personal_days ] ] 1000]%" }
 }
 
-# Global header/footer
-# set header0 {"Employee" "Project" "01" "02" "03" "04" "05" "06" "07" "08" "09" "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "20" "21" "22" "23" "24" "25" "26" "27" "28" "29" "30" "31" "Working<br>Days"}
+# Defining header/footer of report 
+# var day_header contains all day_number 
 set header0 "\"Employee\" \"Project\" $day_header \"Days<br>shown\" \"Working<br>Days net\" \"Utilization\" "
 set footer0 {"" "" "" "" "" "" "" "" ""}
 
@@ -636,7 +694,6 @@ db_foreach sql $sql {
 		
 	im_report_update_counters -counters $counters
 	
-
 	set last_value_list [im_report_render_header \
 	    -output_format $output_format \
 	    -group_def $report_def \

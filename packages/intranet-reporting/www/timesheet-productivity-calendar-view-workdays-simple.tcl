@@ -223,12 +223,12 @@ set sql "
 		sub_project_id,
 		CASE WHEN t.sub_project_id = t.top_parent_project_id THEN NULL ELSE t.sub_project_name END as sub_project_name,
                 CASE WHEN t.sub_project_id = t.top_parent_project_id THEN NULL ELSE t.sub_project_nr END as sub_project_nr,
-                (select count(*) from (select * from im_absences_working_days_month(user_id,$report_month,$report_year) t(days int))ct) as work_days,
-                (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_vacation) AS (days date)) absence_query) as vacation_days,
-                (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_training) AS (days date)) absence_query) as training_days,
-                (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_travel) AS (days date)) absence_query) as travel_days,
-                (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_sick) AS (days date)) absence_query) as sick_days,
-                (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_personal) AS (days date)) absence_query) as personal_days,
+                -- (select count(*) from (select * from im_absences_working_days_month(user_id,$report_month,$report_year) t(days int))ct) as work_days,
+                -- (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_vacation) AS (days date)) absence_query) as vacation_days,
+                -- (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_training) AS (days date)) absence_query) as training_days,
+                -- (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_travel) AS (days date)) absence_query) as travel_days,
+                -- (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_sick) AS (days date)) absence_query) as sick_days,
+                -- (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_personal) AS (days date)) absence_query) as personal_days,
 	        $outer_sql
 	from
         	(select
