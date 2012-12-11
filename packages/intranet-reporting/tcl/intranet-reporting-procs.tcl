@@ -20,7 +20,6 @@ ad_proc -public im_report_status_deleted {} { return 15002 }
 ad_proc -public im_report_type_simple_sql {} { return 15100 }
 ad_proc -public im_report_type_indicator {} { return 15110 }
 
-
 # -------------------------------------------------------
 # Package Procs
 # -------------------------------------------------------
@@ -347,11 +346,13 @@ ad_proc im_report_render_footer {
     -group_def
     -last_value_array_list
     {-encoding ""}
+    {-encoding ""}
     {-output_format "html"}
     {-row_class ""}
     {-cell_class ""}
     {-level_of_detail 999}
     {-debug 0}
+    {-absence_array_list ""}
 } {
     Renders the footer stack of a single row in a project-open report. 
     The procedure acts similar to im_report_render_header,
@@ -363,6 +364,7 @@ ad_proc im_report_render_footer {
     A group_var with a value different from the current one is the
     trigger to display the footer line.
 } {
+    ns_log NOTICE "intranet-reporting-procs::im_report_render_footer-absence_array_list: $absence_array_list"
     if {$debug} { ns_log Notice "render_footer:" }
     array set last_value_array $last_value_array_list
 
@@ -412,6 +414,7 @@ ad_proc im_report_render_footer {
 		set cmd "set value \"$field\""
 		set value [uplevel 1 $cmd]
 	    }
+	    # ns_log NOTICE "intranet-reporting-procs::im_report_render_footer: Setting field: $field -> value: $value"
 	    lappend footer_line $value
 	}
 	set footer_record [list \
@@ -427,8 +430,6 @@ ad_proc im_report_render_footer {
 
     return [array get footer_array]
 }
-
-
 
 
 ad_proc im_report_display_footer {
@@ -547,6 +548,10 @@ ad_proc im_report_display_footer {
 	set new_record_value $footer_record(new_value)
 	set footer_line $footer_record(line)
 
+	ns_log NOTICE "intranet-reporting-procs::im_report_display_footer-footer_record_list: $footer_record_list"
+        ns_log NOTICE "intranet-reporting-procs::im_report_display_footer-new_record_value: $new_record_value"
+        ns_log NOTICE "intranet-reporting-procs::im_report_display_footer-footer_line: $footer_line"
+
 	# -------------------------------------------------------
 	# Write out the header if last_value != new_value
 
@@ -568,9 +573,6 @@ ad_proc im_report_display_footer {
 
     }
 }
-
-
-
 
 
 ad_proc im_report_update_counters {
@@ -988,3 +990,4 @@ ad_proc -public im_reporting_form_update_ajax {
 
     template::head::add_javascript -src "/intranet-reporting/js/ajax_update_select_box.js?$par_str" -order "999"
 }
+
