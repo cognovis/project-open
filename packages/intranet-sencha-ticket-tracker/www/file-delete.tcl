@@ -2,7 +2,7 @@ ad_page_contract {
     Delete a filestorage file
     @author Frank Bergmann
     @creation-date 6 May 2011
-    @cvs-id $Id: file-delete.tcl,v 1.1 2011/06/06 16:59:02 po34demo Exp $
+    @cvs-id $Id$
 } {
     item_id:integer
 }
