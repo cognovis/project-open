@@ -1,4 +1,4 @@
-# /packages/intranet-reporting/www/timesheet-productivity-calendar-view.tcl
+# /packages/intranet-reporting/www/timesheet-monthly-hours-absences.tcl
 #
 # Copyright (C) 2003 - 2012 ]project-open[
 #
@@ -6,7 +6,6 @@
 # http://www.project-open.com/ for licensing details.
 
 ad_page_contract {
-	testing reports	
     @param start_year Year to start the report
     @param start_unit Month or week to start within the start_year
 } {
@@ -20,6 +19,298 @@ ad_page_contract {
     { daily_hours 0 }
     { different_from_project_p "" }
 }
+
+# ------------------------------------------------------------
+# Report specific procs
+# ------------------------------------------------------------
+
+ad_proc -private im_report_render_absences {
+    -group_def
+    -last_value_array_list
+    -report_year_month
+    {-encoding ""}
+    {-output_format "html"}
+    {-row_class ""}
+    {-cell_class ""}
+    {-level_of_detail 999}
+    {-debug 0}
+    {-absences_list ""}
+} {
+    Renders the footer stack of a single row in a project-open report. 
+    The procedure acts similar to im_report_render_header,
+    but returns a list of results instead of writing the results
+    to the web page immediately.
+    This is done, because the decision what footer lines to display
+    can only be taken when the next row is displayed.
+    Returns a list of report lines, each together with the group_var.
+    A group_var with a value different from the current one is the
+    trigger to display the footer line.
+} {
+
+    set timesheet_hours_per_day [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2] -parameter "TimesheetHoursPerDay" -default 8]
+    if { "" != $absences_list  } { array set absence_arr $absences_list }
+
+    if {$debug} { ns_log Notice "render_footer:" }
+    array set last_value_array $last_value_array_list
+    if {$debug} { ns_log NOTICE "intranet-reporting-procs::im_report_render_absences:: ==============================================================" }
+    if {$debug} { ns_log NOTICE "intranet-reporting-procs::im_report_render_absences:: group_def: $group_def" }
+    if {$debug} { ns_log NOTICE "intranet-reporting-procs::im_report_render_absences:: last_value_array_list: $last_value_array_list" }
+
+    # Split group_def and assign to an array for reverse access
+    set group_level 1
+    while {[llength $group_def] > 0} {
+	set group_def_array($group_level) $group_def
+	if {$debug} { ns_log Notice "render_footer: group_def_array($group_level) = ..." }
+	array set group_array $group_def
+        set group_def {}
+        if {[info exists group_array(content)]} {
+            set group_def $group_array(content)
+        }
+        incr group_level
+    }
+    set group_level [expr $group_level - 1]
+
+    while {$group_level > 0} {
+	if {$debug} { ns_log Notice "render_footer: level=$group_level" }
+
+	# -------------------------------------------------------
+	# Extract the definition of the current level from the definition
+	array set group_array $group_def_array($group_level)
+	set group_var $group_array(group_by)
+	set footer $group_array(footer)
+	set content $group_array(content)
+
+        # -------------------------------------------------------
+        # Determine the new value for the current group_level
+        set new_value ""
+        if {$group_var != ""} {
+            upvar $group_var $group_var
+            if {![info exists $group_var]} {
+                ad_return_complaint 1 "Header: Level $group_level: Group var '$group_var' doesn't exist"
+            }
+            set cmd "set new_value \"\$$group_var\""
+            eval $cmd
+            if {$debug} { ns_log Notice "render_footer: level=$group_level, new_value='$new_value'" }
+        }
+
+	# -------------------------------------------------------
+	# Get absences for user 
+	# -------------------------------------------------------
+	# Determine month 
+	if {$debug} { ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::group_var: $group_var" }
+	# -------------------------------------------------------
+	# Write out absences to an array
+	# -------------------------------------------------------
+	set absence_line [list]
+	set ctr 0
+	set total_sum_absences 0
+	foreach field $footer {
+	    ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::field: $field"
+	    set position_day_str [string first "(day" [string tolower $field]]
+            if {$debug} { ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::position found: $position_day_str" }
+	    if { "-1" != $position_day_str } {
+		set calendar_day [string range $field [expr $position_day_str + 4] [expr $position_day_str + 5]] 
+		if {$debug} { ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::calendar_day: $calendar_day" }
+		set report_year [string range $report_year_month 0 3]
+		set report_month [string range $report_year_month 5 6 ]
+		set date_ansi_key "$report_year-$report_month-$calendar_day"
+		if {$debug} { ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::looking up key: $date_ansi_key" }
+		if { [info exists absence_arr($date_ansi_key)] } {	    
+		    if {$debug} { ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::found absence" }
+		    # Evaluate absence amount  
+		    # absence_arr($date_ansi_key) is list of lists
+		    set total_absence 0 
+		    foreach absence_list_item $absence_arr($date_ansi_key) {
+			# Absences are stored as days/fractions of a day 
+			# Evaluate total absence in UoM: 'Hours'  
+			if { 1 < [expr [lindex $absence_list_item 0] + 0] } {
+			    # We assume that absences with a total (total_days) > 1 are always full day absences  
+			    set total_absence [expr $total_absence + $timesheet_hours_per_day]
+			} else {
+			    # Single absences might be fraction of day  
+			    set total_absence [expr [expr $timesheet_hours_per_day + 0] * [expr [lindex $absence_list_item 0]]]
+			}
+		    }
+		    
+		    if { "html" == $output_format } {
+			set value "<a href='/intranet-timesheet2/absences?view_name=absence_list_home&user_selection=$new_value"
+			append value "&timescale=start_stop&start_date=$date_ansi_key&end_date=$date_ansi_key' title='$absence_arr($date_ansi_key)'><strong>$total_absence</strong></a>"
+		    } else {
+			set value "$total_absence"
+		    }
+		    set total_sum_absences [expr $total_sum_absences + [expr $total_absence + 0]]  
+		} else {
+		    if {$debug} { ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::did not found absence in array" }
+                    set value "&nbsp;"
+		}
+	    } else { 
+		if {$debug} { ns_log NOTICE "intranet-reporting-procs::im_report_render_absences::No day column" }
+		set value ""
+		if { 0 == $ctr } {
+		    set value <strong>[lang::message::lookup "" intranet-core.Absences "Absences"]</strong>
+		} else {
+		    if { [string first "number_hours_ctr_pretty" $field] >= 0 } {
+			set value $total_sum_absences
+		    }
+		}
+	    }
+	    lappend absence_line $value
+	    incr ctr
+	}
+
+	set footer_record [list \
+	    line $absence_line \
+	    new_value $new_value
+	]
+	# Store the result for display later
+	set footer_array($group_level) $footer_record
+
+	set group_level [expr $group_level - 1]
+    }
+    if {$debug} { ns_log Notice "render_footer: after group_by footers" }
+    
+    return [array get footer_array]
+}
+
+
+ad_proc -private im_report_display_absences {
+    -group_def
+    -footer_array_list
+    -last_value_array_list
+    {-encoding ""}
+    {-output_format "html"}
+    {-display_all_footers_p 0}
+    {-level_of_detail 999}
+    {-cell_class ""}
+    {-row_class ""}
+    {-debug 0}
+} {
+    
+} {
+    if {$debug} { ns_log Notice "display_footer:" }
+    array set last_value_array $last_value_array_list
+    array set footer_array $footer_array_list
+
+    # -------------------------------------------------------
+    # Abort if there are no footer values, because this
+    # is probably the first time that this routine is executed
+    if {[llength $footer_array_list] == 0} {
+	return
+    }
+
+    set group_def_org $group_def
+
+    # -------------------------------------------------------
+    # Determine the "return_group_level" to which we have to go _back_.
+    # This level determines the number of footers that we need to write out.
+    #
+    set return_group_level 1
+    while {[llength $group_def] > 0} {
+
+	# -------------------------------------------------------
+	# Extract the definition of the current level from the definition
+	array set group_array $group_def
+	set group_var $group_array(group_by)
+	set header $group_array(header)
+	set content $group_array(content)
+	if {$debug} { ns_log Notice "display_footer: level=$return_group_level, group_var=$group_var" }
+
+	# -------------------------------------------------------
+	# 
+	set footer_record_list $footer_array($return_group_level)
+	array set footer_record $footer_record_list
+	set new_record_value $footer_record(new_value)
+
+	# -------------------------------------------------------
+	# Determine new value for the current group return_group_level
+	set new_value ""
+	if {$group_var != ""} {
+	    upvar $group_var $group_var
+	    set cmd "set new_value \"\$$group_var\""
+	    eval $cmd
+	}
+
+	# -------------------------------------------------------
+	# Check if new_value != new_record_value.
+	# In this case we have found the first level in which the
+	# results differ. This is the level where we have to return.
+	if {$debug} { ns_log Notice "display_footer: level=$return_group_level, group_var=$group_var, new_record_value=$new_record_value, new_value=$new_value" }
+	if {![string equal $new_value $new_record_value]} {
+	    # leave the while loop
+	    break
+	}
+
+	# -------------------------------------------------------
+	# Prepare the next iteration of the while loop:
+	# continue with the "row" part of the current level
+	set group_def {}
+	if {[info exists group_array(content)]} {
+	    set group_def $group_array(content)
+	}
+	incr return_group_level
+
+    }
+
+    # Restore the group_def destroyed by the previous while loop
+    set group_def $group_def_org
+
+
+    # -------------------------------------------------------
+    # Calculate the maximum level in the report definition
+    set max_group_level 1
+    while {[llength $group_def] > 0} {
+	set group_def_array($max_group_level) $group_def
+	if {$debug} { ns_log Notice "display_footer: group_def_array($max_group_level) = ..." }
+	array set group_array $group_def
+        set group_def {}
+        if {[info exists group_array(content)]} {
+            set group_def $group_array(content)
+        }
+        incr max_group_level
+    }
+    set max_group_level [expr $max_group_level - 2]
+
+
+    if {$display_all_footers_p} { set return_group_level 1 }
+    if {$max_group_level > $level_of_detail} { set max_group_level $level_of_detail }
+
+    # -------------------------------------------------------
+    # Now let's display all footers between max_group_level and
+    # return_group_level.
+    #
+    if {$debug} { ns_log Notice "display_footer: max_group_level=$max_group_level, return_group_level=$return_group_level" }
+    for {set group_level $max_group_level} { $group_level >= $return_group_level} { set group_level [expr $group_level-1]} {
+
+	# -------------------------------------------------------
+	# Extract the absence_line
+	#
+	set footer_record_list $footer_array($group_level)
+	array set footer_record $footer_record_list
+	set new_record_value $footer_record(new_value)
+	set absence_line $footer_record(line)
+
+	# -------------------------------------------------------
+	# Write out the header if last_value != new_value
+
+	if {$debug} { ns_log Notice "display_footer: writing footer for group_level=$group_level" }
+
+	switch $output_format {
+	    html - printer { ns_write "<tr>\n" }
+	    csv {  }
+	}
+
+	foreach field $absence_line {
+	    im_report_render_cell -encoding $encoding -output_format $output_format -cell $field -cell_class $cell_class
+	}
+
+	switch $output_format {
+	    html - printer { ns_write "</tr>\n" }
+	    csv { ns_write "\n" }
+	}
+
+    }
+}
+
 
 # ------------------------------------------------------------
 # Security & Permissions
@@ -59,9 +350,12 @@ set date_format "YYYY-MM-DD"
 # ------------------------------------------------------------
 # Defaults
 # ------------------------------------------------------------
+set debug 0
 
 set view_hours_all_p [im_permission $current_user_id view_hours_all]
 if { [im_is_user_site_wide_or_intranet_admin $current_user_id] } { set view_hours_all_p 1 }
+
+set timesheet_hours_per_day [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2] -parameter "TimesheetHoursPerDay" -default 8]
 
 set page_title [lang::message::lookup "" intranet-reporting.Timesheet_Logging_Report___Monthly_View___Simple "Timesheet Productivity Report - Monthly View - Simple"]
 set context_bar [im_context_bar $page_title]
@@ -151,10 +445,7 @@ if {[info exists user_id] && 0 != $user_id && "" != $user_id && !$view_hours_all
     lappend criteria "h.user_id = :user_id"
 }
 
-if { 0 == $user_id && !$view_hours_all_p} {
-    lappend criteria "h.user_id = :current_user_id"
-}
-
+# If privilige "view_hours_all_p" is not set, show only the users "own" hours
 if { !$view_hours_all_p } {
 	lappend criteria "u.user_id = :current_user_id"
 }
@@ -163,6 +454,10 @@ set where_clause [join $criteria " and\n            "]
 if { ![empty_string_p $where_clause] } {
     set where_clause " and $where_clause"
 }
+
+# Check for filter "Employee"  
+set outer_where ""
+if { "" != $user_id } { set outer_where "and user_id = :user_id" }
 
 # if {"" != $daily_hours && 0 != $daily_hours} {
 #    set criteria_inner_sql "and h.hours > :daily_hours"
@@ -214,7 +509,6 @@ for { set i 1 } { $i < $duration + 1 } { incr i } {
     }
     append day_header " "
 }
-
 
 set inner_sql [join $inner_sql_list ", "]
 set outer_sql [join $outer_sql_list ", "]
@@ -299,18 +593,21 @@ set sql "
  			sub_project_nr,
         	        sub_project_name
 	 ) t
-group by 
-	user_id,
-	user_name,
-	top_parent_project_id,
-	top_project_name,
-	top_project_nr,
-	sub_project_id,
-	sub_project_name,
-	sub_project_nr
-order by
-        user_id,
-	top_parent_project_id
+	 where 
+	       1=1
+	       $outer_where
+	 group by 
+	 	user_id,
+		user_name,
+		top_parent_project_id,
+		top_project_name,
+		top_project_nr,
+		sub_project_id,
+		sub_project_name,
+		sub_project_nr
+	order by
+              user_id,
+	      top_parent_project_id
 "
 
 # This string represents a project/sub project
@@ -505,38 +802,81 @@ db_foreach sql $sql {
 	    -row_class $class \
 	    -cell_class $class
 
+
         set number_hours_project_ctr 0
-
 	if { $user_id != $saved_user_id } {
-		set saved_user_id $user_id
-		for { set i 1 } { $i < $duration + 1 } { incr i } {
-	        	if { 1 == [string length $i]} { set day_double_digit day0$i } else { set day_double_digit day$i }
-	        	set month_arr($day_double_digit) 0
-			set ts_hours_arr($day_double_digit) ""
- 		    	set number_hours_ctr_pretty 0
-		}
-	}	
+	    set saved_user_id $user_id
 
+	    # reset counters  
+	    for { set i 1 } { $i < $duration + 1 } { incr i } {
+	        if { 1 == [string length $i]} { set day_double_digit day0$i } else { set day_double_digit day$i }
+	        set month_arr($day_double_digit) 0
+		set ts_hours_arr($day_double_digit) ""
+ 	   	set number_hours_ctr_pretty 0
+	    }
+	    
+	    array unset absence_arr 
+
+	    # Get absences for this user 
+	    if {$debug} { ns_log NOTICE "timesheet-monthly-hours-absences::get-absences: new_value: $new_value, report_month: $report_month, report_year: $report_year," }
+	    set column_sql "select * from im_absences_month_absence_duration_type (:user_id, :report_month, :report_year, null) AS (days date, total_days numeric, absence_type_id integer)"
+	    db_foreach col $column_sql {
+		if {$debug} { ns_log NOTICE "timesheet-monthly-hours-absences::switch_user - setting absence_arr($days)" }
+		set duration_absence_type_list [list $total_days [im_category_from_id $absence_type_id]]
+		if { [info exists absence_arr($days)] } {
+		    set absence_arr($days) [lappend absence_arr($days) $duration_absence_type_list]
+		} else {
+		    set absence_arr($days) "{$duration_absence_type_list}"
+		}
+		if {$debug} { ns_log NOTICE "timesheet-monthly-hours-absences::new absence_arr($days): $absence_arr($days)" }
+	    }
+
+	    # Preset ts_hours_arr with absences 
+	    for { set i 1 } { $i < $duration + 1 } { incr i } {
+		if { 1 == [string length $i]} { set day_double_digit 0$i } else { set day_double_digit $i }
+		set date_ansi_key "$report_year-$report_month-$day_double_digit"
+                if { [info exists absence_arr($date_ansi_key)] } {
+                    ns_log NOTICE "timesheet-monthly-hours-absences::switch_user - new User: $user_id - found absence for key: $date_ansi_key"
+                    # Evaluate absence amount
+                    # absence_arr($date_ansi_key) is list of lists
+                    set total_absence 0
+                    foreach absence_list_item $absence_arr($date_ansi_key) {
+                        # Absences are stored as days/fractions of a day
+                        # Evaluate total absence in UoM: 'Hours'
+                        if { 1 < [expr [lindex $absence_list_item 0] + 0] } {
+                            # We assume that absences with a total (total_days) > 1 are always full day absences
+                            set total_absence [expr $total_absence + $timesheet_hours_per_day]
+                        } else {
+                            # Single absences might be fraction of day
+                            set total_absence [expr [expr $timesheet_hours_per_day + 0] * [expr [lindex $absence_list_item 0]]]
+                        }
+                    }
+		    if {$debug} { ns_log NOTICE "timesheet-monthly-hours-absences::switch_user - Found total_absence: $total_absence" }
+		    set ts_hours_arr(day$day_double_digit) $total_absence
+		    if {$debug} { ns_log NOTICE "timesheet-monthly-hours-absences::switch_user - Setting ts_hours_arr(day$day_double_digit) to: $total_absence"	}
+		    set number_hours_ctr_pretty [expr $number_hours_ctr_pretty + $total_absence]
+		}
+	    }
+	    # Convert to list in order pass on as parameter 
+	    set absences_list [array get absence_arr]
+	}	
 
 	# Formating and row totals 
 	for { set i 1 } { $i < $duration + 1 } { incr i } {
-
 	        # Make sure that day_double_digit is always a 2-digit number  
 		if { 1 == [string length $i]} { set day_double_digit day0$i } else { set day_double_digit day$i }
-
 		# Building totals for each row
 		if { "" != [expr $$day_double_digit] } {
 			set ts_hours_arr($day_double_digit) [expr $ts_hours_arr($day_double_digit) + $$day_double_digit]
-
    		        set number_hours_project_ctr [expr $number_hours_project_ctr + [expr $$day_double_digit]] 
 		        set number_hours_ctr_pretty [expr $number_hours_ctr_pretty + [expr $$day_double_digit]]
-
 			if { 0 == $month_arr($day_double_digit) } {
 				set month_arr($day_double_digit) 1
 			        set number_hours_ctr [expr $number_hours_ctr + $ts_hours_arr($day_double_digit)] 
 			}
 		}
 	}
+
 
 	im_report_update_counters -counters $counters
 
@@ -548,6 +888,7 @@ db_foreach sql $sql {
 	    -row_class $class \
 	    -cell_class $class
         ]
+	
 
         set absence_array_list [im_report_render_absences \
 	    -output_format $output_format \
@@ -556,7 +897,8 @@ db_foreach sql $sql {
 	    -report_year_month $report_year_month \
 	    -level_of_detail $level_of_detail \
 	    -row_class $class \
-	    -cell_class $class
+	    -cell_class $class \
+	    -absences_list $absences_list
         ]
 
         set footer_array_list [im_report_render_footer \
@@ -565,7 +907,7 @@ db_foreach sql $sql {
 	    -last_value_array_list $last_value_list \
 	    -level_of_detail $level_of_detail \
 	    -row_class $class \
-	    -cell_class $class
+	    -cell_class $class 
         ]
 }
 
