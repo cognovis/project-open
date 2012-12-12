@@ -1202,7 +1202,10 @@ ad_proc im_costs_project_finance_component {
     } 
     
     # show admin links only if at least one write permission
-    if {$show_details_p} { set show_admin_links_p 1 }
+    # -- KH-2012-12-12: 
+    # -- If show_admin_links_p is set to '0' it should simply not show up
+    # -- Nothing should overwrite that setting 
+    # if {$show_details_p} { set show_admin_links_p 1 }
 
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
@@ -1595,8 +1598,6 @@ ad_proc im_costs_project_finance_component {
     # if the intranet-invoices module is installed
     set admin_html ""
     if {$show_admin_links_p && [im_table_exists im_invoices]} {
-
-
 	# Customer invoices: customer = Project Customer, provider = Internal
 	set customer_id [util_memoize [list db_string project_customer "select company_id from im_projects where project_id = $org_project_id" -default ""]]
 	set provider_id [im_company_internal]
