@@ -145,7 +145,7 @@ if {"windows" == $platform && $aoldir_exists_p} {
     set aoldir [join [lrange $aoldir_pieces 0 1] "/"]
     # Now it's D:/project-open (without trailing slash)
 
-    if {"c:/project-open" != $aoldir && $aoldir_len >= 2} {
+    if {$aoldir_len >= 2} {
         ns_write "<li>setting pathes ... "
         parameter::set_from_package_key -package_key "acs-workflow" -parameter "graphviz_dot_path" -value "$aoldir/bin/dot.bat"
         parameter::set_from_package_key -package_key "intranet-core" -parameter "BackupBasePathUnix" -value "$aoldir/servers/projop/filestorage/backup"
