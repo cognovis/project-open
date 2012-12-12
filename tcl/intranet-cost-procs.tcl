@@ -1143,6 +1143,9 @@ ad_proc im_costs_project_finance_component {
     {-show_summary_p 1}
     {-show_admin_links_p 0}
     {-no_timesheet_p 0}
+    {-view_name ""}
+    {-disable_view_standard_p 0}
+    {-disable_view_finance_p 0}
     user_id 
     project_id 
 } {
@@ -1164,6 +1167,11 @@ ad_proc im_costs_project_finance_component {
     </ul>
 
 } {
+
+    # Is component shown?  
+    if { ("" == $view_name || "standard" == $view_name) && $disable_view_standard_p } { return "" }
+    if { "finance" == $view_name && $disable_view_finance_p } { return "" }
+
     # pre-filtering 
     # permissions - beauty of code follows transparency and readability
     
