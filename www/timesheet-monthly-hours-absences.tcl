@@ -18,6 +18,8 @@ ad_page_contract {
     { customer_id 0 }
     { daily_hours 0 }
     { different_from_project_p "" }
+    { cost_center_id 0 }
+    { department_id 0 }
 }
 
 # ------------------------------------------------------------
@@ -450,14 +452,53 @@ if { !$view_hours_all_p } {
 	lappend criteria "u.user_id = :current_user_id"
 }
 
+# Put everything together
 set where_clause [join $criteria " and\n            "]
 if { ![empty_string_p $where_clause] } {
     set where_clause " and $where_clause"
 }
 
-# Check for filter "Employee"  
+# -----------------------------------------------------------
+# Outer where 
+# -----------------------------------------------------------
+
 set outer_where ""
-if { "" != $user_id } { set outer_where "and user_id = :user_id" }
+set criteria_outer [list]
+
+# Check for filter "Employee"  
+if { "" != $user_id } { lappend criteria_outer "and user_id = :user_id" }
+
+# Check for filter "Cost Center"  
+if { "0" != $cost_center_id &&  "" != $cost_center_id } {
+        lappend criteria_outer "
+        	user_id in (select employee_id from im_employees where department_id in (select object_id from acs_object_context_index where ancestor_id = $cost_center_id))
+	"
+}
+
+# Check for filter "Department"  
+
+if { "0" != $department_id &&  "" != $department_id } {
+  	lappend criteria_outer "
+                user_id in (
+                        select employee_id from im_employees where department_id in (
+                                select
+                                        object_id
+                                from
+                                        acs_object_context_index
+                                where
+                                        ancestor_id = $department_id
+                	)
+           	)
+        "
+}
+
+
+# Create "outer where" 
+if { ![empty_string_p $criteria_outer] } { 
+   set outer_where [join $criteria_outer " and\n   "] 
+} else {
+   set outer_where "1=1" 
+}
 
 # if {"" != $daily_hours && 0 != $daily_hours} {
 #    set criteria_inner_sql "and h.hours > :daily_hours"
@@ -523,12 +564,6 @@ set sql "
 		sub_project_id,
 		CASE WHEN t.sub_project_id = t.top_parent_project_id THEN NULL ELSE t.sub_project_name END as sub_project_name,
                 CASE WHEN t.sub_project_id = t.top_parent_project_id THEN NULL ELSE t.sub_project_nr END as sub_project_nr,
-                -- (select count(*) from (select * from im_absences_working_days_month(user_id,$report_month,$report_year) t(days int))ct) as work_days,
-                -- (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_vacation) AS (days date)) absence_query) as vacation_days,
-                -- (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_training) AS (days date)) absence_query) as training_days,
-                -- (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_travel) AS (days date)) absence_query) as travel_days,
-                -- (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_sick) AS (days date)) absence_query) as sick_days,
-                -- (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_personal) AS (days date)) absence_query) as personal_days,
 	        $outer_sql
 	from
         	(select
@@ -594,7 +629,6 @@ set sql "
         	        sub_project_name
 	 ) t
 	 where 
-	       1=1
 	       $outer_where
 	 group by 
 	 	user_id,
@@ -669,6 +703,18 @@ switch $output_format {
 	if { $view_hours_all_p } {
 	    ns_write "
 		<tr>
+                  <td class=form-label>[_ intranet-core.Cost_Center]:</td>
+                  <td class=form-widget>
+		      [im_cost_center_select -include_empty 1  -department_only_p 0  cost_center_id $cost_center_id [im_cost_type_timesheet]]
+                 </td>
+		</tr>
+		<tr>
+                  <td class=form-label>[_ intranet-core.Department]:</td>
+                  <td class=form-widget>
+		      [im_cost_center_select -include_empty 1  -department_only_p 1  department_id $department_id [im_cost_type_timesheet]]
+                 </td>
+		</tr>
+		<tr>
 		  <td class=form-label>Employee</td>
 		  <td class=form-widget>
 		    [im_user_select -include_empty_p 1 user_id $user_id]
@@ -710,7 +756,6 @@ switch $output_format {
                   </td>
                 </tr>
 		--> 
-
                 <tr>
                   <td class=form-label>Format</td>
                   <td class=form-widget>
