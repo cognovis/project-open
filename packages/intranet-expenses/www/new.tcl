@@ -114,15 +114,14 @@ set include_empty 0
 set expense_currencies [parameter::get_from_package_key -package_key intranet-expenses -parameter "ExpenseCurrencies" -default {}]
 set currency_options [im_currency_options -currency_list $expense_currencies $include_empty]
 
-set expense_type_options [db_list_of_lists expense_types "
-	select	expense_type,
-		expense_type_id
-	from im_expense_type
-"]
+set expense_type_options [list]
+set expense_type_sql "select expense_type, expense_type_id from im_expense_type"
+db_foreach expense_types $expense_type_sql {
+       set expense_type [lang::message::lookup "" "intranet-expenses.$expense_type" "$expense_type"]
+       set expense_type_options [linsert $expense_type_options 0 [list $expense_type $expense_type_id]]
+}
 
-set expense_type_options [db_list_of_lists expense_types "select expense_type, expense_type_id from im_expense_type"]
 set expense_type_options [linsert $expense_type_options 0 [list [lang::message::lookup "" "intranet-expenses.--Select--" "-- Please Select --"] 0]]
-
 
 
 set expense_payment_type_options [db_list_of_lists expense_payment_type "
