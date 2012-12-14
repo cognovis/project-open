@@ -307,7 +307,7 @@ foreach csv_line_fields $values_list_of_lists {
     }
 
     # Add the last change as note of type 11514
-    if {"" != $change} {
+    if {[exists_and_not_null change]} {
 	set date [string range $change 0 7]
 	set note [string trim [string range $change 8 end]]
 	set duplicate_note_sql "
@@ -341,20 +341,23 @@ foreach csv_line_fields $values_list_of_lists {
     }
 
     # deal with the supervisor
-    set supervisor_first [string range $supervisor 0 0]
-    set supervisor_last [string range $supervisor 1 end]
-    set username "${supervisor_first}.$supervisor_last"
-    set supervisor_id [db_string supervisor "select user_id from users where lower(username)=lower(:username)" -default ""]
+    if {[exists_and_not_null supervisor]} {	
+	set supervisor_first [string range $supervisor 0 0]
+	set supervisor_last [string range $supervisor 1 end]
+	set username "${supervisor_first}.$supervisor_last"
+	set supervisor_id [db_string supervisor "select user_id from users where lower(username)=lower(:username)" -default ""]
 
-    # Make the department manager the manager for the employee
-    if {"" == $supervisor_id} {
-	set supervisor_id [db_string manager "select manager_id from im_cost_centers where cost_center_id = :department_id" -default ""]
-    }
-    if {$supervisor_id eq $employee_id} {
-	set supervisor_id ""
+	# Make the department manager the manager for the employee
+	if {"" == $supervisor_id} {
+	    set supervisor_id [db_string manager "select manager_id from im_cost_centers where cost_center_id = :department_id" -default ""]
+	}
+	if {$supervisor_id eq $employee_id} {
+	    set supervisor_id ""
+	}
+	db_dml update_supervisor "update im_employees set supervisor_id = :supervisor_id where employee_id = :employee_id"	
     }
 
-    db_dml update_employee "update im_employees set department_id = :department_id, availability = :availability, personnel_number=:personnel_number, old_personnel_number=:old_personnel_number, panf=:panf, supervisor_id = :supervisor_id where employee_id = :employee_id"
+    db_dml update_employee "update im_employees set department_id = :department_id, availability = :availability, personnel_number=:personnel_number, old_personnel_number=:old_personnel_number, panf=:panf where employee_id = :employee_id"
     db_dml update_person "update persons set gender=:gender where person_id = :employee_id"
 
     # Update the dates
