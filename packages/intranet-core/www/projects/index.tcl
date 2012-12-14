@@ -328,8 +328,8 @@ if { ![empty_string_p $company_id] && $company_id != 0 } {
 }
 
 # Limit to start-date and end-date
-if {"" != $start_date} { lappend criteria "a.end_date::date >= :start_date" }
-if {"" != $end_date} { lappend criteria "a.start_date::date <= :end_date" }
+if {"" != $start_date} { lappend criteria "p.end_date::date >= :start_date" }
+if {"" != $end_date} { lappend criteria "p.start_date::date <= :end_date" }
 
 if { ![empty_string_p $upper_letter] && [string compare $upper_letter "ALL"] != 0 && [string compare $upper_letter "SCROLL"] != 0 } {
     lappend criteria "im_first_letter_default_to_a(p.project_name)=:upper_letter"
