@@ -370,7 +370,7 @@ ad_form -extend -name task -on_request {
     im_biz_object_delete_timephased_data -task_id $task_id
 
     # Write Audit Trail
-    im_project_audit -project_id $task_id -action after_update
+    im_project_audit -project_id $task_id -status_id $task_status_id -type_id $task_type_id -action after_update
 
     # Send a notification for this task
     set params [list  [list base_url "/intranet-timesheet2-tasks/"]  [list task_id $task_id] [list return_url ""] [list no_write_p 1]]
