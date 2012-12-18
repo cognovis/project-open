@@ -16,6 +16,17 @@ ad_page_contract {
     return_url
 }
 
+# ------------------------------------------------------------
+# Defaults & Permissions
+# ------------------------------------------------------------
+
+set user_id [ad_maybe_redirect_for_registration]
+im_project_permissions $user_id $release_project_id view read write admin
+if {!$write} {
+    ad_return_complaint 1 "<li>[_ intranet-core.lt_You_have_insufficient_6]"
+    return
+}
+
 
 # ------------------------------------------------------------
 # Get the list of release states
@@ -52,7 +63,18 @@ set rel_item_info_sql "
 		r.object_id_two = item.project_id and
 		r.rel_id = ri.rel_id
 "
-db_0or1row rel_item_info $rel_item_info_sql
+set exists_p [db_0or1row rel_item_info $rel_item_info_sql]
+
+if {!$exists_p} {
+    # The project doesn't exist
+    ad_return_complaint 1 [lang::message::lookup "" intranet-release-mgmt.Release_project_does_not_exist "
+	<br>
+	<b>The specified item #$release_item_id does not exist in project #$release_project_id</b>:<br>
+	The item or the project may have been deleted.
+	<br>&nbsp;<br>
+    "]
+} 
+
 
 
 # ------------------------------------------------------------
