@@ -1108,6 +1108,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 			a.object_type = :object_type
 			and a.attribute_id = aa.acs_attribute_id
 			and aa.widget_name = aw.widget_name
+			and aa.attribute_id in (select distinct attribute_id from im_dynfield_type_attribute_map)
 			and $extra_where
 			$also_hard_coded_p_sql
 		) t
