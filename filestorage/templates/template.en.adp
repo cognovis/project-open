@@ -17,7 +17,7 @@
 	    background-attachment:fixed; padding:0px;
 	}
 	p { font-family: verdana, arial, helvetica, sans-serif; color:black }
-	.mybody { margin-left:10px; margin-top:2px; margin-right:2px; margin-bottom:2px; }
+	.mybody { margin-left:10px; margin-top:0px; margin-right:2px; margin-bottom:2px; }
 	.roweven { font-family: verdana, arial, helvetica, sans-serif; font-size: 8pt; }
 	.rowodd { font-family: verdana, arial, helvetica, sans-serif; font-size: 8pt; }
 	.invoiceroweven { font-family: verdana, arial, helvetica, sans-serif; font-size: 8pt; }
@@ -29,37 +29,50 @@
     </style>
 </head>
 
+
 <body text="#000000">
 <div class="mybody">
 <table width="95%" border="0" cellpadding="1" cellspacing="1">
   <tr>
     <td>&nbsp; </td>
-      <td align="right" valign="bottom"> <p><img src="/logo.gif">
+       <td align="right" valign="bottom"> <img src="/logo-invoice.jpg">
           <br>
       </td>
  </tr>
 </table>
 <p>
 
-<div class="blueheader">
-	<%= $internal_name %> |
-	<%= $internal_address_line1 %> <%= $internal_address_line2 %> |
-	<%= $internal_postal_code %> <%= $internal_city %> |
-	<%= $internal_country_name %>
-</div>
 
 </p>
 <table width="95%" border="0" cellspacing="1" cellpadding="1">
   <tr>
-    <td colspan=2>
-      <p><b><%= $doc_title %> <%= [join $related_project_nrs ", "] %> <b></p>
+
+
     </td>
   </tr>
   <tr>
     <td>
       <table border="0" cellspacing="1" cellpadding="1">
         <tr class=rowtitle><td colspan="2" class=rowtitle></td></tr>
-        <tr><td class="address"><%=$company_name %></td></tr>
+
+<tr><td class="address"><%= $internal_name %></td></tr>
+          <tr><td class="address"><%= $internal_address_line1 %> <%= $internal_address_line2 %></td></tr>
+          <tr><td class="address"><%= $internal_postal_code %> <%= $internal_city %></td></tr>
+          <tr><td class="address"><%= $internal_country_name %></td></tr>
+          <tr><td class="address">
+
+
+
+       
+	    <%= [lang::message::lookup $locale intranet-invoices.VAT "VAT"] %>:
+	    <%= $internal_vat_number %>
+	</td></tr>
+      </table>
+    </td>
+    <td>
+        <table border="0" cellspacing="1" cellpadding="1">
+          <tr><td colspan="2" class="rowtitle"></td></tr>
+           <tr><td class="address"><%=$company_name %></td></tr>
 	<tr><td class="address"><%=$office_name %></td></tr>
 	<tr><td class="address"><%=$address_line1 %> <%=$address_line2 %></td></tr>
 	<tr><td class="address"><%=$address_postal_code %> <%=$address_city %></td></tr>
@@ -67,19 +80,6 @@
 	<tr><td class="address">
 	    <%= [lang::message::lookup $locale intranet-invoices.VAT "VAT"] %>:
 	    <%=$vat_number %>
-	</td></tr>
-      </table>
-    </td>
-    <td>
-        <table border="0" cellspacing="1" cellpadding="1">
-          <tr><td colspan="2" class="rowtitle"></td></tr>
-          <tr><td class="address"><%= $internal_name %></td></tr>
-          <tr><td class="address"><%= $internal_address_line1 %> <%= $internal_address_line2 %></td></tr>
-          <tr><td class="address"><%= $internal_postal_code %> <%= $internal_city %></td></tr>
-          <tr><td class="address"><%= $internal_country_name %></td></tr>
-          <tr><td class="address">
-	    <%= [lang::message::lookup $locale intranet-invoices.VAT "VAT"] %>:
-	    <%= $internal_vat_number %>
 	  </td></tr>
         </table>
     </td>
@@ -87,23 +87,8 @@
   <tr>
     <td>
       <table border="0" cellspacing="1" cellpadding="1">
-	<tr><td class="address"><%=$company_contact_name%></td><td class="address">&nbsp;</td></tr>
-	<tr>
-	  <td class="address"><%= [lang::message::lookup $locale intranet-core.Phone "Phone"] %>:&nbsp;</td>
-	  <td class="address"><%= $contact_person_work_phone %></td>
-	</tr>
-	<tr>
-	  <td class="address"><%= [lang::message::lookup $locale intranet-core.Fax "Fax"] %>:&nbsp;</td>
-	  <td class="address"><%= $contact_person_work_fax %></td>
-	</tr>
-      </table>
-    </td>
-    <td align="left" valign="top">
-      <table border="0" cellspacing="1" cellpadding="1">
-	<tr>
-	  <td colspan="2" class="rowtitle"></td>
-	</tr>
-        <tr>
+<br>	
+<tr>
 	  <td class="address"><%= $internal_contact_name %></td>
 	  <td class="address">&nbsp;</td>
 	</tr>
@@ -118,17 +103,47 @@
         <tr>
 	  <td class="address"><%= [lang::message::lookup $locale intranet-core.Email "Email"] %>:&nbsp;</td>
 	  <td class="address"><%= $internal_contact_email %></td>
+
+	</tr>
+      </table>
+    </td>
+    <td align="left" valign="top">
+      <table border="0" cellspacing="1" cellpadding="1">
+	<tr>
+	  <td colspan="2" class="rowtitle"></td>
+	</tr>
+<br>        
+<tr><td class="address"><%=$company_contact_name%></td><td class="address">&nbsp;</td></tr>
+	<tr>
+	  <td class="address"><%= [lang::message::lookup $locale intranet-core.Phone "Phone"] %>:&nbsp;</td>
+	  <td class="address"><%= $contact_person_work_phone %></td>
+	</tr>
+	<tr>
+	  <td class="address"><%= [lang::message::lookup $locale intranet-core.Fax "Fax"] %>:&nbsp;</td>
+	  <td class="address"><%= $contact_person_work_fax %></td>
+
 	</tr>
         </table>
     </td>
   </tr>
+
 </table>
+<br>
+<br>
+<br>
 <br>
 
 <table border="0" cellspacing="1" cellpadding="1">
 <tr>
-	<td class="rowtitle"><%= [lang::message::lookup $locale intranet-invoices.Document_hash_simbol "Document Nr."] %>:&nbsp;</td>
+
+
+
+	<td class="rowtitle"><%= [" "] %>Customer Invoice :&nbsp;</td>
 	<td class="address"><%=$invoice_nr %></td>
+
+
+
+
 </tr>	
 <tr>
 	<td class="rowtitle">
@@ -152,36 +167,37 @@
 <p>
 
 <%
-	set payment_method_string ""
-	set payment_method_text ""
-	set payment_cond_string ""
-	set payment_cond_text ""
-
-	if {$cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_bill]} {
-		set payment_cond_string "[lang::message::lookup $locale intranet-invoices.Payment_Terms "Payment Terms"] &nbsp;"
-		set payment_cond_text [lang::message::lookup $locale intranet-invoices.lt_This_invoice_is_past_]
-
-		set payment_method_string "[lang::message::lookup $locale intranet-invoices.Payment_Method "Payment Method"]:&nbsp;"
-		set payment_method_text $invoice_payment_method_desc
-	}
-
-	set vat_incl "$invoice_item_html"
-	set sub_total "
-	    <tr>
-		<td class=roweven colspan=4 align=right><B>[lang::message::lookup $locale intranet-invoices.Total "Totallll"]</B></td>
-		<td class=roweven align=right><B><nobr>$subtotal_pretty $currency</nobr></B></td>
-	    </tr>
-	"
-	if { $cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_po] } { set vat_incl "$item_list_html" }
-	if { $cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_po] } { set sub_total "" }
+	if {$grand_total_pretty == $subtotal_pretty } { set grand_total_pretty 10 }
+ 
 %>
 
-<table border="0" cellspacing="2" cellpadding="2">
-	<%=$vat_incl %>
-	<%=$sub_total%>
+<table border="0" cellspacing="2" cellpadding="2" align="right"><%=$subtotal_item_html%>
 </table>
 <p>
-
+<br>
+<br>
+<table>
+<tr>
+<td class="rowtitle">
+<br>
+<br>
+<br>
+Payment delay &nbsp; :&nbsp; <%=$calculated_due_date_pretty%>
+</td>
+</tr>
+</table>
+<br>
+<br>
+<br><br>
+<br>
+<br><br>
+<br>
+<br><br>
+<br>
+<br><br>
+<br>
+<br>
+<br>
 <table width="737" border="0" cellpadding="1" cellspacing="1">
 <tr>
 	<td class="rowtitle"><nobr><%= $payment_cond_string%></nobr></font></td>
@@ -191,6 +207,10 @@
 	<td class="rowtitle"><nobr><%=$payment_method_string %></nobr></td>
 	<td width="90%" class="address"><%=$payment_method_text%></td>
 </tr>
+
+
+
+
 <tr>
 <%
 	set vat_not_incl [lang::message::lookup $locale intranet-invoices.The_indicated_prices_dont_include_VAT "The indicated prices don't include VAT."]
@@ -271,16 +291,61 @@
 <td class="cominfo">
 	<%= $internal_payment_method_desc %><br>
 </td>
-<td class="cominfo">
-	<%= [lang::message::lookup $locale intranet-invoices.General_Manager "General Manager"] %>:<br>
-	<%= $internal_primary_contact_name %>,<br>
-	<%= $internal_primary_contact_email %>
-</td>
+
 </tr>
 </table>
 
+<p>
 
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+
+
+<br>
+<br>
+
+<%
+
+	set payment_method_string ""
+	set payment_method_text ""
+	set payment_cond_string ""
+	set payment_cond_text ""
+
+	if {$cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_bill]} {
+		set payment_cond_string "[lang::message::lookup $locale intranet-invoices.Payment_Terms "Payment Terms"] &nbsp;"
+		set payment_cond_text [lang::message::lookup $locale intranet-invoices.lt_This_invoice_is_past_]
+
+		set payment_method_string "[lang::message::lookup $locale intranet-invoices.Payment_Method "Payment Method"]:&nbsp;"
+		set payment_method_text $invoice_payment_method_desc
+	}
+
+	set vat_incl "$invoice_item_html"
+	set sub_total "
+	    <tr>
+		<td class=roweven colspan=4 align=right><B>[lang::message::lookup $locale intranet-invoices.Total "Totallll"]</B></td>
+		<td class=roweven align=right><B><nobr>$subtotal_pretty $currency</nobr></B></td>
+	    </tr>
+	"
+	if { $cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_po] } { set vat_incl "$item_list_html" }
+	if { $cost_type_id == [im_cost_type_invoice] || $cost_type_id == [im_cost_type_po] } { set sub_total "" }
+%>
+
+<table border="0" cellspacing="2" cellpadding="2">
+	<%=$vat_incl %>
+	<%=$sub_total%>
+</table>
+<p>
 </div>
 </body>
 </html>
 
+  
