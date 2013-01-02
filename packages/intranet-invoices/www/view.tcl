@@ -242,6 +242,7 @@ db_foreach related_projects $related_projects_sql {
 	set parent_id [db_string parentid "select parent_id from im_projects where project_id = :parent_id" -default ""]
 	incr cnt
     }
+ 
     if {"" != $customer_project_nr} { 
 	lappend related_customer_project_nrs $customer_project_nr 
     }
@@ -646,19 +647,19 @@ if {"" != $cost_project_id && 0 != $cost_project_id} {
     set rel_project_id $cost_project_id
 }
 
-set project_short_name_default [db_string short_name_default "select project_nr from im_projects where project_id=:rel_project_id" -default ""]
-set customer_project_nr_default ""
-
-if {$company_project_nr_exists && $rel_project_id} {
-
-    db_0or1row project_info_query "
+db_0or1row project_info_query "
     	select
-    		p.company_project_nr as customer_project_nr_default
+                project_nr as project_short_name_default,
+                im_category_from_id(project_type_id) as project_type_pretty
     	from
-    		im_projects p
+    		im_projects
     	where
-    		p.project_id = :rel_project_id
-    "
+    		project_id = :rel_project_id
+ "
+
+set customer_project_nr_default ""
+if {$company_project_nr_exists && $rel_project_id} {
+    set customer_project_nr_default [db_string project_nr_default "select company_project_nr from im_projects where project_id=:rel_project_id" -default ""]
 }
 
 # ---------------------------------------------------------------
@@ -881,6 +882,7 @@ if {$show_our_project_nr} {
           <td class=rowtitle $decoration_our_ref>[lang::message::lookup $locale intranet-invoices.Our_Ref]</td>
     "
 }
+
 
 append invoice_item_html "
           <td class=rowtitle $decoration_amount>[lang::message::lookup $locale intranet-invoices.Amount]</td>
@@ -1421,6 +1423,40 @@ append terms_html "$canned_note_html $note_html"
 set item_list_html [concat $invoice_item_html $subtotal_item_html]
 set item_html [concat $item_list_html $terms_html]
 
+# ---------------------------------------------------------------------
+# Surcharge / Discount section
+# ---------------------------------------------------------------------
+
+# PM Fee. Set to "checked" if the customer has a default_pm_fee_percentage != ""
+set pm_fee_checked ""
+set pm_fee_perc ""
+if {[info exists default_pm_fee_perc]} { set pm_fee_perc $default_pm_fee_perc }
+if {"" == $pm_fee_perc} { set pm_fee_perc [ad_parameter -package_id [im_package_invoices_id] "DefaultProjectManagementFeePercentage" "" "10.0"] }
+if {[info exists default_pm_fee_percentage] && "" != $default_pm_fee_percentage} { 
+    set pm_fee_perc $default_pm_fee_percentage 
+    set pm_fee_checked "checked"
+}
+set pm_fee_msg [lang::message::lookup "" intranet-invoicing.PM_Fee_Msg "Project Management %pm_fee_perc%%"]
+
+# Surcharge. 
+set surcharge_checked ""
+set surcharge_perc ""
+if {[info exists default_surcharge_perc]} { set surcharge_perc $default_surcharge_perc }
+if {"" == $surcharge_perc} { set surcharge_perc [ad_parameter -package_id [im_package_invoices_id] "DefaultSurchargePercentage" "" "10.0"] }
+if {[info exists default_surcharge_percentage]} { set surcharge_perc $default_surcharge_percentage }
+set surcharge_msg [lang::message::lookup "" intranet-invoicing.Surcharge_Msg "Rush Surcharge %surcharge_perc%%"]
+
+# Discount
+set discount_checked ""
+set discount_perc ""
+if {[info exists default_discount_perc]} { set discount_perc $default_discount_perc }
+if {"" == $discount_perc} { set discount_perc [ad_parameter -package_id [im_package_invoices_id] "DefaultDiscountPercentage" "" "10.0"] }
+if {[info exists default_discount_percentage]} { set discount_perc $default_discount_percentage }
+set discount_msg [lang::message::lookup "" intranet-invoicing.Discount_Msg "Discount %discount_perc%%"]
+
+set submit_msg [lang::message::lookup "" intranet-invoicing.Add_Discount_Surcharge_Lines "Add Discount/Surcharge Lines"]
+
+
 
 # ---------------------------------------------------------------
 # Special Output: Format using a template and/or send out as PDF
@@ -1610,40 +1646,6 @@ if {0 != $render_template_id || "" != $send_to_user_as} {
 
 } 
 
-
-
-# ---------------------------------------------------------------------
-# Surcharge / Discount section
-# ---------------------------------------------------------------------
-
-# PM Fee. Set to "checked" if the customer has a default_pm_fee_percentage != ""
-set pm_fee_checked ""
-set pm_fee_perc ""
-if {[info exists default_pm_fee_perc]} { set pm_fee_perc $default_pm_fee_perc }
-if {"" == $pm_fee_perc} { set pm_fee_perc [ad_parameter -package_id [im_package_invoices_id] "DefaultProjectManagementFeePercentage" "" "10.0"] }
-if {[info exists default_pm_fee_percentage] && "" != $default_pm_fee_percentage} { 
-    set pm_fee_perc $default_pm_fee_percentage 
-    set pm_fee_checked "checked"
-}
-set pm_fee_msg [lang::message::lookup "" intranet-invoicing.PM_Fee_Msg "Project Management %pm_fee_perc%%"]
-
-# Surcharge. 
-set surcharge_checked ""
-set surcharge_perc ""
-if {[info exists default_surcharge_perc]} { set surcharge_perc $default_surcharge_perc }
-if {"" == $surcharge_perc} { set surcharge_perc [ad_parameter -package_id [im_package_invoices_id] "DefaultSurchargePercentage" "" "10.0"] }
-if {[info exists default_surcharge_percentage]} { set surcharge_perc $default_surcharge_percentage }
-set surcharge_msg [lang::message::lookup "" intranet-invoicing.Surcharge_Msg "Rush Surcharge %surcharge_perc%%"]
-
-# Discount
-set discount_checked ""
-set discount_perc ""
-if {[info exists default_discount_perc]} { set discount_perc $default_discount_perc }
-if {"" == $discount_perc} { set discount_perc [ad_parameter -package_id [im_package_invoices_id] "DefaultDiscountPercentage" "" "10.0"] }
-if {[info exists default_discount_percentage]} { set discount_perc $default_discount_percentage }
-set discount_msg [lang::message::lookup "" intranet-invoicing.Discount_Msg "Discount %discount_perc%%"]
-
-set submit_msg [lang::message::lookup "" intranet-invoicing.Add_Discount_Surcharge_Lines "Add Discount/Surcharge Lines"]
 
 
 # ---------------------------------------------------------------------

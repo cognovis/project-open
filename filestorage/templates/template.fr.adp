@@ -197,10 +197,6 @@ Payment delay &nbsp; :&nbsp; <%=$calculated_due_date_pretty%>
 <br>
 <br>
 <table width="737" border="0" cellpadding="1" cellspacing="1">
-<tr>
-	<td class="rowtitle"><nobr><%= $payment_cond_string%></nobr></font></td>
-	<td width="90%" class="address"><%= $payment_cond_text %></td>
-</tr>
 <tr valign=top>
 	<td class="rowtitle"><nobr><%=$payment_method_string %></nobr></td>
 	<td width="90%" class="address"><%=$payment_method_text%></td>
