@@ -647,6 +647,9 @@ if {"" != $cost_project_id && 0 != $cost_project_id} {
     set rel_project_id $cost_project_id
 }
 
+set project_short_name_default ""
+set project_type_pretty ""
+
 db_0or1row project_info_query "
     	select
                 project_nr as project_short_name_default,
