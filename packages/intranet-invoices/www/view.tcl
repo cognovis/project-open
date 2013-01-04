@@ -721,38 +721,6 @@ if {"" != $address_country_code} {
     set country_name [lang::message::lookup $locale intranet-core.$country_name $country_name]
 }
 
-# -------------
-# set defaults KOLIBRI
-# -------------
-
-# if purchase order, no 14 days. All the rest is the same
-
-if {$address_country_code eq ""} {
-    set address_country_code "de"
-}
-
-switch $address_country_code {
-    de {
-	# Check if the company is a Kleinunternehmer
-	if {$company_type_id eq 10000301} {
-	    set taxability_string "Leistungsempfänger ist Kleinunternehmer und Steuerschuldner gemäß § 19 UStG."
-	}
-	set taxability_string ""
-    }
-    default {
-	set taxability_string "The recipient carries the tax liability."
-    }
-}
-
-switch $cost_type_id {
-    3704 {
-	set payment_days_string " within 14 days"
-    }
-    default {
-	set payment_days_string ""
-    }
-}
-
 # ---------------------------------------------------------------
 # Update the amount paid for this cost_item
 # ---------------------------------------------------------------
