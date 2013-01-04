@@ -55,16 +55,13 @@ ad_proc -public im_dynfield::status_category_for_object_type {
 }
 
 
-
-
-
-
 ad_proc -public im_dynfield::datatype_options {
 } {
     Return the default list of datatypes cached
 } {
     return [util_memoize [list im_dynfield::datatype_options_not_cached]]
 }
+
 
 ad_proc -public im_dynfield::datatype_options_not_cached {
 } {
@@ -115,14 +112,13 @@ ad_proc -public im_dynfield::datatype_options_not_cached {
 }
 
 
-
-
 ad_proc -public im_dynfield::widget_options {
 } {
     Return the default list of widgets cached
 } {
     return [util_memoize [list im_dynfield::widget_options_not_cached]]
 }
+
 
 ad_proc -public im_dynfield::widget_options_not_cached {
 } {
@@ -600,11 +596,11 @@ ad_proc -public im_dynfield::attribute_store {
                 }
             }
         }
+
 	if {"edit" != $display_mode} { 
 	    ns_log Notice "im_dynfield::attribute_store: Skipping writing attribute $object_type.$attribute_name because display_mode='$display_mode'"
 	    continue 
 	}
-
 
 	# Is this a multi-value field?
 	set multiple_p [template::element::get_property $form_id $attribute_name multiple_p]
@@ -1108,6 +1104,7 @@ ad_proc -public im_dynfield::append_attributes_to_form {
 			a.object_type = :object_type
 			and a.attribute_id = aa.acs_attribute_id
 			and aa.widget_name = aw.widget_name
+			and aa.attribute_id in (select distinct attribute_id from im_dynfield_type_attribute_map)
 			and $extra_where
 			$also_hard_coded_p_sql
 		) t
@@ -1640,4 +1637,66 @@ ad_proc -public im_dynfield::util::missing_attributes_from_table {
                   )
                   and attname not in (select attribute_name from acs_attributes aa, acs_object_types ot where aa.object_type = ot.object_type and ot.table_name = :table_name)
     }]
+}
+
+
+ad_proc -public im_dynfield::attribute_validate {
+    {-object_type ""}
+    -object_id:required
+    -form_id:required
+    {-user_id ""}
+} {
+    Validates intranet-dynfield attributes and ensures a clean 
+    error handling. In some cases the object is already created  
+    when im_dynfield::attribute_store is called. Therfore we 
+    need a separate function to be called before the object 
+    is created. 
+} {
+    # -------------------------------------------------
+    # Defaults and setup
+    # -------------------------------------------------
+
+    if {"" == $user_id} { set user_id [ad_get_user_id] }
+    set current_user_id $user_id
+
+    if { "user" == $object_type } {
+        set object_type "person"
+    }
+
+    # Get the list of all variables of the form
+    template::form get_values $form_id
+
+    set attribute_sql "
+        select  da.attribute_id as dynfield_attribute_id,
+                aa.pretty_name	as pretty_name_err,
+		*
+        from    im_dynfield_attributes da,
+                acs_attributes aa,
+                im_dynfield_widgets dw
+        where
+                da.acs_attribute_id = aa.attribute_id
+                and aa.object_type = :object_type
+                and da.widget_name = dw.widget_name
+                and 't' = acs_permission__permission_p(da.attribute_id, :current_user_id, 'write')
+                and (also_hard_coded_p is NULL or also_hard_coded_p != 't')
+        order by aa.attribute_name
+    "
+
+    db_foreach attributes $attribute_sql {
+        # Skip attributes that do not exists in (the partial) form.
+        if {![template::element::exists $form_id $attribute_name]} {
+            continue
+        }
+        # Type validation	
+	if { "" != [template::element::get_values $form_id $attribute_name] } {
+	        switch $widget_name {
+        	    numeric {
+                    	    if { ![string is double -strict [template::element::get_values $form_id $attribute_name]] } {
+	                       ad_return_complaint 1 [lang::message::lookup "" intranet-dynfield.ErrNotNumeric "Numeric value expected for field \"$pretty_name_err\""]
+			    }
+		    }
+               }
+	}
+
+    }
 }
