@@ -334,8 +334,14 @@ function ajaxFunction() {
 		    <textarea name=note rows=6 cols=40 wrap="<%=[im_html_textarea_wrap]%>">@cost_note@</textarea>
 		  </td>
 		</tr>
-
-
+<if @vat_type_enabled_p@>
+		<tr>
+		  <td class=rowodd>#intranet-core.Tax_classification#</td>
+                  <td class=rowodd>
+		    <%= [im_category_select -translate_p 1 -plain_p 1 -cache_interval 0 "Intranet VAT Type" vat_type_id $vat_type_id] %>
+                 </td>
+		</tr>
+</if>
         </table>
     </tr>
   </table>
@@ -386,10 +392,12 @@ function ajaxFunction() {
           </td>
           <td colspan=@vat_colspan@ align=right> 
             <table border=0 cellspacing=1 cellpadding=0>
+<if @vat_type_enabled_p@ eq 0>
               <tr> 
                 <td>#intranet-invoices.VATnbsp#</td>
                 <td><input type=text name=vat value="@vat@" size=4> % &nbsp;</td>
               </tr>
+</if>
 <if @tax_enabled_p@>
               <tr> 
                 <td>#intranet-invoices.TAXnbsp#</td>

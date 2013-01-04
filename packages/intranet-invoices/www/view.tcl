@@ -1293,6 +1293,15 @@ if { 0 == $item_list_type } {
 # Add subtotal + VAT + TAX = Grand Total
 # ---------------------------------------------------------------
 
+if {[im_column_exists im_costs vat_type_id]} {
+    # get the VAT note. We do not overwrite the VAT value stored in
+    # the invoice in case the default rate has changed for the
+    # vat_type_id and this is just a reprint of the invoice
+    set vat_note [db_string vat_note "select aux_string1 from im_categories where category_id = :vat_type_id" -default ""]
+} else {
+    set vat_note ""
+}
+    
 
 # Set these values to 0 in order to allow to calculate the
 # formatted grand total
