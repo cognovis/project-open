@@ -55,7 +55,7 @@ ad_page_contract {
 		db_foreach mail_list $sql {
 			append json_record_list "{\"id\":\"$content_item_id\",\n"
 			append json_record_list "\"date\":\"$date_formatted\",\n"
-		    	append json_record_list "\"subject\":\"[string map {\" \'} $header_subject]\",\n"
+		    	append json_record_list "\"subject\":\"[string map {\" \'} [mime::field_decode $header_subject]]\",\n"
 			append json_record_list "\"from\":\"[string map {\" \'} $header_from]\",\n"
 			append json_record_list "\"to\":\"[string map {\" \'} $header_to]\"\n"
 			append json_record_list "},\n"
