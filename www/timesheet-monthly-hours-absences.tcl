@@ -492,11 +492,11 @@ if { "0" != $department_id &&  "" != $department_id } {
         "
 }
 
-
 # Create "outer where" 
 if { ![empty_string_p $criteria_outer] } { 
    set outer_where [join $criteria_outer " and\n   "] 
 } 
+if {"" != $outer_where} { set outer_where "and $outer_where" }
 
 # if {"" != $daily_hours && 0 != $daily_hours} {
 #    set criteria_inner_sql "and h.hours > :daily_hours"
