@@ -466,7 +466,7 @@ set outer_where ""
 set criteria_outer [list]
 
 # Check for filter "Employee"  
-if { "" != $user_id } { lappend criteria_outer "user_id = :user_id" }
+if { "" != $user_id && $view_hours_all_p} { lappend criteria_outer "user_id = :user_id" }
 
 # Check for filter "Cost Center"  
 if { "0" != $cost_center_id &&  "" != $cost_center_id } {
