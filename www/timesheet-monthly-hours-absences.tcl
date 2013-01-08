@@ -466,7 +466,7 @@ set outer_where ""
 set criteria_outer [list]
 
 # Check for filter "Employee"  
-if { "" != $user_id } { lappend criteria_outer "and user_id = :user_id" }
+if { "" != $user_id } { lappend criteria_outer "user_id = :user_id" }
 
 # Check for filter "Cost Center"  
 if { "0" != $cost_center_id &&  "" != $cost_center_id } {
@@ -496,9 +496,7 @@ if { "0" != $department_id &&  "" != $department_id } {
 # Create "outer where" 
 if { ![empty_string_p $criteria_outer] } { 
    set outer_where [join $criteria_outer " and\n   "] 
-} else {
-   set outer_where "1=1" 
-}
+} 
 
 # if {"" != $daily_hours && 0 != $daily_hours} {
 #    set criteria_inner_sql "and h.hours > :daily_hours"
@@ -629,6 +627,7 @@ set sql "
         	        sub_project_name
 	 ) t
 	 where 
+	       1=1
 	       $outer_where
 	 group by 
 	 	user_id,
