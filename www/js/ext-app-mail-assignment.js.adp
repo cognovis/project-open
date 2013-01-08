@@ -91,6 +91,7 @@ Ext.onReady(function(){
             {name: 'from_header', mapping: 'from_header'},
             {name: 'to_header', mapping: 'to_header'},
             {name: 'subject_header', mapping: 'subject_header'},
+            {name: 'date_email', mapping: 'date_email'}
         ]
     });
 
@@ -109,11 +110,12 @@ Ext.onReady(function(){
             {text: "@message_name@", dataIndex: 'msg_name', hidden: true},
             {text: "@from@", dataIndex: 'from_header'},
             {text: "@to@", dataIndex: 'to_header'},
-            {text: "@subject_header@", dataIndex: 'subject_header', width: 365}
+            {text: "@subject_header@", dataIndex: 'subject_header', width: 365},
+            {text: "@date_email@", dataIndex: 'date_email', width: 110}
         ],
         columnLines: true,
-        width: 600,
-        height: 300,
+        width: 710,
+        height: 500,
         frame: true,
         title: '@title_defered_mails@',
         iconCls: 'icon-grid',

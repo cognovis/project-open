@@ -289,7 +289,7 @@ namespace eval im_mail_import {
             catch {set subject_header $email_headers(subject)}
 
 	    # Massage the header a bit
-	    regsub {=\?iso-....-.\?.\?} $subject_header "" subject_header
+	    # regsub {=\?iso-....-.\?.\?} $subject_header "" subject_header
 
 	    set spam_header ""
 	    if {[info exists email_headers(x-spambayes-classification)]} {

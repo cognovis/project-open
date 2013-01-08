@@ -136,9 +136,12 @@ ad_page_contract {
 	set from_header ""
 	set to_header ""
 	set subject_header "No Subject"
+	set date_email "Date not found"
+
 	catch {set from_header $email_headers(from)}
 	catch {set to_header $email_headers(to)}
 	catch {set subject_header [mime::field_decode $email_headers(subject)]}
+	catch {set date_email $email_headers(date)}
 
 	# Massage the header a bit
 	regsub {=\?iso-....-.\?.\?} $subject_header "" subject_header
@@ -166,7 +169,8 @@ ad_page_contract {
 	append json_record_list "{\"msg_name\":\"$msg\",\n"
         append json_record_list "\"from_header\":\"$from_header\",\n"
         append json_record_list "\"to_header\":\"$to_header\",\n"
-        append json_record_list "\"subject_header\":\"$subject_header\"\n"
+        append json_record_list "\"subject_header\":\"$subject_header\",\n"
+        append json_record_list "\"date_email\":\"$date_email\"\n"
 	append json_record_list "}\n"
         lappend record_list_tmp $json_record_list
         incr ctr
