@@ -138,7 +138,7 @@ ad_page_contract {
 	set subject_header "No Subject"
 	catch {set from_header $email_headers(from)}
 	catch {set to_header $email_headers(to)}
-	catch {set subject_header $email_headers(subject)}
+	catch {set subject_header [mime::field_decode $email_headers(subject)]}
 
 	# Massage the header a bit
 	regsub {=\?iso-....-.\?.\?} $subject_header "" subject_header
