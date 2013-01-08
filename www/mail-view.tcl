@@ -36,7 +36,8 @@ set field_list [acs_mail_body_to_output_format -body_id $body_id]
 
 set to [lindex $field_list 0]
 set from [lindex $field_list 1]
-set subject [lindex $field_list 2]
+set subject [mime::field_decode [lindex $field_list 2]]
+
 set body [lindex $field_list 3]
 
 # strip html part from html email 
