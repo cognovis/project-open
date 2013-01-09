@@ -30,12 +30,14 @@ if {!$user_is_admin_p } {
     }
 }
 
-set page_title  [lang::message::lookup "" intranet-mail-import.Mail_Assignment_title "Assign mails to users or projects"]
+set page_title [lang::message::lookup "" intranet-mail-import.Mail_Assignment_title "Assign mails to users or projects"]
+set introduction [lang::message::lookup "" intranet-mail-import.IntroductionMailDispatcher "The following mails couldn't be assigned to any object, please assign them manually or delete them.<br>"]
 set context_bar [im_context_bar [list /intranet-dynfield/ "DynField"] $page_title]
+
 set return_url [im_url_with_query]
 set current_url_without_vars [ns_conn url]
 
 # src="/intranet-sencha/js/ext-all.js" 
 template::head::add_javascript -src "/intranet-sencha/js/ext-all-debug-w-comments.js" -order "100"
 template::head::add_javascript -src "/intranet-mail-import/js/ext-app-mail-assignment.js" -order "130"
-template::head::add_css -href "/intranet-sencha/css/ext-all.css" -media "screen" -order "120"
+template::head::add_css -href "/intranet-sencha/css/ext-all-gray.css" -media "screen" -order "9999"
