@@ -6,6 +6,17 @@ Ext.require([
 
 Ext.onReady(function(){
 
+    // WIN OVERLAY SHOWING EMAIL  ---------------	
+
+	Ext.define('mailOverlay', {
+	    extend: 'Ext.window.Window',
+	    width: 600,
+	    height: 600
+	    // buttons:[{ text:"@close_button;noquote@" }]
+	});
+
+    // DATASOURCE ------------------------------	
+	
     Ext.define("Post", {
         extend: 'Ext.data.Model',
         proxy: {
@@ -32,10 +43,13 @@ Ext.onReady(function(){
         model: 'Post'
     });
 
+
+    // PANEL ------------------------------	
+
     var panel = Ext.create('Ext.panel.Panel', {
         renderTo: searchbox,
         title: '@search_title@',
-        width: 600,
+        width: 741,
         bodyPadding: 10,
         layout: 'anchor',
 
@@ -74,7 +88,6 @@ Ext.onReady(function(){
 
     // ---------------- Defered Mails -----------------------------
 
-
     Ext.define("Defered Mails", {
         extend: 'Ext.data.Model',
         proxy: {
@@ -108,13 +121,33 @@ Ext.onReady(function(){
         selModel: sm,
         columns: [
             {text: "@message_name@", dataIndex: 'msg_name', hidden: true},
-            {text: "@from@", dataIndex: 'from_header'},
-            {text: "@to@", dataIndex: 'to_header'},
-            {text: "@subject_header@", dataIndex: 'subject_header', width: 365},
+            {text: "@from@", dataIndex: 'from_header', width: 150},
+            {text: "@to@", dataIndex: 'to_header', width: 150},
+            {text: "@subject_header@", dataIndex: 'subject_header', width: 294},
+
+<if @view_mails_all_p@ eq 1>
+            {
+            	xtype:'actioncolumn',
+		header: 'View',
+	 	width:30,
+		align: 'middle',
+            	items: [{
+                	icon: '/intranet/images/navbar_default/email_open.png',  
+	                tooltip: 'View email',
+        	        handler: function(grid, rowIndex, colIndex) {
+                	    var rec = grid.getStore().getAt(rowIndex);
+                    	    // alert(rec.get('msg_name'));
+		                Ext.create('mailOverlay', {
+                                    html: '<iframe src="/intranet-mail-import/mail-view?content_item_id=0&msg_id=' + rec.get('msg_name') + '&view_mode=body" width="100%" height="100%"></iframe>' 
+               			 }).show();
+                	}
+            	}]
+            },
+</if>
             {text: "@date_email@", dataIndex: 'date_email', width: 110}
-        ],
+    	],
         columnLines: true,
-        width: 710,
+        width: 741,
         height: 500,
         frame: true,
         title: '@title_defered_mails@',
@@ -152,7 +185,7 @@ Ext.onReady(function(){
         	        success: function(response){
                 	        var text = response.responseText;
 				Ext.getCmp('grid_panel_defered_mails').getStore().load();
-                        	alert('Removal successful');
+                        	// alert('Removal successful');
 	                }
         	    });
 	            // result += record.get(column) * 1;
