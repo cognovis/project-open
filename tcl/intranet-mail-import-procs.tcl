@@ -288,6 +288,7 @@ namespace eval im_mail_import {
             catch {set to_header $email_headers(to)}
             catch {set subject_header $email_headers(subject)}
 
+	    # 20130108 KH: Removed - Use mime::field_decode $subject instead
 	    # Massage the header a bit
 	    # regsub {=\?iso-....-.\?.\?} $subject_header "" subject_header
 
@@ -350,14 +351,17 @@ namespace eval im_mail_import {
 	    # List of all ids: set to [list 0] if empty to avoid
 	    # syntax errors in SQL
 	    set all_ids [set_union $to_ids $from_ids]
+	    ns_log Notice "im_mail_import.process_mails15a: all_ids=$all_ids"
 
 	    # Calculate the IDs of non-Employees (=> external persons)
 	    set employee_ids [db_list employee_ids "select member_id from group_distinct_member_map where group_id=[im_profile_employees]"]
 	    set non_emp_ids [set_difference $all_ids $employee_ids]
 
-	    set all_object_ids [set_union $non_emp_ids $project_ids]
+	    # set all_object_ids [set_union [set_union $non_emp_ids $project_ids] $all_ids] 
+	    set all_object_ids [set_union $non_emp_ids $project_ids]    
+	    ns_log Notice "im_mail_import.process_mails15b: all_object_ids=$all_object_ids"
 
-	    ns_log Notice "im_mail_import.process_mails16x: to_ids=$to_ids, from_ids=$from_ids, project_ids=$project_ids, all_oids=$all_object_ids"
+	    ns_log Notice "im_mail_import.process_mails16x: to_ids=$to_ids, from_ids=$from_ids,all_ids=$all_ids, project_ids=$project_ids, all_oids=$all_object_ids, non_emp_ids: $non_emp_ids"
 
 	    # Move to "defered" if there is no object for this email right now...
             if {0 == [llength $all_object_ids]} {
@@ -426,7 +430,8 @@ namespace eval im_mail_import {
 		ns_log Notice "im_mail_import.process_mails20: created cr_item_id: \#$cr_item_id\n"
 	        append debug "created spam_item \#$cr_item_id\n"
 
-		ns_log Notice "im_mail_import.process_mails21: No assigning non_emp_ids: $non_emp_ids"		
+		# Assigning to NON-Employees
+		ns_log Notice "im_mail_import.process_mails21: Now assigning non_emp_ids: $non_emp_ids"		
 		foreach non_emp_id $non_emp_ids {
 		    set rel_type "im_mail_from"
 		    set object_id_two $non_emp_id
@@ -451,6 +456,8 @@ namespace eval im_mail_import {
 		    ns_log Notice "im_mail_import.process_mails21a: created relationship \#$rel_id"
 		    append debug "created relationship \#$rel_id\n"
 		}
+
+		# Assigning to projects 
 		ns_log Notice "im_mail_import.process_mails22: No assigning project_ids: $project_ids"		
 		foreach project_id $project_ids {
 		    set rel_type "im_mail_related_to"
