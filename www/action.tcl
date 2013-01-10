@@ -83,6 +83,7 @@ switch $action {
 	    set project_member_id [im_opt_val item_project_member_id($id)]
 	    set cost_type_id [im_opt_val item_cost_type_id($id)]
 	    set item_type_id [im_planning_item_type_revenues]
+	    set item_status_id [im_planning_item_status_active]
 	    set date [im_opt_val item_date($id)]
 	    set value [im_opt_val item_value($id)]
 	    set note [im_opt_val item_note($id)]
@@ -94,7 +95,7 @@ switch $action {
 			-- object standard 6 parameters
 			null, 'im_planning_item', now(), :user_id, '[ns_conn peeraddr]', null,
 			-- Main parameters
-			:object_id, :item_type_id, null,
+			:object_id, :item_type_id, :item_status_id,
 			-- Value parameters
 			:value, :note,
 			-- Dimension parameters
