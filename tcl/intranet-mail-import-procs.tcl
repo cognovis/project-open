@@ -600,6 +600,14 @@ ad_proc im_mail_import_user_component {
         set rel_user_id [ad_get_user_id]
     }
 
+    # Other users than the user himself need to be admins or have the privilege view_mails_all
+    if { $rel_user_id != [ad_get_user_id]  } {
+        if { ![im_is_user_site_wide_or_intranet_admin [ad_get_user_id]] && ![im_permission [ad_get_user_id] view_mails_all] } {
+	    return "No Permission"
+            break
+        }
+    }
+
     # HTML Overlay
     if { $yui_support_p } {
         set js_include [template::adp_include /packages/intranet-mail-import/www/js/overlay ""]
@@ -628,7 +636,6 @@ ad_proc im_mail_import_user_component {
         order by
                 ao.creation_date DESC
     "
-
     set ctr 0
 
     set html_lines ""
