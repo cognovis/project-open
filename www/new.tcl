@@ -155,7 +155,19 @@ if {[llength $rep_cost_ids] == 0} {
 # ------------------------------------------------------------------
 
 set currency_options [im_currency_options]
-set department_options [im_department_options]
+
+# Hidden parameter "EmployeeInformationShowDepartmentsOnly". This allows configuration option as follows:
+# Department-1
+# 	- CC-A
+#		- Employee Ben Bigboss 
+# 	- CC-B
+#		- Employee Petra Projectanager
+# Department-2 
+# ....
+# ...visible at http://[YOUR_SERVER]/cost-centers/index/
+set department_only_p [parameter::get -package_id [apm_package_id_from_key intranet-hr] -parameter "EmployeeInformationShowDepartmentsOnly" -default 1]
+set department_options [im_cost_center_options -include_empty 0 -department_only_p $department_only_p]
+
 set end_date $end_century
 
 set supervisor_options [im_employee_options 1]
