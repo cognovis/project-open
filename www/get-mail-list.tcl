@@ -21,12 +21,14 @@ ad_page_contract {
 	set view_p 0
 
 	# Admins can see everything 
-	if { [im_is_user_site_wide_or_intranet_admin $user_id] } {
-		set view_p 1
-	}
+	if { [im_is_user_site_wide_or_intranet_admin $user_id] } { set view_p 1	}
+
+	# Users with privilege to see all mails can see everything 
+        if { [im_permission $user_id view_mails_all] } { set view_p 1 }
 
 	if { $object_type == "im_user" && $object_id==$user_id } {
-		set view_p 1 
+	   # User can see his own emails  
+	   set view_p 1 
 	} else {
 		if { $object_type == "im_project" } {
 		    if { [im_biz_object_member_p $user_id $object_id] || [im_is_user_site_wide_or_intranet_admin $user_id] } { 
