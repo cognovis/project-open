@@ -23,7 +23,7 @@ set current_user_id [ad_maybe_redirect_for_registration]
 # Check Permission  
 if { 0 != $content_item_id } {
     set body_id [db_string get_data "select body_id from acs_mail_bodies where content_item_id= :content_item_id" -default 0]
-    if { ![im_is_user_site_wide_or_intranet_admin $current_user_id] && ![im_permission $user_id view_mails_all] } {
+    if { ![im_is_user_site_wide_or_intranet_admin $current_user_id] && ![im_permission $current_user_id view_mails_all] } {
 	# Permission check
 	set sql " 
 		select 	count(*)	
@@ -43,7 +43,7 @@ if { 0 != $content_item_id } {
      }
 } else {
 	# User nneds to be admin or needs to have the privilege 'view_mails_all' to view a mail from the FS 
-	if { ![im_is_user_site_wide_or_intranet_admin $current_user_id] && ![im_permission $user_id view_mails_all] } {
+	if { ![im_is_user_site_wide_or_intranet_admin $current_user_id] && ![im_permission $current_user_id view_mails_all] } {
 		ns_return 200 text/html [lang::message::lookup "" intranet-mail.NoPermissionToViewMail "You do not have the permissions to view this email"]
 		break		
 	}
