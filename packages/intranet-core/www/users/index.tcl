@@ -106,6 +106,7 @@ set freelancers_exist_p [db_table_exists im_freelancers]
 # Default 0 corresponds to the list of all users.
 # Use a normalized group_name in lowercase and with
 # all special characters replaced by "_".
+
 set user_group_name [im_mangle_user_group_name $user_group_name]
 set user_group_id 0
 set menu_select_label ""
@@ -329,9 +330,9 @@ db_foreach select_user_types "
 	where
 		group_id = profile_id" \
     {
-	set group_name [lang::message::lookup "" intranet-core.[lang::util::suggest_key $group_name] $group_name]
+	set group_name_pretty [lang::message::lookup "" intranet-core.[lang::util::suggest_key $group_name] $group_name]
 
-        set option [list $group_name [im_mangle_user_group_name $group_name]]
+        set option [list $group_name_pretty [im_mangle_user_group_name $group_name]]
         lappend user_types $option
     }
 
