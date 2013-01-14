@@ -205,6 +205,21 @@ set contact_select [im_company_contact_select company_contact_id $company_contac
 set cost_center_label [lang::message::lookup "" intranet-invoices.Cost_Center "Cost Center"]
 set cost_center_select [im_cost_center_select -include_empty 1 -department_only_p 0 cost_center_id $cost_center_id $cost_type_id]
 
+if {[im_column_exists im_costs vat_type_id]} {
+    # Get a reasonable default value for the vat_type_id,
+    # either from the invoice or from the company.
+    
+    set vat_type_id [db_string vat_type_info "select vat_type_id from im_costs where cost_id = :invoice_id" -default ""]
+    if {"" == $vat_type_id} {
+	set vat_type_id [db_string vat_info "select tax_classification from im_companies where company_id = :company_id" -default ""]
+    }
+    set vat_type_enabled_p 1
+} else {
+    set vat_type_enabled_p ß
+}
+
+# Should we show the "Tax" field?
+set tax_enabled_p [ad_parameter -package_id [im_package_invoices_id] "EnabledInvoiceTaxFieldP" "" 1]
 
 # ---------------------------------------------------------------
 # Modify some variable between the source and the target invoice

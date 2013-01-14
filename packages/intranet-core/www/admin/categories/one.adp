@@ -69,11 +69,15 @@ However, it is OK to:
 
   <tr class=rowodd>
     <td>String1</td>
-    <td><input size=60 name=aux_string1 value="@aux_string1@"></td>
+    <td>
+      <textarea name=aux_string1 rows=5 cols=50 wrap="<%=[im_html_textarea_wrap]%>">@aux_string1@</textarea>
+    </td>
   </tr>
   <tr class=roweven>
     <td>String2</td>
-    <td><input size=60 name=aux_string2 value="@aux_string2@"></td>
+    <td>
+      <textarea name=aux_string2 rows=5 cols=50 wrap="<%=[im_html_textarea_wrap]%>">@aux_string2@</textarea>
+    </td>
   </tr>
 
 
