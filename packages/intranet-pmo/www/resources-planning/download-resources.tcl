@@ -33,7 +33,7 @@ while {$i<7} {
     set current_month [db_string current_month "select to_char(to_date(:current_month,'YYMM') + interval '1 month','YYMM') from dual"]
 }
 
-set csv_header "username;personnel_number;project_name"
+set csv_header "username;personnel_number;project_name;project_nr;company_id"
 foreach col $column_headers {
     
     # Generate a header line for CSV export. Header uses the
@@ -48,17 +48,17 @@ set csv_body ""
 # Get the username / project combinations
 
 set user_projects [list]
-db_foreach projects_info_query {select username,project_name,personnel_number,project_id,employee_id
+db_foreach projects_info_query {select username,project_name,personnel_number,project_id,employee_id,project_nr,company_id
     from im_planning_items i, im_projects p, im_employees e, users u
     where u.user_id = i.item_project_member_id
     and p.project_id = i.item_project_phase_id
     and e.employee_id = u.user_id
-    group by username,project_name,personnel_number,employee_id,project_id
+    group by username,project_name,personnel_number,employee_id,project_id,project_nr,company_id
     order by username,project_name
 } {
     set user_project "${employee_id}-${project_id}"
     lappend user_projects $user_project
-    set csv_lines($user_project) "${username};${personnel_number};${project_name}"
+    set csv_lines($user_project) "${username};${personnel_number};${project_name};${project_nr};${company_id}"
 }
 
 foreach user_project $user_projects {
