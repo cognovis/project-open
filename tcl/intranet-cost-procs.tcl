@@ -1200,7 +1200,7 @@ ad_proc im_costs_project_finance_component {
     }
     
     # user is employee and has has privilege  "view cost" 
-    if { [im_user_is_employee_p $user_id] && [im_permission $user_id view_costs] } {
+    if { ![im_user_is_customer_p $user_id] && ![im_user_is_freelance_p $user_id] && [im_permission $user_id view_costs] } {
 	set view_docs_3_p 1
 	set can_read_summary_p 1
     }
@@ -1683,6 +1683,7 @@ ad_proc im_costs_project_finance_component {
         "
 
     }
+
 
     if {!$show_summary_p} { set summary_html "" }
     if {!$can_read_summary_p} { set summary_html "" }
