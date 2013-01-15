@@ -210,7 +210,7 @@ ad_proc -public im_material_list_component {
     set date_format "YYYY-MM-DD"
 
     if { "" == $max_entries_per_page || "0" == $max_entries_per_page } {
-        set max_entries_per_page [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 50]
+        set max_entries_per_page [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage "" 500]
     }
 
     set end_idx [expr $start_idx + $max_entries_per_page - 1]
