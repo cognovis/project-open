@@ -637,6 +637,7 @@ ad_proc im_timesheet_csv1 {
 		h.note as hours_note,
 		to_char(h.day, 'YYYY-MM-DD') as day_formatted,
 		u.*,
+                u.username as user_name,
 		e.*,
 		supervisor.email as supervisor_email,
 		im_name_from_user_id(supervisor.party_id) as supervisor_name,
@@ -708,6 +709,7 @@ ad_proc im_timesheet_csv1 {
 	    set ttt ""
 	    if {"" != $csv_line} { append csv_line $csv_separator }
 	    set cmd "set ttt $column_var"
+	    ds_comment "$cmd"
 	    eval "$cmd"
 	    append csv_line "\"[im_csv_duplicate_double_quotes $ttt]\""
 	}
