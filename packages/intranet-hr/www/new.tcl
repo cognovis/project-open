@@ -156,7 +156,10 @@ if {[llength $rep_cost_ids] == 0} {
 
 set currency_options [im_currency_options]
 set department_options [im_department_options]
-set end_date $end_century
+
+if {"" == $end_date} {
+    set end_date $end_century
+}
 
 set supervisor_options [im_employee_options 1]
 set salary_interval_options {{Month month} {Day day} {Week week} {Year year}}
@@ -386,7 +389,9 @@ if {[form is_submission $form_id]} {
 		current_job_id = :current_job_id,
 		qualification_id = :qualification_id,
 		vacation_days_per_year = :vacation_days_per_year,
-		vacation_balance = :vacation_balance
+		vacation_balance = :vacation_balance,
+		start_date = :start_date,
+		end_date = :end_date
 	where
 		employee_id = :employee_id
 "
