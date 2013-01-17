@@ -15,6 +15,7 @@
   </tr>
 </if>
   <formtemplate id="person_view" style="standard-withouttabletab"></formtemplate>
+  <if @write_p@>
     <tr>
       <td class=form-label>&nbsp;</td>
       <td class=form-widget>
@@ -25,5 +26,6 @@
 	</form>
       </td>
     </tr>
+  </if>
 </table>
 
