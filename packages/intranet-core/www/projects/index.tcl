@@ -375,24 +375,24 @@ switch [string tolower $order_by] {
     }
 }
 
-set where_clause [join $criteria " and\n            "]
+set where_clause [join $criteria " and "]
 if { ![empty_string_p $where_clause] } {
     set where_clause " and $where_clause"
 }
 
-set extra_select [join $extra_selects ",\n\t"]
+set extra_select [join $extra_selects ","]
 if { ![empty_string_p $extra_select] } {
-    set extra_select ",\n\t$extra_select"
+    set extra_select ",$extra_select"
 }
 
-set extra_from [join $extra_froms ",\n\t"]
+set extra_from [join $extra_froms ","]
 if { ![empty_string_p $extra_from] } {
-    set extra_from ",\n\t$extra_from"
+    set extra_from ",$extra_from"
 }
 
-set extra_where [join $extra_wheres "and\n\t"]
+set extra_where [join $extra_wheres " and "]
 if { ![empty_string_p $extra_where] } {
-    set extra_where ",\n\t$extra_where"
+    set extra_where " and $extra_where"
 }
 
 
