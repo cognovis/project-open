@@ -936,7 +936,12 @@ ad_proc -public im_navbar {
 	"
     }
 
-    set show_context_comment_p 1
+    if {"" == [ad_parameter -package_id [im_package_core_id] ErrorReportURL "" ""]} {
+	set show_context_comment_p 0
+    } else {
+	set show_context_comment_p 1
+    }
+
     if {$show_context_comment_p} {
 	set context_comment_html "
 	    <div id=\"main_users_online\">

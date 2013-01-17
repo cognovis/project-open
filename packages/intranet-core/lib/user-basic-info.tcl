@@ -164,3 +164,6 @@ im_dynfield::append_attributes_to_form \
     -form_display_mode "display" \
     -page_url "/intranet/users/view"
 
+
+# Permissions for existing user: We need to be able to admin him:
+im_user_permissions $current_user_id $user_id view_p read_p write_p admin_p

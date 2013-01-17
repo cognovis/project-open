@@ -637,6 +637,7 @@ ad_proc im_timesheet_csv1 {
 		h.note as hours_note,
 		to_char(h.day, 'YYYY-MM-DD') as day_formatted,
 		u.*,
+                u.username as user_name,
 		e.*,
 		supervisor.email as supervisor_email,
 		im_name_from_user_id(supervisor.party_id) as supervisor_name,
@@ -708,6 +709,7 @@ ad_proc im_timesheet_csv1 {
 	    set ttt ""
 	    if {"" != $csv_line} { append csv_line $csv_separator }
 	    set cmd "set ttt $column_var"
+	    ds_comment "$cmd"
 	    eval "$cmd"
 	    append csv_line "\"[im_csv_duplicate_double_quotes $ttt]\""
 	}
@@ -1040,7 +1042,7 @@ ad_proc im_users_csv1 {
     set lol [im_dynfield::append_attributes_to_im_view -object_type "person"]
     set column_headers [concat $column_headers [lindex $lol 0]]
     set column_vars [concat $column_vars [lindex $lol 1]]
-
+    set dynfield_selects [join [lindex $lol 2] " "]
     # ---------------------------------------------------------------
     # Generate SQL Query
     
@@ -1053,8 +1055,11 @@ ad_proc im_users_csv1 {
     if { ![empty_string_p $where_clause] } {
 	set where_clause " and $where_clause"
     }
-    
+
     set extra_select ""
+    if {"" != $dynfield_selects} {
+	set extra_select ", [string trimright $dynfield_selects ","]" 
+    }
     set extra_from ""
     
 
@@ -1095,16 +1100,16 @@ ad_proc im_users_csv1 {
 		$where_clause
     "
 
+ns_log Notice "ad... $sql"
     # ---------------------------------------------------------------
     # Set up colspan to be the number of headers + 1 for the # column
 
     set csv_header ""
     foreach col $column_headers {
-	
 	# Generate a header line for CSV export. Header uses the
 	# non-localized text so that it's identical in all languages.
 	if {"" != $csv_header} { append csv_header $csv_separator }
-	append csv_header "\"[ad_quotehtml $col]\""
+	append csv_header "\"[ad_quotehtml [lang::util::localize $col]]\""
 	
     }
     
