@@ -250,8 +250,16 @@ foreach csv_line_fields $values_list_of_lists {
 	
 	# Create the rel
 	if {$current_availability > 0} {
-	    # Create the relationship for this month
-	    set rel_id [im_biz_object_add_role -percentage $current_availability $employee_id $project_id 1300]
+	    # Find out if the relationship already exists
+	    set rel_id ""
+	    if {"" == $rel_id} {
+		# Create the relationship for this month
+		set rel_id [im_biz_object_add_role -percentage $current_availability $employee_id $project_id 1300]
+	    } else {
+		# Update the relationship
+	    }
+	} else {
+	    # Remove the relationship
 	}
     } else {
 	ds_comment "$personnel_number :: $employee_id :: $project_id :: $project_nr ::"
