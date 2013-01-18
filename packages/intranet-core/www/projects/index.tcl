@@ -232,7 +232,7 @@ ad_form \
     -action $action_url \
     -mode $form_mode \
     -method GET \
-    -export {start_idx order_by how_many view_name include_subprojects_p include_subproject_level letter filter_advanced_p}\
+    -export {start_idx order_by how_many include_subprojects_p include_subproject_level letter filter_advanced_p}\
     -form {}
 
 if {[im_permission $current_user_id "view_projects_all"]} { 
@@ -252,6 +252,7 @@ if { [empty_string_p $company_id] } {
 }
 
 set company_options [im_company_options -include_empty_p 1 -include_empty_name "#intranet-core.All#" -type "CustOrIntl" ]
+set view_options [db_list_of_lists views {select view_label,view_name from im_views where view_type_id = 1451}]
 
 # Get the list of profiles readable for current_user_id
 set managable_profiles [im_profile::profile_options_managable_for_user -privilege "read" $current_user_id]
@@ -270,6 +271,7 @@ ad_form -extend -name $form_id -form {
     {user_id_from_search:text(select),optional {label \#intranet-core.With_Member\#} {options $user_options}}
     {start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {value "$start_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
     {end_date:text(text) {label "[_ intranet-timesheet2.End_Date]"} {value "$end_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('end_date', 'y-m-d');" >}}}
+    {view_name:text(select) {label \#intranet-core.View_Name\#} {value "$view_name"} {options $view_options}}
 }
 
 # List to store the view_type_options

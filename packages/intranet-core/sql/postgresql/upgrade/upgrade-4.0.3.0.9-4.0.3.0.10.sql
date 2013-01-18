@@ -25,3 +25,14 @@ SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-4.
 alter table im_views add column view_label varchar(1000);
 
 update im_views set view_label = replace(view_name,'_',' ');
+
+-- Add a new DynView Type for the invoice list page.
+SELECT im_category_new ('1451', 'List - Project', 'Intranet DynView Type');
+
+-- Update the existing list type
+update im_views set view_type_id = 1451 where view_name = 'project_list';
+update im_views set view_label = 'Project List' where view_name = 'project_list';
+
+-- Add project revenue view
+insert into im_views (view_id, view_name, view_label, view_type_id)
+values (1020, 'project_revenue', 'Project Revenue', 1451);
