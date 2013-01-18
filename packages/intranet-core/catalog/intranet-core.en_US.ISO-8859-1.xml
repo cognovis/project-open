@@ -1743,6 +1743,7 @@ other way for the user to find out.</msg>
   <msg key="View_1">View:</msg>
   <msg key="View_Id">View Id</msg>
   <msg key="View_Name">View Name</msg>
+  <msg key="View_Label">View Label</msg>
   <msg key="View_Projects">View Projects</msg>
   <msg key="View_sql">View sql</msg>
   <msg key="View_Status">View Status</msg>
