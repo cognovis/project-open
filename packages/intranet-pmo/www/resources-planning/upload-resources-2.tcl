@@ -251,18 +251,23 @@ foreach csv_line_fields $values_list_of_lists {
 	# Create the rel
 	if {$current_availability > 0} {
 	    # Find out if the relationship already exists
-	    set rel_id ""
+	    set rel_id [db_string select_rel "select rel_id from acs_rels where object_id_one = :project_id and object_id_two = :employee_id" -default ""]
 	    if {"" == $rel_id} {
 		# Create the relationship for this month
 		set rel_id [im_biz_object_add_role -percentage $current_availability $employee_id $project_id 1300]
 	    } else {
 		# Update the relationship
+		db_dml update_availability "update im_biz_object_members set percentage = :current_availability where rel_id = :rel_id"
 	    }
 	} else {
 	    # Remove the relationship
+	    set rel_id [db_string select_rel "select rel_id from acs_rels where object_id_one = :project_id and object_id_two = :employee_id" -default ""]
+	    if {$rel_id ne ""} {
+		ns_log Notice "This rel $rel_id for $project_id :: $personnel_number should be removed"
+	    }
 	}
     } else {
-	ds_comment "$personnel_number :: $employee_id :: $project_id :: $project_nr ::"
+	ds_comment "Can't add personnel $personnel_number for Employee $employee_id in Project $project_id :: $project_nr"
     }
 }
 
