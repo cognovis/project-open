@@ -1015,6 +1015,7 @@ ad_proc -public im_workflow_home_inbox_component {
     {-object_type ""}
     {-subtype_id ""}
     {-status_id ""}
+    {-exclude_type_ids ""}
 } {
     Returns a HTML table with the list of workflow tasks for the
     current user.
@@ -1146,7 +1147,11 @@ ad_proc -public im_workflow_home_inbox_component {
 
     append table_header_html "</tr>\n"
 
-
+    if {"" == $exclude_type_ids} {
+	set extra_where_clause ""
+    } else {
+	set extra_where_clause " and im_biz_object__get_type_id(o.object_id) not in ([template::util::tcl_to_sql_list $exclude_type_ids])"
+    }
     # ---------------------------------------------------------------
     # SQL Query
 
@@ -1178,6 +1183,7 @@ ad_proc -public im_workflow_home_inbox_component {
 		and t.state in ('enabled', 'started')
 		and t.transition_key = tr.transition_key
 		and t.workflow_key = tr.workflow_key
+                $extra_where_clause
     "
 
     if {"" != $order_by_clause} {
