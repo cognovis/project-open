@@ -415,6 +415,7 @@ set action_url "/intranet-invoices/list"
 set form_mode "edit"
 set company_options [im_company_options -include_empty_p 1 -include_empty_name "#intranet-core.All#" -type "CustOrIntl" ]
 
+set view_options [db_list_of_lists views {select view_label,view_name from im_views where view_type_id = 1450}]
 ad_form \
     -name $form_id \
     -action $action_url \
@@ -427,7 +428,7 @@ ad_form \
 	{company_id:text(select),optional {label \#intranet-invoices.Company\#} {options $company_options} {value $company_id}}
 	{start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {value "$start_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
 	{end_date:text(text) {label "[_ intranet-timesheet2.End_Date]"} {value "$end_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('end_date', 'y-m-d');" >}}}
-	{view_name:text(select) {label \#intranet-core.View_Name\#} {value "$view_name"} {options {{"Invoice List" invoice_list} {"Customers" invoice_customer_list} {"Providers" invoice_provider_list}}}}
+	{view_name:text(select) {label \#intranet-core.View_Name\#} {value "$view_name"} {options $view_options}}
 }
 
 # List to store the view_type_options
