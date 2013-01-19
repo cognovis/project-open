@@ -45,3 +45,20 @@ end;$body$ language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
+
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+        v_count  integer;
+	v_attribute_id integer;
+begin
+
+        select attribute_id into v_attribute_id from im_dynfield_attributes
+        where acs_attribute_id = (select attribute_id from acs_attributes where attribute_name = 'default_vat');
+	   perform im_dynfield_attribute__del(v_attribute_id);
+
+        return 0;
+end;$body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
