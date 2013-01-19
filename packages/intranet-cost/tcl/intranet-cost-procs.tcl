@@ -1141,7 +1141,7 @@ ad_proc -public im_costs_company_profit_loss_component {
 ad_proc im_costs_project_finance_component { 
     {-show_details_p 1}
     {-show_summary_p 1}
-    {-show_admin_links_p 0}
+    {-show_admin_links_p 1}
     {-no_timesheet_p 0}
     {-view_name ""}
     {-disable_view_standard_p 0}
@@ -1200,7 +1200,7 @@ ad_proc im_costs_project_finance_component {
     }
     
     # user is employee and has has privilege  "view cost" 
-    if { [im_user_is_employee_p $user_id] && [im_permission $user_id view_costs] } {
+    if { ![im_user_is_customer_p $user_id] && ![im_user_is_freelance_p $user_id] && [im_permission $user_id view_costs] } {
 	set view_docs_3_p 1
 	set can_read_summary_p 1
     }
@@ -1683,6 +1683,7 @@ ad_proc im_costs_project_finance_component {
         "
 
     }
+
 
     if {!$show_summary_p} { set summary_html "" }
     if {!$can_read_summary_p} { set summary_html "" }
