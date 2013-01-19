@@ -25,7 +25,7 @@ create table im_search_object_types (
 			constraint im_search_object_types_pk
 			primary key,
 	object_type	varchar(100)
-			constraint im_search_objects_object_type_fk
+			constraint im_search_object_types_object_type_fk
 			references acs_object_types
 			on delete cascade,
 			-- Relative weight of the object type.
