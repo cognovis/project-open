@@ -646,20 +646,21 @@ if {"" != $cost_project_id && 0 != $cost_project_id} {
     set rel_project_id $cost_project_id
 }
 
-set project_short_name_default [db_string short_name_default "select project_nr from im_projects where project_id=:rel_project_id" -default ""]
+db_0or1row project_info_query "
+        select
+                project_nr as project_short_name_default,                                                                                   
+                im_category_from_id(project_type_id) as project_type_pretty                                                                 
+        from                                                                                                                                
+                im_projects                                                                                                                 
+        where                                                                                                                               
+                project_id = :rel_project_id                                                                                                
+ "                                                                                                                                          
+
 set customer_project_nr_default ""
-
 if {$company_project_nr_exists && $rel_project_id} {
-
-    db_0or1row project_info_query "
-    	select
-    		p.company_project_nr as customer_project_nr_default
-    	from
-    		im_projects p
-    	where
-    		p.project_id = :rel_project_id
-    "
+    set customer_project_nr_default [db_string project_nr_default "select company_project_nr from im_projects where project_id=:rel_project_id" -default ""]
 }
+
 
 # ---------------------------------------------------------------
 # Check permissions
@@ -718,38 +719,6 @@ if {"" != $address_country_code} {
 	    set country_name $address_country_code
     }
     set country_name [lang::message::lookup $locale intranet-core.$country_name $country_name]
-}
-
-# -------------
-# set defaults KOLIBRI
-# -------------
-
-# if purchase order, no 14 days. All the rest is the same
-
-if {$address_country_code eq ""} {
-    set address_country_code "de"
-}
-
-switch $address_country_code {
-    de {
-	# Check if the company is a Kleinunternehmer
-	if {$company_type_id eq 10000301} {
-	    set taxability_string "Leistungsempfänger ist Kleinunternehmer und Steuerschuldner gemäß § 19 UStG."
-	}
-	set taxability_string ""
-    }
-    default {
-	set taxability_string "The recipient carries the tax liability."
-    }
-}
-
-switch $cost_type_id {
-    3704 {
-	set payment_days_string " within 14 days"
-    }
-    default {
-	set payment_days_string ""
-    }
 }
 
 # ---------------------------------------------------------------
@@ -1292,6 +1261,15 @@ if { 0 == $item_list_type } {
 # Add subtotal + VAT + TAX = Grand Total
 # ---------------------------------------------------------------
 
+if {[im_column_exists im_costs vat_type_id]} {
+    # get the VAT note. We do not overwrite the VAT value stored in
+    # the invoice in case the default rate has changed for the
+    # vat_type_id and this is just a reprint of the invoice
+    set vat_note [db_string vat_note "select aux_string1 from im_categories where category_id = :vat_type_id" -default ""]
+} else {
+    set vat_note ""
+}
+    
 
 # Set these values to 0 in order to allow to calculate the
 # formatted grand total

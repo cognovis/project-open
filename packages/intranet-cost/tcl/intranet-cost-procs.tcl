@@ -1653,7 +1653,8 @@ ad_proc im_costs_project_finance_component {
 
 
     set summary_html ""
-    if {$show_details_p} {
+
+    if {1} {
 
 	# Summary in broad format
 	set summary_html "

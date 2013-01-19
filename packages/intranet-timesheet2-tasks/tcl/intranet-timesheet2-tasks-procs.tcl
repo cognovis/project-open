@@ -20,6 +20,7 @@ ad_library {
 ad_proc -public im_timesheet_task_status_active { } { return 9600 }
 ad_proc -public im_timesheet_task_status_inactive { } { return 9602 }
 ad_proc -public im_timesheet_task_status_closed { } { return 9601 }
+ad_proc -public im_timesheet_task_status_potential { } { return 9610 }
 
 # Task Type
 # 9500-9549    Timesheet Task Type
@@ -1344,19 +1345,32 @@ ad_proc -public im_timesheet_next_task_nr {
 }
 
 
-ad_proc -public -callback im_timesheet_task_after_update -impl im_timesheet_tasks {
+ad_proc -public -callback im_project_after_update -impl im_timesheet_tasks {
     {-object_id:required}
+    {-status_id:required}
 } {
     Updates tasks status on im_projects table according with im_timesheet_tasks table.
 } {
-    set task_status [db_string select_task_status { 
-    	SELECT task_status_id FROM im_timesheet_tasks WHERE task_id = :object_id
-    } -default ""]
+
+    set closed_status_ids [util_memoize [list db_list task_status "select * from im_sub_categories([im_timesheet_task_status_closed])"] 3600]
+    set active_status_ids [util_memoize [list db_list task_status "select * from im_sub_categories([im_timesheet_task_status_active])"] 3600]
+    set inactive_status_ids [util_memoize [list db_list task_status "select * from im_sub_categories([im_timesheet_task_status_inactive])"] 3600]
+    set potential_status_ids [util_memoize [list db_list task_status "select * from im_sub_categories([im_timesheet_task_status_potential])"] 3600]
+
+    if {[lsearch $closed_status_ids $status_id] >=0} {
+	set project_status_id [im_project_status_closed]
+    } elseif {[lsearch $active_status_ids $status_id] >=0} {
+	set project_status_id [im_project_status_open]
+    } elseif {[lsearch $inactive_status_ids $status_id] >=0} {
+	set project_status_id [im_project_status_closed]
+    } elseif {[lsearch $potential_status_ids $status_id] >=0} {
+	set project_status_id [im_project_status_potential]
+    } else {
+	set project_status_id ""
+    }
     
-    if {[exists_and_not_null task_status]} {
-        if {$task_status eq [im_timesheet_task_status_closed]} {
-            db_dml update " UPDATE im_projects SET project_status_id = [im_project_status_closed] WHERE project_id = :object_id"
-        }
+    if {"" != $project_status_id} {
+	db_dml update " UPDATE im_projects SET project_status_id = :project_status_id  WHERE project_id = :object_id"
     }
 }
 

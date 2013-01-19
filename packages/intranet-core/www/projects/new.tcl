@@ -285,7 +285,7 @@ ad_form -extend -name $form_id -new_request {
 	template::element::set_error $form_id percent_completed "Number must be in range (0 .. 100)"
 	incr n_error
     }
-    if {[template::util::date::compare $end $start] == -1} {
+    if {[template::util::date::compare $end_date $start_date] == -1} {
 	template::element::set_error $form_id end "[_ intranet-core.lt_End_date_must_be_afte]"
 	incr n_error
     }

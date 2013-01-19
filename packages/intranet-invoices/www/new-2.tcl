@@ -29,7 +29,8 @@ ad_page_contract {
     { payment_days:integer ""}
     { payment_method_id:integer "" }
     template_id:integer
-    vat:trim
+    {vat:trim ""}
+    vat_type_id:integer
     tax:trim
     { discount_perc "0" }
     { surcharge_perc "0" }
@@ -231,6 +232,11 @@ permission::grant -object_id $invoice_id -party_id $company_contact_id -privileg
 # Check if the cost item was changed via outside SQL
 im_audit -object_type "im_invoice" -object_id $invoice_id -action before_update
 
+# Get the vat from the vat_type_id
+if {"" != $vat_type_id} {
+    set vat [db_string get_int1 "select aux_int1 from im_categories where category_id = :vat_type_id"]
+}
+
 # Update the invoice itself
 db_dml update_invoice "
 update im_invoices 
@@ -270,7 +276,8 @@ set
 	note		= :note,
 	variable_cost_p = 't',
 	amount		= null,
-	currency	= :invoice_currency
+	currency	= :invoice_currency,
+        vat_type_id     = :vat_type_id
 where
 	cost_id = :invoice_id
 "
