@@ -1959,6 +1959,7 @@ ad_proc -public im_dynfield::object_array {
 
     set array_val(object_type_id) [set $type_column]
     return 1
+}
 
 ad_proc -public im_dynfield::attribute_validate {
     {-object_type ""}
