@@ -310,10 +310,11 @@ ad_proc -public intranet_collmex::update_customer_invoice {
     append csv_line ";" ; # 9 Steuer zum halben Umsatzsteuersatz
     append csv_line ";" ; # 10 Umsätze Innergemeinschaftliche Lieferung
     append csv_line ";" ; # 11 Umsätze Export
-    append csv_line ";$konto" ; # 12 Steuerfreie Erloese Konto
     if {$vat eq 19} {
+	append csv_line ";" ; # 12 Hat VAT => Nicht Steuerfrei
 	append csv_line ";" ; # 13 Hat VAT => Nicht Steuerfrei
     } else {
+	append csv_line ";$konto" ; # 12 Steuerfreie Erloese Konto
 	append csv_line ";\"[im_csv_duplicate_double_quotes $netto]\""; # Steuerfrei Betrag
     }
     append csv_line ";\"EUR\"" ; # 14Währung (ISO-Codes)
