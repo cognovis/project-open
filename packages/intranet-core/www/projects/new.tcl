@@ -359,7 +359,8 @@ template::element::create $form_id on_track_status_id \
 
 if { 1 == [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2-tasks] -parameter "AutomaticProjectAdvanceP" -default 1] } {
     template::element::create $form_id percent_completed \
-	-widget "hidden"
+	-widget "hidden" \
+        -datatype float
 } else {
     template::element::create $form_id percent_completed \
 	-datatype float \
@@ -663,8 +664,8 @@ if {[form is_submission $form_id]} {
     # Make sure the project name has a minimum length
     if { [string length $project_nr] < $project_nr_field_min_len} {
 	incr n_error
-	template::element::set_error $form_id project_nr "[_ intranet-core.lt_The_project_nr_that] <br>
-	   [_ intranet-core.lt_Please_use_a_project_nr_]"
+	template::element::set_error $form_id project_nr "[lang::message::lookup "" intranet-core.lt_The_project_nr_that "The Project Nr is too short."] <br>
+	   [lang::message::lookup "" intranet-core.lt_Please_use_a_project_nr_ "Please use a longer Project Nr or modify the parameter 'ProjectNrMinimumLength'."]"
     }
 	
     # Check for project number duplicates
