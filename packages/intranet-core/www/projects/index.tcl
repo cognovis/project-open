@@ -233,7 +233,7 @@ ad_form \
     -action $action_url \
     -mode $form_mode \
     -method GET \
-    -export {start_idx order_by how_many include_subprojects_p include_subproject_level letter filter_advanced_p}\
+    -export {start_idx order_by how_many include_subproject_level letter filter_advanced_p}\
     -form {}
 
 if {[im_permission $current_user_id "view_projects_all"]} { 
@@ -247,7 +247,9 @@ if {[im_permission $current_user_id "view_projects_all"]} {
         {project_status_id:text(im_category_tree),optional {label \#intranet-core.Project_Status\#} {value $project_status_id} {custom {category_type "Intranet Project Status" translate_p 1}} }
     }
 }
-
+ad_form -extend -name $form_id -form {
+    {include_subprojects_p:text(select),optional {label "#intrancet-core.SubProjects#"} {options {{"#intranet-core.Yes#" "t"} {"#intranet-core.No#" "f"}}}}
+}
 if { [empty_string_p $company_id] } {
     set company_id 0
 }
