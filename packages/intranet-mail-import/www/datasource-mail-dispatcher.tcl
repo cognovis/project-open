@@ -29,35 +29,35 @@ set query "%${query}%"
 # #####################
 
 set sql "
-	select 
-		project_id as object_id,
-		'im_project' as object_type, 
-		project_name as object_name, 
-		project_nr as object_nr,
- 		'0' as order_by 
-	from 
-		im_projects 
-	where 
-		project_name like :query 
-		or project_nr like :query 
-	
-	UNION 
-	
-	select 
-		object_id as object_id,
-		'im_user' as object_type,
-		im_name_from_user_id(object_id) as object_name,
-		'0' as object_nr,
-		'1' as order_by
- 
-	from 
-		cc_users
-	where 
-		first_names like :query or
-		last_name like :query 
-	order by
-		order_by
-	"
+        select
+                project_id as object_id,
+                'im_project' as object_type,
+                project_name as object_name,
+                project_nr as object_nr,
+                '0' as order_by
+        from
+                im_projects
+        where
+                lower(project_name) like lower(:query)
+                or lower(project_nr) like lower(:query)
+
+        UNION
+
+        select
+                object_id as object_id,
+                'im_user' as object_type,
+                im_name_from_user_id(object_id) as object_name,
+                '0' as object_nr,
+                '1' as order_by
+
+        from
+                cc_users
+        where
+                lower(first_names) like lower(:query) or
+                lower(last_name) like lower(:query)
+        order by
+                order_by
+"
 
 set ctr 0 
 set record_list_tmp [list]
