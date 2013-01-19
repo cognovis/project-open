@@ -28,7 +28,7 @@ SELECT im_dynfield_widget__new (
                 null,                   -- creation_user
                 null,                   -- creation_ip
                 null,                   -- context_id
-                'tax_classification',              -- widget_name
+                'vat_type',              -- widget_name
                 '#intranet-core.VAT#',      -- pretty_name
                 '#intranet-core.VAT#',      -- pretty_plural
                 10007,                  -- storage_type_id
@@ -45,10 +45,10 @@ declare
         v_count  integer;
 begin
         select count(*) into v_count from user_tab_columns
-        where lower(table_name) = 'im_companies' and lower(column_name) = 'tax_classification';
+        where lower(table_name) = 'im_companies' and lower(column_name) = 'vat_type_id';
 
         IF v_count = 0 THEN
-  	      alter table im_companies add column tax_classification integer;
+  	      alter table im_companies add column vat_type_id integer;
         END IF;
 
         return 0;
@@ -69,9 +69,9 @@ BEGIN
 
 	  v_attribute_id := im_dynfield_attribute_new (
 	  	 ''im_company'',			-- object_type
-		 ''tax_classification'',			-- column_name
+		 ''vat_type_id'',			-- column_name
 		 ''#intranet-core.Tax_classification#'',	-- pretty_name
-		 ''tax_classification'',			-- widget_name
+		 ''vat_type'',			-- widget_name
 		 ''integer'',				-- acs_datatype
 		 ''t'',					-- required_p   
 		 90,					-- pos y

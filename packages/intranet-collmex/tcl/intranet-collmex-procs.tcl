@@ -203,7 +203,7 @@ ad_proc -public intranet_collmex::update_provider_bill {
 	where c.company_id = ci.provider_id 
 	and c.main_office_id = o.office_id
 	and ci.cost_id = i.invoice_id 
-	and ca.category_id = c.tax_classification
+	and ca.category_id = c.vat_type_id
         and cc.cost_center_id = ci.cost_center_id
 	and i.invoice_id = :invoice_id
     }
@@ -278,7 +278,7 @@ ad_proc -public intranet_collmex::update_customer_invoice {
 	and c.main_office_id = o.office_id
 	and ci.cost_id = i.invoice_id 
         and cc.cost_center_id = ci.cost_center_id
-        and ca.category_id = c.tax_classification
+        and ca.category_id = c.vat_type_id
 	and i.invoice_id = :invoice_id
     }
 
