@@ -791,6 +791,9 @@ ad_proc -public -callback contacts::extensions -impl attributes {
     {-object_type}
 } {
 } {
+    # Fraber 110511: $class list_ids returns an error, 
+    # so I'm disabling this function here.
+    return {}
 
     set class [::im::dynfield::Class object_type_to_class $object_type]
     set list_ids [$class list_ids]
