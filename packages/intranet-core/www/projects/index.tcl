@@ -103,6 +103,7 @@ set context_bar [im_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 set upper_letter [string toupper $letter]
 set return_url [im_url_with_query]
+set cur_format [im_l10n_sql_currency_format]
 
 # Determine the default status if not set
 if { 0 == $project_status_id } {
@@ -205,7 +206,7 @@ db_foreach column_list_sql $column_sql {
     }
 
     if {"" == $visible_for || [eval $visible_for]} {
-	lappend column_headers "$column_name"
+	lappend column_headers "[lang::util::localize $column_name]"
 	lappend column_vars "$column_render_tcl"
 	lappend column_headers_admin $admin_html
 	if {"" != $extra_select} { lappend extra_selects $extra_select }
