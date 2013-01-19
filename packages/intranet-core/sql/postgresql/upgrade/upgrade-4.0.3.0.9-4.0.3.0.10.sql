@@ -22,7 +22,24 @@
 SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-4.0.3.0.9-4.0.3.0.10.sql','');
 
 -- Update Views with a label column
-alter table im_views add column view_label varchar(1000);
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+        v_count  integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = 'im_views' and lower(column_name) = 'view_label';
+
+        IF v_count = 0 THEN
+	   alter table im_views add column view_label varchar(1000);
+        END IF;
+
+        return 0;
+end;$body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
 update im_views set view_label = replace(view_name,'_',' ');
 

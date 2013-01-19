@@ -39,6 +39,24 @@ SELECT im_dynfield_widget__new (
                 'im_name_from_id'
 );
 
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+        v_count  integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = 'im_companies' and lower(column_name) = 'tax_classification';
+
+        IF v_count = 0 THEN
+  	      alter table im_companies add column tax_classification integer;
+        END IF;
+
+        return 0;
+end;$body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 -- tax classification
 CREATE OR REPLACE FUNCTION inline_0 ()
 RETURNS integer AS '
@@ -49,7 +67,6 @@ DECLARE
 	row			record;
 BEGIN
 
-	 alter table im_companies add column tax_classification integer;
 	  v_attribute_id := im_dynfield_attribute_new (
 	  	 ''im_company'',			-- object_type
 		 ''tax_classification'',			-- column_name
@@ -64,6 +81,7 @@ BEGIN
 
 	  
 
+	IF v_attribute_id != 1 THEN
 	FOR row IN 
 		SELECT category_id FROM im_categories WHERE category_type = ''Intranet Company Type''
 	LOOP
@@ -79,7 +97,7 @@ BEGIN
 		END IF;
 
 	END LOOP;
-
+        END IF;
 
 	RETURN 0;
 END;' language 'plpgsql';
