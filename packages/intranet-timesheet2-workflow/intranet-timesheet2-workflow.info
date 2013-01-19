@@ -25,7 +25,7 @@
         <callbacks>
         </callbacks>
         <parameters>
-            <parameter scope="instance" datatype="string"  min_n_values="1"  max_n_values="1"  name="DefaultWorkflowKey"  default="timesheet_approval_wf" description="Workflow-Key of the default Time Sheet Approval Workflow"/>
+            <parameter scope="instance" datatype="string"  min_n_values="1"  max_n_values="1"  name="DefaultWorkflowKey"  default="" description="Workflow-Key of the default Time Sheet Approval Workflow, for example 'timesheet_approval_wf'. Default is empty for no workflow."/>
             <parameter scope="instance" datatype="string"  min_n_values="1"  max_n_values="1"  name="ConfirmationPeriod"  default="monthly" description="Show button to confirm hours on monthly or weekly basis. Value range: 'monthly' or 'weekly'"/>
 	    <parameter scope="instance" datatype="number"  min_n_values="1"  max_n_values="1"  name="ShowCommentsInPanel"  default="0" description="Show comments made during the approval process. (Requires pg/sql function to be set in WF writing comments to table 'im_timesheet_conf_object')"/>
         </parameters>
