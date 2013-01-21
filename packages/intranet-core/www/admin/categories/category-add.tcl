@@ -144,6 +144,16 @@ foreach locale [array names translation] {
     }
 }
 
+# Now add aux_string1 and aux_string2 as the default en_US locales
+
+if {"" != $aux_string1} {
+    lang::message::register -comment $category_description en_US intranet-core "string1_${category_id}" [string trim $aux_string1]
+}
+
+if {"" != $aux_string2} {
+    lang::message::register -comment $category_description en_US intranet-core "string2_${category_id}" [string trim $aux_string2]
+}
+
 # Remove all permission related entries in the system cache
 im_permission_flush
 
