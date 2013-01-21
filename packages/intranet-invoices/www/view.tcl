@@ -1263,6 +1263,14 @@ if {[im_column_exists im_costs vat_type_id]} {
     set vat_note ""
 }
     
+# -------------------------
+# Deal with payment terms and variables in them
+# -------------------------
+
+set payment_terms [im_category_from_id -locale $locale $payment_term_id]
+set payment_terms_note [im_category_string1 -category_id $payment_term_id -locale $locale]
+eval [template::adp_compile -string $payment_terms_note]
+set payment_terms_note $__adp_output
 
 # Set these values to 0 in order to allow to calculate the
 # formatted grand total
