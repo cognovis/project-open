@@ -91,11 +91,17 @@ where child_id=:category_id
 "
 
 foreach parent $parents {
-    db_dml insert_parent "
-insert into im_category_hierarchy
-(parent_id, child_id) values (:parent, :category_id)
-"
+    db_dml insert_parent "insert into im_category_hierarchy (parent_id, child_id) values (:parent, :category_id)"
+
+    # Transitive closure. Add the parents parents as well
+    foreach super_parent [im_category_parents $parent] {
+	db_dml insert_parent "insert into im_category_hierarchy (parent_id, child_id) values (:super_parent, :category_id)"
+    }
 }
+
+# ---------
+
+# ----------
 
 
 # ---------------------------------------------------------------
