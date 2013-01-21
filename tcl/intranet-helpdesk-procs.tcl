@@ -879,6 +879,15 @@ namespace eval im_ticket {
 }
 
 
+namespace eval im_ticket::notification {
+
+    ad_proc -public get_url {
+        object_id
+    } {
+        # Todo:
+    }
+}
+
 
 # ----------------------------------------------------------------------
 # Ticket - Project Relationship
