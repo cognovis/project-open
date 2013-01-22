@@ -291,6 +291,7 @@ namespace eval im_mail_import {
 	    # 20130108 KH: Removed - Use mime::field_decode $subject instead
 	    # Massage the header a bit
 	    # regsub {=\?iso-....-.\?.\?} $subject_header "" subject_header
+	    set subject_header [mime::field_decode $subject_header]
 
 	    set spam_header ""
 	    if {[info exists email_headers(x-spambayes-classification)]} {

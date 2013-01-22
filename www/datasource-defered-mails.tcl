@@ -144,7 +144,8 @@ ad_page_contract {
 	catch {set date_email $email_headers(date)}
 
 	# Massage the header a bit
-	regsub {=\?iso-....-.\?.\?} $subject_header "" subject_header
+	# regsub {=\?iso-....-.\?.\?} $subject_header "" subject_header
+	set subject_header [mime::field_decode $subject_header]
 
 	# remove double quotes from 'from' and 'to'
 	regsub -all "\"" $from_header "" from_header

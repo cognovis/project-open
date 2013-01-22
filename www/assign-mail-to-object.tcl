@@ -97,7 +97,8 @@ ad_page_contract {
 		     catch {set subject_header $email_headers(subject)}
 
 		     # Massage the header a bit
-		     regsub {=\?iso-....-.\?.\?} $subject_header "" subject_header
+		     # regsub {=\?iso-....-.\?.\?} $subject_header "" subject_header
+		     set subject_header [mime::field_decode $subject_header]
 
 		     set rfc822_message_id ""
 		     if {[info exists email_headers(message-id)]} {
