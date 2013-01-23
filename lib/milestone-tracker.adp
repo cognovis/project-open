@@ -1,4 +1,4 @@
-<if "" ne @data_list@>
+<if @show_milestone_tracker_p@>
 <div id=@diagram_id@></div>
 <script type='text/javascript'>
 

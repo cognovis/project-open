@@ -16,10 +16,12 @@
 #	diagram_width
 #	diagram_height
 
+
 if {![info exists project_id]} { set project_id 59146 }
-set diagram_width 300
-set diagram_height 300
+if {![info exists diagram_width]} { set diagram_width 300 }
+if {![info exists diagram_height]} { set diagram_height 300 }
 set title "Milestones"
+
 
 set year 2000
 set month "01"
@@ -147,13 +149,16 @@ foreach audit_date $audit_dates {
     foreach id $milestone_ids {
 	set hash "m$id"
 	set cmd "set v \$${hash}($audit_date)"
-	eval $cmd
-	append data_line ", m$id: $v"
+	catch {
+	    eval $cmd
+	    append data_line ", m$id: $v"
+	}
     }
     append data_line "}"
     lappend data_list $data_line
 }
 
+set show_milestone_tracker_p [expr [llength $data_list] > 4]
 
 # Compile JSON for data
 set data_json "\[\n"
