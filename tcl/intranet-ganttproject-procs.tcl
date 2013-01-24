@@ -1606,7 +1606,10 @@ ad_proc -public im_gp_save_allocations {
 		    set table_name im_gantt_assignments
 		    set column_name "xml_[string tolower $nodeName]"
 		    set column_exists_p [im_column_exists $table_name $column_name]
-		    if {!$column_exists_p} { db_dml add_column "alter table $table_name add column $column_name text" }
+		    if {!$column_exists_p} { 
+			db_dml add_column "alter table $table_name add column $column_name text" 
+			im_permission_flush
+		    }
 
     		    switch [string tolower $nodeName] {
 			"taskuid" { 
