@@ -7,17 +7,18 @@
 <property name="context">@context_bar@</property>
 <property name="main_navbar_label">notes</property>
 
-
+<!--
 <table border=0 cellpadding=0 cellspacing=0>
 <tr>
-  <td> <!-- TD for the left hand filter HTML -->
+  <td> 
 
 	<form method=get action='index'>
 	<%= [export_form_vars material_group_id material_start_idx material_order_by material_how_many material_view_name] %>
 
 	</form>
 
-  </td> <!-- end of left hand filter TD -->
+  </td>
+
   <td>&nbsp;</td>
   <td valign=top width='30%'>
     <table border=0 cellpadding=0 cellspacing=0>
@@ -39,7 +40,12 @@
 <br>
 
 <h2>@page_title;noquote@</h2>
-<listtemplate name="@list_id@"></listtemplate>
 
+-->
+<table width='100%'>
+<tr><td>
+<listtemplate name="@list_id@"></listtemplate>
+</td></tr>
+</table>
 <br>
 
