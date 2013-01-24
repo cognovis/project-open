@@ -936,6 +936,11 @@ ad_proc im_filestorage_copy_source_directory { project_id sub_project_id } {
     Returns "" if successful 
     Returns a formatted errors string otherwise.
 } {
+    # Only proceed if translation stuff is installed
+    set trans_exists_p [im_table_exists im_trans_tasks]
+    if {!$trans_exists_p} { return "" }
+
+
     # Localize the workflow stage directories
     set locale "en_US"
     set source [lang::message::lookup $locale intranet-translation.Workflow_source_directory "source"]
