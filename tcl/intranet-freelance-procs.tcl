@@ -643,8 +643,13 @@ ad_proc im_freelance_member_select_component {
     set target_lang_skill_type [im_freelance_skill_type_target_language]
     set subject_area_skill_type [im_freelance_skill_type_subject_area]
 
-    set project_source_lang [db_string source_lang "select substr(im_category_from_id(source_language_id), 1, 2) from im_projects where project_id = :object_id" -default 0]
-    set project_target_langs [db_list target_langs "select '''' || substr(im_category_from_id(language_id), 1, 2) || '''' from im_target_languages where project_id = :object_id"]
+    set project_source_lang ""
+    set project_target_langs [list]
+
+    catch {
+	set project_source_lang [db_string source_lang "select substr(im_category_from_id(source_language_id), 1, 2) from im_projects where project_id = :object_id" -default 0]
+	set project_target_langs [db_list target_langs "select '''' || substr(im_category_from_id(language_id), 1, 2) || '''' from im_target_languages where project_id = :object_id"]
+    }
 
     set source_language_where ""
     if {"" != $project_source_lang} {
