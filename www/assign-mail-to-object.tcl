@@ -28,7 +28,8 @@ ad_page_contract {
 #-- -----------------------------------------------
 
 set debug ""
-set mail_dir "/web/projop/Maildir"
+
+set mail_dir [parameter::get -package_id [apm_package_id_from_key intranet-mail-import] -parameter "MailDir" -default 60]
 set defered_folder "$mail_dir/defered"
 set processed_folder "$mail_dir/processed"
 
@@ -106,7 +107,7 @@ if { "-1" != $object_id } {
 	catch {set to_header $email_headers(to)}
 	catch {set subject_header $email_headers(subject)}
 
-	# Massage the header a bit
+	# Clean up header ... 
 	set subject_header [mime::field_decode $subject_header]
 
 	set rfc822_message_id ""
@@ -164,21 +165,20 @@ if { "-1" != $object_id } {
 	)"
 
 	if {[catch {
-		   set cr_item_id [db_string get_data $sql -default 0]
+	   set cr_item_id [db_string get_data $sql -default 0]
 	} err_msg]} {
-		   ns_log Notice "assign-mail-to-object: Error creating cr_item: $err_msg"
-		   break
+	   ns_log Notice "assign-mail-to-object: Error creating cr_item: $err_msg"
+	   break
 	}
+
+	# --------------------------------------------------------
+        # Create relationships OBJECT <-> CR_ITEM
+	# --------------------------------------------------------
 
 	ns_log Notice "assign-mail-to-object: created spam_item $email_id"
         append debug "created spam_item \\#$email_id\n"
 
-	if { "user" == $object_type } {
-              	    set rel_type "im_mail_from"
-	} else {
-               	    set rel_type "im_mail_related_to"
-	}
-
+        set rel_type "im_mail_related_to"
 	set object_id_two $object_id
         set object_id_one $cr_item_id
         set creation_user $user_id
@@ -196,7 +196,7 @@ if { "-1" != $object_id } {
 			        )
 	"
 	if {[catch {
-	   set rel_id [db_string get_data $sql -default 0]
+	   set rel_id [db_string set_object_cr-item_rel $sql -default 0]
 	} err_msg]} {
 	   ns_log Notice "assign-mail-to-object: Could not create relationship: $err_msg"
 	   break
@@ -204,59 +204,10 @@ if { "-1" != $object_id } {
 	ns_log Notice "assign-mail-to-object: created relationship \\#$rel_id"
 	append debug "created relationship \\#$rel_id\n"
 
-
-	# ---------------------------------------------------------------
-	# Save attachments 
-	# ---------------------------------------------------------------
-
-
-	if { "im_project" == $object_type || "user" == $object_type } {
-
-		# get attachments
-		array set email {}
-		acs_mail_lite::parse_email -file $email_id -array email
-		set email_files $email(files)
-		set file_name ""
-
-		ns_log Notice "assign-mail-to-object: Found object type: $object_type"
-
-		# determine object folder
-		if { "im_project" == $object_type } {
-		    set object_path [im_filestorage_project_path $object_id]			    
-		} else {
-		    set object_path [im_filestorage_user_path $object_id]
-		}
-
-		append object_path "/mails"
-			
-		# Make sure the mail folder in projects exists, if not create it
-		if {![file exists $object_path]} {
-		    if {[catch { ns_mkdir $object_path } err_msg]} {
-			ns_log Notice "assign-mail-to-object: Error creating '$object_path' folder: '$err_msg'"
-			append debug "Error creating '$object_path' folder: '$err_msg'\n"
-			return $debug
-		    }
-		}
-
-		# create sub-directory to store attachments for cr_item
-		append object_path "/$cr_item_id"
-
-		if {[catch { ns_mkdir $object_path } errmsg]} {
-		    ns_log Notice "assign-mail-to-object: Error creating '$object_path' folder: '$errmsg'"
-		    append debug "Error creating '$object_path' folder: '$errmsg'\n"
-		    return $debug
-		}
-		foreach attachment $email_files {
-		    append file_name $object_path "/" [lindex $attachment 2]
-		    set content [lindex $attachment 3]
-		    set fp [open $file_name w]
-		    fconfigure $fp -translation binary
-		    fconfigure $fp -encoding binary
-		    puts -nonewline $fp $content
-		    close $fp
-		    set file_name ""
-		}
-	} 
+        # --------------------------------------------------------
+        # Store attachments
+        # --------------------------------------------------------
+	im_mail_import::save_attachments_to_object -object_id $object_id -email_id $email_id -cr_item_id $cr_item_id
 
 	# --------------------------------------------------------
         # Move to "processed"
