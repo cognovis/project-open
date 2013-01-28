@@ -76,19 +76,19 @@ if { 0 != $content_item_id } {
 
 	if { 0 != $object_id } {
 	    if { "im_project" == $object_type } {
-		set project_path [db_string get_view_id "select project_path from im_projects where project_id =$project_id" -default 0]
-		set list_attachments [im_filestorage_find_files $project_id]
+		set project_path [db_string get_view_id "select project_path from im_projects where project_id = $object_id" -default 0]
+		set list_attachments [im_filestorage_find_files $object_id]
 		append attachment_html "<div style='width:600px;'>" 
 
 		foreach url $list_attachments {
-		    set file_path [im_filestorage_project_path_helper $project_id]
+		    set file_path [im_filestorage_project_path_helper $object_id]
 		    set cr_item_id [string range $url [expr [string length $file_path]+7] [expr [string length $file_path] + [string length :body_id] + 3 ] ]
 		    if { 0 == [string compare $body_id $cr_item_id] } {
 			set file_name [string range $url [expr [string length $file_path] + [string length $body_id] + 8] [string length $url]]
 			set file_extension [file extension $url]
 			set file_icon [im_filestorage_file_type_icon $file_extension]
-			set rel_file_path "/intranet/download/project/$project_id/mails/$body_id/$file_name"
-			append attachment_html "<div style='float:left;margin:10px;'><a href='$rel_file_path'>$file_icon</a><br><a href='$rel_file_path'>$file_name</a></div>"
+			set rel_file_path "/intranet/download/project/$object_id/mails/$body_id/$file_name"
+			append attachment_html "<div style='float:left;margin:10px;'><a href='$rel_file_path'>$file_icon</a><br><a href='$rel_file_path' target='_blank'>$file_name</a></div>"
 		    }
 		}
 		append attachment_html "</div>" 
