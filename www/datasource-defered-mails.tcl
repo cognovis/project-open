@@ -138,8 +138,12 @@ ad_page_contract {
 	set subject_header "No Subject"
 	set date_email "Date not found"
 
-	catch {set from_header $email_headers(from)}
-	catch {set to_header $email_headers(to)}
+	# array set email_arr {}
+        # acs_mail_lite::parse_email -file $msg -array email_arr
+	# ad_return_complaint 1 $email_arr(headers)
+
+	catch {set from_header [string map { "\"" "" } $email_headers(from)]}
+	catch {set to_header [string map { "\"" "" } $email_headers(to)]}
 	catch {set subject_header [mime::field_decode $email_headers(subject)]}
 	catch {set date_email $email_headers(date)}
 
