@@ -735,19 +735,6 @@ EXECUTE PROCEDURE im_tickets_tsearch();
 
 
 
-
-
-
------------------------------------------------------------
--- Index the existing business objects
-
-update persons set first_names=first_names;
-update im_projects set project_type_id = project_type_id;
-update im_companies set company_type_id = company_type_id;
-update im_forum_topics set scope = scope;
-update im_invoices set invoice_nr = invoice_nr;
-
-
 -----------------------------------------------------------
 -- wiki / bt
 
@@ -777,7 +764,6 @@ ON cr_items
 FOR EACH ROW 
 EXECUTE PROCEDURE content_item_tsearch();
 
-update cr_items set locale = locale;
 
 create or replace function content_item__name (integer) returns varchar as '
 DECLARE
@@ -789,10 +775,6 @@ BEGIN
 
 	return v_name;
 end;' language 'plpgsql';
-
-update cr_items set name=name;
-
-
 
 
 
@@ -862,8 +844,6 @@ begin
 	FOR EACH ROW
 	EXECUTE PROCEDURE im_conf_items_tsearch();
 
-	update im_conf_items set conf_item_nr = conf_item_nr;
-
 	return 0;
 end;$body$ language 'plpgsql';
 select inline_0 ();
@@ -918,6 +898,200 @@ begin
 
 	return 0;
 end;' language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------------
+-- Index the existing business objects
+
+
+-- update persons set first_names=first_names;
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+	v_count		integer;
+	v_ctr		integer;
+	row		RECORD;
+begin
+	select count(*) into v_count from persons;
+	v_ctr := 0;
+	FOR row IN
+		select person_id from persons order by person_id
+	LOOP
+		RAISE NOTICE 'TSearch2: Updating person % of %: person_id=%', v_ctr, v_count, row.person_id;
+		update persons set first_names = first_names where person_id = row.person_id;
+		v_ctr := v_ctr + 1;
+	END LOOP;
+
+	return 0;
+end;$body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+-- update im_projects set project_type_id = project_type_id;
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+	v_count		integer;
+	v_ctr		integer;
+	row		RECORD;
+begin
+	select count(*) into v_count from im_projects;
+	v_ctr := 0;
+	FOR row IN
+		select project_id from im_projects order by project_id
+	LOOP
+		RAISE NOTICE 'TSearch2: Updating project % of %: project_id=%', v_ctr, v_count, row.project_id;
+		update im_projects set project_nr = project_nr where project_id = row.project_id;
+		v_ctr := v_ctr + 1;
+	END LOOP;
+
+	return 0;
+end;$body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+-- update im_companies set company_type_id = company_type_id;
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+	v_count		integer;
+	v_ctr		integer;
+	row		RECORD;
+begin
+	select count(*) into v_count from im_companies;
+	v_ctr := 0;
+	FOR row IN
+		select company_id from im_companies order by company_id
+	LOOP
+		RAISE NOTICE 'TSearch2: Updating company % of %: company_id=%', v_ctr, v_count, row.company_id;
+		update im_companies set company_path = company_path where company_id = row.company_id;
+		v_ctr := v_ctr + 1;
+	END LOOP;
+
+	return 0;
+end;$body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+
+
+
+
+-- update im_invoices set invoice_nr = invoice_nr;
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+	v_count		integer;
+	v_ctr		integer;
+	row		RECORD;
+begin
+	select count(*) into v_count from im_invoices;
+	v_ctr := 0;
+	FOR row IN
+		select invoice_id from im_invoices order by invoice_id
+	LOOP
+		RAISE NOTICE 'TSearch2: Updating invoice % of %: invoice_id=%', v_ctr, v_count, row.invoice_id;
+		update im_invoices set invoice_nr = invoice_nr where invoice_id = row.invoice_id;
+		v_ctr := v_ctr + 1;
+	END LOOP;
+
+	return 0;
+end;$body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+
+-- update im_forum_topics set scope = scope;
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+	v_count		integer;
+	v_ctr		integer;
+	row		RECORD;
+begin
+	select count(*) into v_count from im_forum_topics;
+	v_ctr := 0;
+	FOR row IN
+		select topic_id from im_forum_topics order by topic_id
+	LOOP
+		RAISE NOTICE 'TSearch2: Updating forum_topic % of %: forum_topic_id=%', v_ctr, v_count, row.topic_id;
+		update im_forum_topics set scope = scope where topic_id = row.topic_id;
+		v_ctr := v_ctr + 1;
+	END LOOP;
+
+	return 0;
+end;$body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+-- update im_conf_items set conf_item_nr = conf_item_nr;
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+	v_count		integer;
+	v_ctr		integer;
+	row		RECORD;
+begin
+	select count(*) into v_count from im_conf_items;
+	v_ctr := 0;
+	FOR row IN
+		select conf_item_id from im_conf_items order by conf_item_id
+	LOOP
+		RAISE NOTICE 'TSearch2: Updating conf_item % of %: conf_item_id=%', v_ctr, v_count, row.conf_item_id;
+		update im_conf_items set conf_item_nr = conf_item_nr where conf_item_id = row.conf_item_id;
+		v_ctr := v_ctr + 1;
+	END LOOP;
+
+	return 0;
+end;$body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
+
+-- update cr_items set locale = locale;
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+	v_count		integer;
+	v_ctr		integer;
+	row		RECORD;
+begin
+	select count(*) into v_count from cr_items;
+	v_ctr := 0;
+	FOR row IN
+		select item_id from cr_items order by item_id
+	LOOP
+		RAISE NOTICE 'TSearch2: Updating conf_item % of %: item_id=%', v_ctr, v_count, row.item_id;
+		update cr_items set locale = locale where item_id = row.item_id;
+		v_ctr := v_ctr + 1;
+	END LOOP;
+
+	return 0;
+end;$body$ language 'plpgsql';
 select inline_0 ();
 drop function inline_0 ();
 
