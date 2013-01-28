@@ -186,7 +186,10 @@ if { 0 != $content_item_id } {
 		    incr i
 	            set line [lindex $file_lines $i]
         	}
-	        set body "\n[join [lrange $file_lines $i end] "\n"]"
+
+		array set email_arr {}
+		acs_mail_lite::parse_email -file $msg -array email_arr
+		set body [lindex [lindex $email_arr(bodies) 0] 1]
 
 	        # Extract headers values
         	array set email_headers $headers
