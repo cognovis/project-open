@@ -27,7 +27,7 @@ ad_page_contract {
 #   Defaults and settings 
 #-- -----------------------------------------------
 
-set debug ""
+set debug "Start:"
 
 set mail_dir [parameter::get -package_id [apm_package_id_from_key intranet-mail-import] -parameter "MailDir" -default 60]
 set defered_folder "$mail_dir/defered"
@@ -143,7 +143,12 @@ if { "-1" != $object_id } {
 
 	set object_type [db_string get_object_type "select object_type from acs_objects where object_id = :object_id" -default 0]		
 	ns_log Notice "assign-mail-to-object: object_type $object_type"
-	set sql "
+
+	# Check if mail is already in DB
+	set cr_item_id [db_string get_data "select content_item_id from acs_mail_bodies where header_message_id = :rfc822_id" -default 0]
+
+	if { 0 == $cr_item_id } {
+	    set sql "
 			select im_mail_import_new_message (
 			        :cr_item_id,    -- cr_item_id
 				null,           -- reply_to
@@ -162,13 +167,14 @@ if { "-1" != $object_id } {
        				:send_date,     --send_date
        				:header_from,   -- header_from
        				:header_to      -- header_to
-	)"
-
-	if {[catch {
-	   set cr_item_id [db_string get_data $sql -default 0]
-	} err_msg]} {
-	   ns_log Notice "assign-mail-to-object: Error creating cr_item: $err_msg"
-	   break
+				)"
+	    if {[catch {
+		set cr_item_id [db_string get_data $sql -default 0]
+	    } err_msg]} {
+		ns_log Notice "assign-mail-to-object: Error creating cr_item: $err_msg"
+		ns_return 500 text/html $err_msg
+		break
+	    }
 	}
 
 	# --------------------------------------------------------
@@ -197,16 +203,16 @@ if { "-1" != $object_id } {
 	"
 	if {[catch {
 	   set rel_id [db_string set_object_cr-item_rel $sql -default 0]
+	    ns_log Notice "assign-mail-to-object: created relationship \\#$rel_id"
+	    append debug "created relationship \\#$rel_id\n"
 	} err_msg]} {
 	   ns_log Notice "assign-mail-to-object: Could not create relationship: $err_msg"
-	   break
 	}
-	ns_log Notice "assign-mail-to-object: created relationship \\#$rel_id"
-	append debug "created relationship \\#$rel_id\n"
 
         # --------------------------------------------------------
         # Store attachments
         # --------------------------------------------------------
+
 	im_mail_import::save_attachments_to_object -object_id $object_id -email_id $email_id -cr_item_id $cr_item_id
 
 	# --------------------------------------------------------
@@ -226,6 +232,7 @@ if { "-1" != $object_id } {
     } err_msg] {
 	ns_log Error "assign-mail-to-object: Error assigning mail to object: $object_id: $err_msg"
 	ns_return 500 text/html $err_msg
+	break
     }
 } else {
 	if {[catch {
