@@ -25,7 +25,7 @@ ad_proc -public im_sysconfig_ldap_check_port_open {
 } {
     array set hash {}
     
-    set port_open_perl "[acs_root_dir]/packages/intranet-sysconfig/perl/ldap-check-port.perl"
+    set port_open_perl "[im_root_dir]/packages/intranet-sysconfig/perl/ldap-check-port.perl"
     set cmd "perl $port_open_perl $ldap_ip_address $ldap_port"
     ns_log Notice "im_sysconfig_ldap_check_port_open: $cmd"
 
@@ -74,7 +74,7 @@ ad_proc -public im_sysconfig_ldap_check_bind {
 } {
     array set hash {}
     
-    set bind_perl "[acs_root_dir]/packages/intranet-sysconfig/perl/ldap-check-bind.perl"
+    set bind_perl "[im_root_dir]/packages/intranet-sysconfig/perl/ldap-check-bind.perl"
     set cmd "perl $bind_perl $ldap_ip_address $ldap_port $ldap_type $ldap_domain $ldap_system_binddn $ldap_system_bindpw"
     ns_log Notice "im_sysconfig_ldap_check_bind: $cmd"
 
@@ -116,7 +116,7 @@ ad_proc -public im_sysconfig_ldap_get_info {
 } {
     array set hash {}
     
-    set connect_perl "[acs_root_dir]/packages/intranet-sysconfig/perl/connect.perl"
+    set connect_perl "[im_root_dir]/packages/intranet-sysconfig/perl/connect.perl"
     set cmd "perl $connect_perl"
     set fp [open "|bash -c \"$cmd\"" "r"]
 
