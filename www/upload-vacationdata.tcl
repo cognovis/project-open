@@ -27,7 +27,7 @@ set context_bar ""
 
 # Check if user is ADMIN or HR Manager
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
-if {!$user_is_admin_p || ![im_profile::member_p -profile_id [im_hr_group_id] -user_id $user_id]} {
+if {!$user_is_admin_p && ![im_profile::member_p -profile_id [im_hr_group_id] -user_id $user_id]} {
     ad_return_complaint 1 "You have insufficient privileges to use this page"
     return
 }
