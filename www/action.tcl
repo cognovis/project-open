@@ -22,6 +22,19 @@ ad_page_contract {
     item_note:array,optional
 }
 
+
+if {0} {
+ad_return_complaint 1 "<pre>
+phase:[array get item_project_phase_id]
+project_member:[array get item_project_member_id]
+cost_type:[array get item_cost_type_id]
+date:[array get item_date]
+note:[array get item_note]
+value:[array get item_value]
+</pre>
+"
+}
+
 # ---------------------------------------------------------------
 # Defaults & Security
 # ---------------------------------------------------------------
@@ -42,6 +55,8 @@ set provider_id [im_company_internal]
 # Default user's hourly billing rate
 set default_billing_rate [parameter::get_from_package_key -package_key intranet-cost -parameter "DefaultTimesheetHourlyCost" -default 30]
 set billing_currency [parameter::get_from_package_key -package_key intranet-cost -parameter "DefaultCurrency" -default "EUR"]
+set planning_dimension_date [parameter::get_from_package_key -package_key intranet-planning -parameter "DimensionTime" -default "month"] 
+set planning_type_id [parameter::get_from_package_key -package_key intranet-planning -parameter "PlanningType" -default "73102"] 
 
 switch $action {
     create_quote_from_planning_data {
@@ -84,12 +99,30 @@ switch $action {
 	    set cost_type_id [im_opt_val item_cost_type_id($id)]
 	    set item_type_id [im_planning_item_type_revenues]
 	    set item_status_id [im_planning_item_status_active]
-	    set date [im_opt_val item_date($id)]
 	    set value [im_opt_val item_value($id)]
 	    set note [im_opt_val item_note($id)]
 
-	    set billing_rate [util_memoize [list db_string billing_rate "select hourly_cost from im_employees where employee_id = $project_member_id" -default ""]]
-	    if {"" == $billing_rate} { set billing_rate $default_billing_rate }
+	    # Fix date according to date dimension type
+	    # Work around errors in the PG date processing
+	    set date_value [im_opt_val item_date($id)]
+	    switch $planning_dimension_date {
+		week { ad_return_complaint 1 "<b>Not implemented yet</b>:<br>PostgreSQL 8.4 includes an error with processing ISO weeks." }
+		month { set date [util_memoize [list db_string to_date "select to_date('$date_value', 'YYYY-MM') from dual" -default ""]] }
+		quarter {
+		    if {[regexp {(....)-(.)} $date_value match year quarter]} {
+			set date [util_memoize [list db_string to_date "select to_date('$year-[expr 1 + ($quarter-1) * 3]', 'YYYY-MM')"]]
+			# ad_return_complaint 1 "date_value=$date_value, date=$date"
+		    } else {
+			ad_return_complaint 1 "<b>Error storing '$planning_dimension_date' date '$date_value'"
+		    }
+		}
+		year { set date "to_date(:date_value, 'YYYY')::timestamptz" }
+	    }
+
+	    set billing_rate $default_billing_rate
+	    if {"" != $project_member_id} {
+		set billing_rate [util_memoize [list db_string billing_rate "select hourly_cost from im_employees where employee_id = $project_member_id" -default ""]]
+	    }
 
 	    db_string insert_im_planning_item "select im_planning_item__new(
 			-- object standard 6 parameters
@@ -153,10 +186,15 @@ switch $action {
 			# Trigger the generation of a cost item
 			set target_cost_type_id [im_cost_type_expense_planned]
 		}
+		"" {
+		    # No Cost Type was selected as part of any dimension
+		    # => use the planning_type_id, even though that's not a cost type
+		    set target_cost_type_id $planning_type_id
+		}
 		default {
 			# ToDo: Implement budget for expense types (airfare, telephone, ...)
 			# Not implemented yet
-			ad_return_complaint 1 "Project Financial Planning: '$cost_type' planning not implemented yet"
+			ad_return_complaint 1 "Project Financial Planning: '$cost_type_id' planning not implemented yet"
 		}
 	    }
 

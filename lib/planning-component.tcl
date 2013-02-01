@@ -22,10 +22,10 @@ if {![info exists planning_type_id] || "" == $planning_type_id} {
     set planning_type_id [parameter::get_from_package_key -package_key intranet-planning -parameter "PlanningType" -default 73102] 
 }
 if {![info exists top_vars] || "" == $top_vars} { 
-    set top_vars [parameter::get_from_package_key -package_key intranet-planning -parameter "TopDimension" -default "73202"] 
+    set top_dimension [parameter::get_from_package_key -package_key intranet-planning -parameter "TopDimension" -default "time"] 
 }
 if {![info exists left_vars] || "" == $left_vars} { 
-    set left_vars [parameter::get_from_package_key -package_key intranet-planning -parameter "LeftDimension" -default "project_phase"] 
+    set left_dimension [parameter::get_from_package_key -package_key intranet-planning -parameter "LeftDimension" -default "project_phase"] 
 }
 if {![info exists planning_dimension_date] || "" == $planning_dimension_date} { 
     set planning_dimension_date [parameter::get_from_package_key -package_key intranet-planning -parameter "DimensionTime" -default "month"] 
@@ -34,12 +34,35 @@ if {![info exists planning_dimension_cost_type] || "" == $planning_dimension_cos
     set planning_dimension_cost_type [parameter::get_from_package_key -package_key intranet-planning -parameter "DimensionCostType" -default "3704 3736 3722"] 
 }
 
-set top_vars "item_cost_type_id"
-set left_vars "item_project_member_id"
 
 set sigma ""
 set bgcolor(0) " class=roweven "
 set bgcolor(1) " class=rowodd "
+set item_date ""
+
+if {[llength $top_dimension] > 1} { ad_return_complaint 1 "<b>Not implemented yet</b>:<br>Please limit TopDimension to a single variable." }
+if {[llength $left_dimension] > 1} { ad_return_complaint 1 "<b>Not implemented yet</b>:<br>Please limit LeftDimension to a single variable." }
+
+
+
+
+# -------------------------------------------------------------
+# Calculate the top and left variables to select out from the im_planning_items table
+#
+switch $top_dimension {
+    project_phase - project-phase { set top_vars "item_project_phase_id" }
+    resource { set top_vars "item_project_member_id" }
+    time { set top_vars "item_date" }
+    cost_type { set top_vars "item_cost_type_id" }
+}
+
+switch $left_dimension {
+    project_phase - project-phase { set left_vars "item_project_phase_id" }
+    resource { set left_vars "item_project_member_id" }
+    time { set left_vars "item_date" }
+    cost_type { set left_vars "item_cost_type_id" }
+}
+
 
 # -------------------------------------------------------------
 # Other Parameters
@@ -104,18 +127,18 @@ switch $planning_dimension_date {
     year { set date_format "YYYY" }
     quarter { set date_format "YYYY-Q" }
     month { set date_format "YYYY-MM" }
-
-    quarter { set date_format "" }
-    week { set date_format "" }
-    week { set date_format "" }
-    week { set date_format "" }
+    week { set date_format "YYYY-IW" }
 }
 
 set dimension_date_list [db_list_of_lists time_dimension "
+	select	*
+	from	(
 		select distinct
-			to_char(im_day_enumerator, :date_format),
-			to_char(im_day_enumerator, :date_format)
+			to_char(im_day_enumerator, :date_format) as date_string,
+			to_char(im_day_enumerator, :date_format) as date_name
 		from	im_day_enumerator(:start_date, :end_date)
+		) t
+	order by date_string
 "]
 
 
@@ -206,6 +229,20 @@ set sql "
 	from	($middle_sql) m
 "
 db_foreach planning_items $sql {
+
+    # Post-process date if exists
+    switch $planning_dimension_date {
+	year { if {[regexp {^(....)} $item_date match year]} { set item_date $year } }
+	quarter { 
+	    if {[regexp {^(....)-(..)} $item_date match year month]} { 
+		set quarter [expr int([string trimleft $month "0"] / 3) + 1]
+		set item_date "$year-$quarter"
+	    }
+	}
+	month { if {[regexp {^(....)-(..)} $item_date match year month]} { set item_date "$year-$month" } }
+	week { ad_return_complaint 1 "Time dimension 'week' not implemented yet" }
+    }
+
     # Calculate the key for this permutation
     # something like "$year-$month-$customer_id"
     set key_expr "\$[join $dimension_vars "-\$"]"
@@ -215,6 +252,7 @@ db_foreach planning_items $sql {
 
 
 # ad_return_complaint 1 "<pre>dimension_member_list=$dimension_member_list</pre>"
+# ad_return_complaint 1 "<pre>hash=<br>[array get hash]</pre>"
 
 
 # ------------------------------------------------------------
@@ -226,12 +264,16 @@ set left_scale [list]
 switch $top_vars {
     item_cost_type_id		{ foreach e $dimension_cost_type_list { lappend top_scale [list $e] } }
     item_project_member_id	{ foreach e $dimension_member_list { lappend top_scale [list $e] } }
+    item_project_phase_id	{ foreach e $dimension_project_phase_list { lappend top_scale [list $e] } }
+    item_date			{ foreach e $dimension_date_list { lappend top_scale [list $e] } }
     default 			{ ad_return_complaint 1 "planning-component: top_vars=$top_vars not implemented yet" }
 }
 
 switch $left_vars {
     item_cost_type_id 		{ foreach e $dimension_cost_type_list { lappend left_scale [list $e] } }
     item_project_member_id	{ foreach e $dimension_member_list { lappend left_scale [list $e] } }
+    item_project_phase_id	{ foreach e $dimension_project_phase_list { lappend left_scale [list $e] } }
+    item_date			{ foreach e $dimension_date_list { lappend left_scale [list $e] } }
     default			{ ad_return_complaint 1 "planning-component: left_vars=$left_vars not implemented yet" }
 }
 
