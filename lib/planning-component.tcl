@@ -225,7 +225,7 @@ set left_scale [list]
 
 switch $top_vars {
     item_cost_type_id		{ foreach e $dimension_cost_type_list { lappend top_scale [list $e] } }
-    item_projec_member_id	{ foreach e $dimension_member_list { lappend top_scale [list $e] } }
+    item_project_member_id	{ foreach e $dimension_member_list { lappend top_scale [list $e] } }
     default 			{ ad_return_complaint 1 "planning-component: top_vars=$top_vars not implemented yet" }
 }
 
