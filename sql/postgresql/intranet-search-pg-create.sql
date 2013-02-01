@@ -736,6 +736,14 @@ EXECUTE PROCEDURE im_tickets_tsearch();
 
 
 -----------------------------------------------------------
+-- im_fs_files
+
+insert into im_search_object_types values (6,'im_fs_file',0.1);
+
+-- Files are managed by the intranet-search-pg-files package
+
+
+-----------------------------------------------------------
 -- wiki / bt
 
 insert into im_search_object_types values (7,'content_item',0.5);
