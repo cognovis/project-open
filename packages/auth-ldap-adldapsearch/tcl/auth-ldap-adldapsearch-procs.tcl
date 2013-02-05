@@ -336,6 +336,7 @@ ad_proc -private auth::ldap::authentication::Authenticate {
 	    # For AD auth, we just try to bind as the user and check if that is OK.
 	    ns_log Notice "auth::ldap::authentication::Authenticate: Active Directory"
 	    ns_log Notice "ldapsearch -n -x -H $uri -D $bind_dn -w xxxxxxxxx"
+	    set password [encoding convertto "utf-8" $password]
 	    set return_code [catch {
 		exec ldapsearch -n -x -H $uri -D $bind_dn -w $password
 	    } err_msg]
