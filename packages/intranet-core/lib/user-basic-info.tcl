@@ -129,6 +129,7 @@ set user_id $user_id_from_search
 # ---------------------------------------------------------------
 
 set managable_profiles [im_profile::profile_options_managable_for_user $current_user_id]
+set edit_profiles_p 0
 if {[llength $managable_profiles] > 0} { set edit_profiles_p 1 }
 if {!$current_user_is_admin_p && ($user_id == $current_user_id)} { set edit_profiles_p 0}
 
