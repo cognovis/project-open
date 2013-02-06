@@ -8,7 +8,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-planning</auto-mount>
 
-    <version name="4.0.3.4.0" url="http://www.project-open.org/download/apm/intranet-planning-4.0.3.4.0.apm">
+    <version name="4.0.3.5.0" url="http://www.project-open.org/download/apm/intranet-planning-4.0.3.5.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
 
@@ -17,7 +17,7 @@
         <parameters>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="PlanningType" default="73102" description="Does the planning refer to cost planning (value=73102) or revenue planning (value=73100)? Default is cost planning (73102)."/>
 
-            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="LeftDimension" default="project-phase" description="A space separated list of the following option to define the left hand side of the planning matrix: 'project_phase': All sub-projects or tasks below the main project. 'resource': The project members assigned to the project. 'time': The time axix from start to the end of the project, the parameter TimeDimensionInterval specifies details. 'cost_type': Allows to plan for a number of different cost type, the parameter CostDimension specifies details. Default is 'project_phase'."/>
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="LeftDimension" default="project_phase" description="A space separated list of the following option to define the left hand side of the planning matrix: 'project_phase': All sub-projects or tasks below the main project. 'resource': The project members assigned to the project. 'time': The time axix from start to the end of the project, the parameter TimeDimensionInterval specifies details. 'cost_type': Allows to plan for a number of different cost type, the parameter CostDimension specifies details. Default is 'project_phase'."/>
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="TopDimension" default="time" description="Simiar to LeftDimension, but defining the upper hand side of the planning matrix. Default is 'time'."/>
 
             <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="DimensionTime" default="month" description="Defines the measure for the time dimension as one of the options: 'week', 'month', 'quarter' or 'year'. Default is 'month'"/>
