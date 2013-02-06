@@ -1,4 +1,4 @@
-# /packages/intranet-invoicing/tcl/intranet-cost-procs.tcl
+# /packages/intranet-invoices/tcl/intranet-cost-procs.tcl
 #
 # Copyright (C) 2003 - 2009 ]project-open[
 #
@@ -1283,6 +1283,11 @@ ad_proc im_costs_project_finance_component {
 		}
 
     set cost_type_excludes [list [im_cost_type_employee] [im_cost_type_repeating] [im_cost_type_expense_item]]
+
+    # Exclude intranet-planning planning types
+    lappend cost_type_excludes 73100
+    lappend cost_type_excludes 73102
+
 
     if {$no_timesheet_p} {
         lappend cost_type_excludes [im_cost_type_timesheet]

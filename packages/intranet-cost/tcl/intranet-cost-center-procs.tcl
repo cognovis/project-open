@@ -1,4 +1,4 @@
-# /packages/intranet-invoicing/tcl/intranet-cost-center-procs.tcl
+# /packages/intranet-invoices/tcl/intranet-cost-center-procs.tcl
 #
 # Copyright (C) 2003 - 2009 ]project-open[
 #
