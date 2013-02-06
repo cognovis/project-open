@@ -242,7 +242,7 @@ if {$enable_nested_projects_p} {
 
 # create customer query
 #
-set customer_list_options [im_company_options -include_empty_p 0 -status "Active or Potential" -type "CustOrIntl"]
+set customer_list_options [im_company_options -include_empty_p 1 -status "Active or Potential" -type "CustOrIntl"]
 set help_text "[im_gif help "There is a difference between &quot;Paying Client&quot; and &quot;Final Client&quot;. Here we want to know from whom we are going to receive the money..."]"
 if {$user_admin_p} {
     set  help_text "<A HREF='/intranet/companies/new'>[im_gif new "Add a new client"]</A> $help_text"
@@ -660,14 +660,22 @@ if {[form is_submission $form_id]} {
 	template::element::set_error $form_id end "[_ intranet-core.lt_End_date_must_be_afte]"
 	incr n_error
     }
-
-    # Make sure the project name has a minimum length
     if { [string length $project_nr] < $project_nr_field_min_len} {
+	# Make sure the project name has a minimum length
 	incr n_error
 	template::element::set_error $form_id project_nr "[lang::message::lookup "" intranet-core.lt_The_project_nr_that "The Project Nr is too short."] <br>
 	   [lang::message::lookup "" intranet-core.lt_Please_use_a_project_nr_ "Please use a longer Project Nr or modify the parameter 'ProjectNrMinimumLength'."]"
     }
-	
+    if { [string length $project_nr] >= 10} {
+	incr n_error
+	template::element::set_error $form_id project_nr "[lang::message::lookup "" intranet-core.lt_The_project_nr_is_too_long "The Project Nr is too long."] <br>
+	   [lang::message::lookup "" intranet-core.lt_Please_use_a_shorter_project_nr_ "Please use a shorter Project Nr."]"
+    }
+    if {[info exists presales_probability] && ($presales_probability > 100 || $presales_probability < 0)} {
+	template::element::set_error $form_id presales_probability "Number must be in range (0 .. 100)"
+	incr n_error
+    }
+
     # Check for project number duplicates
     set project_nr_exists [db_string project_nr_exists "
 	select 	count(*)
@@ -810,7 +818,7 @@ if {[form is_valid $form_id]} {
 	    ad_return_complaint 1 "Could not find project with id: $project_id, please get in touch with your System Administrator"
 	}
     }
-	
+
     # -----------------------------------------------------------------
     # Update the Project
     # -----------------------------------------------------------------
