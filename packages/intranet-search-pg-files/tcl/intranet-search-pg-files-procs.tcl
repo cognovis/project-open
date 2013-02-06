@@ -56,15 +56,13 @@ ad_proc -public intranet_search_pg_files_fti_content {
 
     # Fun with encoding - We may encounter files encoded using
     # "binary", "latin-1", "utf-8" etc. Try binary first
-
-
     set catdoc "/usr/local/bin/catdoc"
     set wvtext "/usr/bin/wvText"
     set htmltotext "/usr/bin/html2text"
 
     # Process the contents depending on file type (extensions)
     switch $file_ext {
-	txt - perl - text - php - sql {
+	txt - perl - text - php - sql - tjp {
 	    # Just get the file's content
 	    if {[catch {
 		set encoding "binary"
@@ -130,6 +128,7 @@ ad_proc -public intranet_search_pg_files_fti_content {
 
 ad_proc -public intranet_search_pg_files_index_object {
     -object_id
+    {-force_p 0}
     {-debug 1}
 } {
     Index the files of a single object such as a project, company or user.
@@ -241,7 +240,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 	    set db_last_modified $last_modified($db_last_modified_key)
 	}
 	
-	if {0 && $debug} {
+	if {$debug} {
 	    lappend error_list "im_ftio: filename=$filename"
 	    lappend error_list "im_ftio: file_path=$file_path"
 	    lappend error_list "im_ftio: pieces=$pieces"
@@ -262,7 +261,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 	# date is still the same...
 	if {$db_last_modified == $file_last_modified} { 
 	    lappend error_list "im_ftio: last_modfied did not change - skipping: $db_last_modified"
-	    continue 
+	    if {!$force_p} { continue }
 	} 
 	
 	# ------------------ File has changed - Update DB ----------------------
@@ -274,21 +273,18 @@ ad_proc -public intranet_search_pg_files_index_object {
 	# related to their customers, but not to their business.
 	set fti_content ""
 	if {$fti_contents_enabled_p} {
-
+	    lappend error_list "im_ftio: calling: 'intranet_search_pg_files_fti_content $filename'"
 	    if {$debug > 0} {
-
 		set fti_content [intranet_search_pg_files_fti_content $filename]
-
 	    } else {
-
 		if {[catch {
 		    set fti_content [intranet_search_pg_files_fti_content $filename]
 		} errmsg]} {
 		    set fti_content "Error parsing '$filename': '$errmsg'"
+		    lappend error_list "im_ftio: Error parsing '$filename': '$errmsg'"
 		}
 	    }
 	    lappend error_list "im_ftio: fti_content=$fti_content"
-
 	}
 
 	# Make sure the folder exists...
@@ -335,7 +331,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 			:file_id, :folder_id,
 			:admin_user_id, :body,
 			now(), :file_last_modified,
-			:fti_content
+			to_tsvector(:fti_content)
 		)
             "
 	    lappend error_list "im_ftio: insert: file_id=$file_id"
@@ -347,7 +343,7 @@ ad_proc -public intranet_search_pg_files_index_object {
 		update im_fs_files set 
 			ft_indexed_p = '0',
 			last_modified = :file_last_modified,
-			fti_content = :fti_content
+			fti_content = to_tsvector(:fti_content)
 		where file_id = :file_id
 	    "
 	    lappend error_list "im_ftio: update: file_id=$file_id, file_last_modified=$file_last_modified"
@@ -357,6 +353,45 @@ ad_proc -public intranet_search_pg_files_index_object {
 	# ToDo: Optimize: This update seems to be
 	# necessary in order to trigger indexing
 	db_dml update_file "update im_fs_files set owner_id = :admin_user_id where file_id = :file_id"
+
+
+	# Insert the file entry into im_search_objects
+	set so_exists_p [db_string search_object_exists_p "select count(*) from im_search_objects where object_id = :file_id"]
+	if {!$so_exists_p} {
+	    db_dml insert_so "
+		insert into im_search_objects (
+			object_id,
+			object_type_id,
+			biz_object_id,
+			owner_id,
+			profile_permissions,
+			popularity,
+			fti
+		) values (
+			:file_id, 
+			6,
+			:object_id,
+			:admin_user_id,
+			NULL,
+			NULL,
+			to_tsvector(:fti_content)
+		)
+            "
+	    lappend error_list "im_ftio: insert: im_search_objects"
+	}
+
+	db_dml update_so "
+		UPDATE im_search_objects set
+			biz_object_id = :object_id,
+			owner_id = :admin_user_id,
+			profile_permissions = NULL,
+			popularity = NULL,
+			fti = to_tsvector(:fti_content)
+		WHERE
+			object_id = :file_id and
+			object_type_id = 6
+	"
+	lappend error_list "im_ftio: update: im_search_objects"
 
 	incr file_ctr
     }   
