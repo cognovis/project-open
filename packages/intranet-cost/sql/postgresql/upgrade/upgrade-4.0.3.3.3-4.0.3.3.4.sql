@@ -19,7 +19,7 @@
 -- @cvs-id $Id$
 --
 
-SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-4.0.3.3.4-4.0.3.3.4.sql','');
+SELECT acs_log__debug('/packages/intranet-cost/sql/postgresql/upgrade/upgrade-4.0.3.3.3-4.0.3.3.4.sql','');
 
 create or replace function inline_0 ()
 returns integer as $body$
