@@ -132,7 +132,7 @@ ad_form -extend -name view -on_request {
 # ------------------------------------------------------
 
 if { [exists_and_not_null view_id] } {
-	set action_list [list [_ intranet-core.Add_new_Column] [export_vars -base "new-column" {view_id return_url}] [_ intranet-core.Add_new_Column]]
+    set action_list [list [_ intranet-core.Add_new_Column] [export_vars -base "new-column" {view_id return_url}] [_ intranet-core.Add_new_Column] [_ intranet-core.Clone_View] [export_vars -base "clone" {{old_view_id $view_id} return_url}] [_ intranet-core.Clone_View]]
 
 	set elements_list {
 	  column_id {
