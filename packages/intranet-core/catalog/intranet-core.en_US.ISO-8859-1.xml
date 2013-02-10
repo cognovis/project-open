@@ -205,6 +205,7 @@
   <msg key="Clients">Clients</msg>
   <msg key="Clone_Project">Clone this project</msg>
   <msg key="Clone_Project_Help">You can 'clone' a project in order to save time to setup a similar project.</msg>
+  <msg key="Clone_View">Clone this view</msg>
   <msg key="Close">Close</msg>
   <msg key="Closed">Closed</msg>
   <msg key="CollabKM_Help">C&amp;KM Help</msg>
