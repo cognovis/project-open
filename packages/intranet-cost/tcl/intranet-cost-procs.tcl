@@ -2191,4 +2191,14 @@ ad_proc -public im_navbar_tree_finance {
 }
 
 
+ad_proc -public -callback im_cost_after_update -impl im_cost_save_vat {
+    {-object_id:required}
+    {-status_id ""}
+    {-type_id ""}
+} {
+    If a cost is saved automatically save the vat
+} {
+    set vat [db_string category "select aux_int1 from im_costs c, im_categories ca where ca.category_id = c.vat_type_id and c.cost_id = :object_id" -default ""]
 
+    db_dml update_cost "update im_costs set vat = :vat where cost_id = :object_id"
+}

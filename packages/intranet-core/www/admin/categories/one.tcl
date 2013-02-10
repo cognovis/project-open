@@ -178,10 +178,38 @@ set l10n_text_sql "
 		el.locale
 "
 
+set enabled_foreign_locales [list]
 db_foreach l10n_strings $l10n_text_sql {
     append category_translation_component "
 $locale: <input type=text name=translation.$locale value=\"$message\" size=40><br>
 "
+    if {"en_US" != $locale} {
+	lappend enabled_foreign_locales $locale
+    
+    }
 }
 
 set constant_p f
+
+# Create a link to translate the foreign locales.
+# But only if we have the english message already registered
+
+set string1_translation_links ""
+set message_key "string1_${category_id}"
+if {"" != $enabled_foreign_locales && [lang::message::message_exists_p en_US "intranet-core.string1_${category_id}"]} {
+    set return_url [util_get_current_url]
+    foreach locale $enabled_foreign_locales {
+	set string1_trans_url [export_vars -base "/acs-lang/admin/edit-localized-message" -url {package_key locale return_url message_key}]
+	append string1_translation_links "<ul><a href='$string1_trans_url'>$locale</a>[im_gif help [lang::message::lookup $locale "intranet-core.${message_key}"]]</ul>"
+    }
+}
+
+set string2_translation_links ""
+set message_key "string2_${category_id}"
+if {"" != $enabled_foreign_locales && [lang::message::message_exists_p en_US "intranet-core.string2_${category_id}"]} {
+    set return_url [util_get_current_url]
+    foreach locale $enabled_foreign_locales {
+	set string2_trans_url [export_vars -base "/acs-lang/admin/edit-localized-message" -url {package_key locale return_url message_key}]
+	append string2_translation_links "<ul><a href='$string2_trans_url'>$locale</a>[im_gif help [lang::message::lookup $locale "intranet-core.${message_key}"]]</ul>"
+    }
+}

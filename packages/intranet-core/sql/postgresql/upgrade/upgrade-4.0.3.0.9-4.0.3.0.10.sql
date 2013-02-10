@@ -22,7 +22,24 @@
 SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-4.0.3.0.9-4.0.3.0.10.sql','');
 
 -- Update Views with a label column
-alter table im_views add column view_label varchar(1000);
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+        v_count  integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = 'im_views' and lower(column_name) = 'view_label';
+
+        IF v_count = 0 THEN
+	   alter table im_views add column view_label varchar(1000);
+        END IF;
+
+        return 0;
+end;$body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
+
 
 update im_views set view_label = replace(view_name,'_',' ');
 
@@ -70,7 +87,7 @@ extra_select, extra_from, extra_where, sort_order, visible_for,variable_name,dat
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_from, extra_where, sort_order, visible_for,variable_name,datatype) values (102006,1020,NULL,'#intranet-core.Provider# #intranet-core.Invoice#',
 '"$provider_amount_formatted"',
-'provider_amount, to_char(provider_amount,:cur_format) as provider_amount_formatted','im_projects p3 left outer join (select sum(amount) as provider_amount, object_id_one from acs_rels r, im_costs where object_id_two = cost_id and cost_type_id = 3704 group by object_id_one) bill on bill.object_id_one = p3.project_id','p3.project_id = p.project_id',30,'','invoice_amount','currency');
+'provider_amount, to_char(provider_amount,:cur_format) as provider_amount_formatted','im_projects p3 left outer join (select sum(amount) as provider_amount, object_id_one from acs_rels r, im_costs where object_id_two = cost_id and cost_type_id = 3704 group by object_id_one) bill on bill.object_id_one = p3.project_id','p3.project_id = p.project_id',30,'','provider_amount','currency');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_from, extra_where, sort_order, visible_for,variable_name,datatype) values (102007,1020,NULL,'#intranet-timesheet2.Hours#',

@@ -1320,6 +1320,8 @@ other way for the user to find out.</msg>
   <msg key="Payed">Payed</msg>
   <msg key="Payment_Method">Payment Method</msg>
   <msg key="Payment_Methods">Payment Methods</msg>
+  <msg key="Payment_Term">Payment Term</msg>
+  <msg key="Payment_Terms">Payment Terms</msg>
   <msg key="Payments">Payments</msg>
   <msg key="PayPal">PayPal</msg>
   <msg key="Per">%%</msg>

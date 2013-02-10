@@ -26,7 +26,7 @@ ad_page_contract {
     cost_status_id:integer 
     cost_type_id:integer
     cost_center_id:integer
-    { payment_days:integer ""}
+    { payment_term_id:integer ""}
     { payment_method_id:integer "" }
     template_id:integer
     {vat:trim ""}
@@ -93,6 +93,7 @@ set rounding_precision 2
 set rf [expr exp(log(10) * $rounding_precision)]
 
 
+set payment_days [db_string payment_days "select aux_int1 from im_categories where category_id = :payment_term_id"]
 if {"" == $payment_days} {
     set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 30]
 }
@@ -271,6 +272,7 @@ set
 			    from im_start_months 
 			    where start_block < :invoice_date),
 	payment_days	= :payment_days,
+	payment_term_id	= :payment_term_id,
 	vat		= to_number(:vat,:vat_format),
 	tax		= to_number(:tax,:tax_format),
 	note		= :note,

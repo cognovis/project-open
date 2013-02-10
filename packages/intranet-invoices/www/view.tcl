@@ -474,13 +474,6 @@ db_1row accounting_contact_info "
 set template_type ""
 if {0 != $render_template_id} {
 
-    # Maintain compatibility with old convention "invoice-english.adp"
-    # ToDo: Remove this compatibility with V4.0
-    if {[regexp {english} $template]} { set locale en }
-    if {[regexp {spanish} $template]} { set locale es }
-    if {[regexp {german} $template]} { set locale de }
-    if {[regexp {french} $template]} { set locale fr }
-    
     # New convention, "invoice.en_US.adp"
     if {[regexp {(.*)\.([_a-zA-Z]*)\.([a-zA-Z][a-zA-Z][a-zA-Z])} $template match body loc template_type]} {
 	set locale $loc
@@ -1265,11 +1258,19 @@ if {[im_column_exists im_costs vat_type_id]} {
     # get the VAT note. We do not overwrite the VAT value stored in
     # the invoice in case the default rate has changed for the
     # vat_type_id and this is just a reprint of the invoice
-    set vat_note [db_string vat_note "select aux_string1 from im_categories where category_id = :vat_type_id" -default ""]
+    set vat_note [im_category_string1 -category_id $vat_type_id -locale $locale]
 } else {
     set vat_note ""
 }
     
+# -------------------------
+# Deal with payment terms and variables in them
+# -------------------------
+
+set payment_terms [im_category_from_id -locale $locale $payment_term_id]
+set payment_terms_note [im_category_string1 -category_id $payment_term_id -locale $locale]
+eval [template::adp_compile -string $payment_terms_note]
+set payment_terms_note $__adp_output
 
 # Set these values to 0 in order to allow to calculate the
 # formatted grand total

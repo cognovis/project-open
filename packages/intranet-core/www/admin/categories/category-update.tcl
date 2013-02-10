@@ -91,11 +91,17 @@ where child_id=:category_id
 "
 
 foreach parent $parents {
-    db_dml insert_parent "
-insert into im_category_hierarchy
-(parent_id, child_id) values (:parent, :category_id)
-"
+    db_dml insert_parent "insert into im_category_hierarchy (parent_id, child_id) values (:parent, :category_id)"
+
+    # Transitive closure. Add the parents parents as well
+    foreach super_parent [im_category_parents $parent] {
+	db_dml insert_parent "insert into im_category_hierarchy (parent_id, child_id) values (:super_parent, :category_id)"
+    }
 }
+
+# ---------
+
+# ----------
 
 
 # ---------------------------------------------------------------
@@ -156,6 +162,14 @@ foreach locale [array names translation] {
     if {"" != $msg} {
 	lang::message::register -comment $category_description $locale $package_key $msg_key $msg
     }
+}
+
+if {"" != $aux_string1} {
+    lang::message::register -comment $category_description en_US intranet-core "string1_${category_id}" [string trim $aux_string1]
+}
+
+if {"" != $aux_string2} {
+    lang::message::register -comment $category_description en_US intranet-core "string2_${category_id}" [string trim $aux_string2]
 }
 
 # Emit a warning if the msg_key_len is > 24.

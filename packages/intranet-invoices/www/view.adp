@@ -296,7 +296,7 @@
 
         <tr> 
           <td class=roweven>#intranet-invoices.Payment_terms#</td>
-          <td class=roweven>#intranet-invoices.lt_payment_days_days_dat#</td>
+          <td class=roweven>@payment_terms;noquote@</td>
 	</tr>
 
 	<tr>

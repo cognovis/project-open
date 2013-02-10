@@ -329,9 +329,9 @@ if {[im_column_exists im_companies default_invoice_template_id]} {
 	set payment_method_id [db_string default_payment_method "select default_payment_method_id from im_companies where company_id = :company_id" -default ""]
     }
     
-    set company_payment_days [db_string default_payment_days "select default_payment_days from im_companies where company_id = :company_id" -default ""]
-    if {"" != $company_payment_days} {
-	set payment_days $company_payment_days
+    set company_payment_term_id [db_string default_payment_days "select payment_term_id from im_companies where company_id = :company_id" -default ""]
+    if {"" != $company_payment_term_id} {
+	set payment_term_id $company_payment_term_id
     }
 }
 
@@ -356,7 +356,7 @@ if {[im_column_exists im_costs vat_type_id]} {
     
     set vat_type_id [db_string vat_type_info "select vat_type_id from im_costs where cost_id = :invoice_id" -default ""]
     if {"" == $vat_type_id} {
-	set vat_type_id [db_string vat_info "select tax_classification from im_companies where company_id = :company_id" -default ""]
+	set vat_type_id [db_string vat_info "select vat_type_id from im_companies where company_id = :company_id" -default ""]
     }
     set vat_type_enabled_p 1
 } else {
@@ -368,6 +368,7 @@ if {[im_column_exists im_costs vat_type_id]} {
 # ---------------------------------------------------------------
 
 set payment_method_select [im_invoice_payment_method_select payment_method_id $payment_method_id]
+set payment_term_select [im_category_select_plain "Intranet Payment Term" payment_term_id $payment_term_id]
 set template_select [im_cost_template_select template_id $template_id]
 set status_select [im_cost_status_select cost_status_id $cost_status_id]
 
