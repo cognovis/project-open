@@ -68,7 +68,7 @@ set group_map [array get group_map_hash]
 set param_hash(GroupMap) $group_map
 
 set auth_id [im_sysconfig_create_edit_authority \
-		 -authority_name $authority_name \
+		 -authority_name "LDAP $authority_name" \
 		 -parameters [array get param_hash] \
 		]
 

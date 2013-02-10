@@ -41,10 +41,8 @@
   <msg key="Contact_Group_Error_Message">Contact_Group_Error_Message</msg>
   <msg key="Contact_Group_Error_Title">Contact Group Error Title</msg>
   <msg key="Contact_Mail">Contact Mail</msg>
-  <msg key="Contact_To_Change">Contact to change
-</msg>
-  <msg key="Contact_To_Delete">Contact to delete
-</msg>
+  <msg key="Contact_To_Change">Contact to change</msg>
+  <msg key="Contact_To_Delete">Contact to delete</msg>
   <msg key="Contacts">Contacts</msg>
   <msg key="Copy_Ticket">Copy Ticket</msg>
   <msg key="Create_New_Company">Create New Company</msg>
@@ -67,8 +65,7 @@
   <msg key="Delete_Contact">Delete contact</msg>
   <msg key="Delete_Customer">Delete customer</msg>
   <msg key="Delete_message">Selection will be deleted. Continue?</msg>
-  <msg key="Delete_Ticket_Error_Message">Delete Ticket Error Message
-</msg>
+  <msg key="Delete_Ticket_Error_Message">Delete Ticket Error Message</msg>
   <msg key="Delete_Ticket_Error_Title">Delete Ticket Error Title</msg>
   <msg key="Delete_tittle">Delete selection</msg>
   <msg key="Department">Department</msg>

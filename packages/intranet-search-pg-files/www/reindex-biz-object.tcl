@@ -44,6 +44,5 @@ foreach oid $object_id {
     set err [lindex $result 1]
     foreach e $err { lappend errors $e}
 }
-ad_return_complaint 1 "<pre>[join $errors "<br>"]</pre>"
 
 ad_returnredirect $return_url

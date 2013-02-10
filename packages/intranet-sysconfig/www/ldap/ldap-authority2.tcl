@@ -61,7 +61,7 @@ set param_hash(GroupMap) $group_map
 #ad_return_complaint 1 "im_sysconfig_create_edit_authority -authority_name $authority_name -parameters [array get param_hash]"
 
 array set result_hash [im_sysconfig_create_edit_authority \
-		 -authority_name $authority_name \
+		 -authority_name "LDAP $authority_name" \
 		 -parameters [array get param_hash] \
 		]
 

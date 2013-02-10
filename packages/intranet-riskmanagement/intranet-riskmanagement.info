@@ -8,7 +8,7 @@
     <initial-install-p>f</initial-install-p>
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-riskmanagement</auto-mount>
-    <version name="4.0.3.4.0" url="http://www.project-open.org/download/apm/intranet-riskmanagement-4.0.3.4.0.apm">
+    <version name="4.0.3.5.0" url="http://www.project-open.org/download/apm/intranet-riskmanagement-4.0.3.5.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <owner url="mailto:mai-bee@gmx.net">Alwin Egger</owner>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>

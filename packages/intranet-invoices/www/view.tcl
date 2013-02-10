@@ -57,6 +57,11 @@ set user_locale [lang::user::locale]
 set locale $user_locale
 set page_title ""
 
+set gen_vars ""
+set blurb ""
+set notify_vars ""
+set url ""
+
 # Security is defered after getting the invoice information
 # from the database, because the customer's users should
 # be able to see this invoice even if they don't have any
@@ -1589,8 +1594,6 @@ if {0 != $render_template_id || "" != $send_to_user_as} {
 
 } 
 
-
-
 # ---------------------------------------------------------------------
 # Surcharge / Discount section
 # ---------------------------------------------------------------------
@@ -1604,7 +1607,7 @@ if {[info exists default_pm_fee_percentage] && "" != $default_pm_fee_percentage}
     set pm_fee_perc $default_pm_fee_percentage 
     set pm_fee_checked "checked"
 }
-set pm_fee_msg [lang::message::lookup "" intranet-invoicing.PM_Fee_Msg "Project Management %pm_fee_perc%%"]
+set pm_fee_msg [lang::message::lookup "" intranet-invoices.PM_Fee_Msg "Project Management %pm_fee_perc%%"]
 
 # Surcharge. 
 set surcharge_checked ""
@@ -1612,7 +1615,7 @@ set surcharge_perc ""
 if {[info exists default_surcharge_perc]} { set surcharge_perc $default_surcharge_perc }
 if {"" == $surcharge_perc} { set surcharge_perc [ad_parameter -package_id [im_package_invoices_id] "DefaultSurchargePercentage" "" "10.0"] }
 if {[info exists default_surcharge_percentage]} { set surcharge_perc $default_surcharge_percentage }
-set surcharge_msg [lang::message::lookup "" intranet-invoicing.Surcharge_Msg "Rush Surcharge %surcharge_perc%%"]
+set surcharge_msg [lang::message::lookup "" intranet-invoices.Surcharge_Msg "Rush Surcharge %surcharge_perc%%"]
 
 # Discount
 set discount_checked ""
@@ -1620,9 +1623,9 @@ set discount_perc ""
 if {[info exists default_discount_perc]} { set discount_perc $default_discount_perc }
 if {"" == $discount_perc} { set discount_perc [ad_parameter -package_id [im_package_invoices_id] "DefaultDiscountPercentage" "" "10.0"] }
 if {[info exists default_discount_percentage]} { set discount_perc $default_discount_percentage }
-set discount_msg [lang::message::lookup "" intranet-invoicing.Discount_Msg "Discount %discount_perc%%"]
+set discount_msg [lang::message::lookup "" intranet-invoices.Discount_Msg "Discount %discount_perc%%"]
 
-set submit_msg [lang::message::lookup "" intranet-invoicing.Add_Discount_Surcharge_Lines "Add Discount/Surcharge Lines"]
+set submit_msg [lang::message::lookup "" intranet-invoices.Add_Discount_Surcharge_Lines "Add Discount/Surcharge Lines"]
 
 
 # ---------------------------------------------------------------------
@@ -1668,7 +1671,6 @@ set memorized_transaction_installed_p [db_string memorized_transaction_installed
 if { "" != $err_mess } {
     set err_mess [lang::message::lookup "" $err_mess "Document Nr. not available anymore, please note and verify newly assigned number"]
 }
-
 
 # ---------------------------------------------------------------------
 # Dynfields
@@ -1808,3 +1810,5 @@ where
 	</table>
         </form>\n"
 }
+
+#set admin_p 1

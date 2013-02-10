@@ -25,7 +25,7 @@ ad_proc -public im_sysconfig_ldap_check_port_open {
 } {
     array set hash {}
     
-    set port_open_perl "[acs_root_dir]/packages/intranet-sysconfig/perl/ldap-check-port.perl"
+    set port_open_perl "[im_root_dir]/packages/intranet-sysconfig/perl/ldap-check-port.perl"
     set cmd "perl $port_open_perl $ldap_ip_address $ldap_port"
     ns_log Notice "im_sysconfig_ldap_check_port_open: $cmd"
 
@@ -74,7 +74,7 @@ ad_proc -public im_sysconfig_ldap_check_bind {
 } {
     array set hash {}
     
-    set bind_perl "[acs_root_dir]/packages/intranet-sysconfig/perl/ldap-check-bind.perl"
+    set bind_perl "[im_root_dir]/packages/intranet-sysconfig/perl/ldap-check-bind.perl"
 
     # we need to escape certain characters in the password:
     regsub -all {&} $ldap_system_bindpw {\\\\&} ldap_system_bindpw
@@ -119,7 +119,7 @@ ad_proc -public im_sysconfig_ldap_get_info {
 } {
     array set hash {}
     
-    set connect_perl "[acs_root_dir]/packages/intranet-sysconfig/perl/connect.perl"
+    set connect_perl "[im_root_dir]/packages/intranet-sysconfig/perl/connect.perl"
     set cmd "perl $connect_perl"
     set fp [open "|bash -c \"$cmd\"" "r"]
 
@@ -164,6 +164,23 @@ ad_proc -public im_sysconfig_create_edit_authority {
     # set get_doc_impl_id  [acs_sc::impl::get_id -owner "auth-ldap-adldapsearch" -name "LDAP" -contract "auth_sync_retreive"]
     # set process_doc_impl_id  [acs_sc::impl::get_id -owner "auth-ldap-adldapsearch" -name "LDAP" -contract "auth_sync_process"]
     
+    if {"" == $auth_impl_id} {
+	ad_return_complaint 1 "
+		<b>Internal Configuration Error</b><br>:
+		It seems that the configuration of your 'service contracts' is<br>
+		broken. We have seen this error before, but we have not yet been <br>
+		able to reproduce and fix it.<br>
+		&nbsp;<br>
+		Please contact support@project-open.com for free support. Please<br>
+		include 'LDAP service contract error' in the subject line of your<br>
+		email.<br>
+		&nbsp;
+		Thank you!
+	"
+	ad_script_abort
+    }
+
+
     set register_impl_id ""
     set user_info_impl_id ""
     set get_doc_impl_id ""
