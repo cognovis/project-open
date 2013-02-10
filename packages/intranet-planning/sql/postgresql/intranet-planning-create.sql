@@ -201,6 +201,8 @@ BEGIN
 	insert into im_planning_items (
 		item_id,
 		item_object_id,
+		item_status_id,
+		item_type_id,
 		item_project_phase_id,
 		item_project_member_id,
 		item_cost_type_id,
@@ -210,6 +212,8 @@ BEGIN
 	) values (
 		v_item_id,
 		p_item_object_id,
+		p_item_status_id,
+		p_item_type_id,
 		p_item_project_phase_id,
 		p_item_project_member_id,
 		p_item_cost_type_id,

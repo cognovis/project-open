@@ -12,6 +12,7 @@ ad_page_contract {
     { level_of_detail:integer 3 }
     { company_id 0 }
     { company_type_id 0 }
+    { profile_id ""}
     { output_format "html" }
     { redirect_p "1" }
 }
@@ -75,6 +76,10 @@ if {"" != $company_id && 0 != $company_id} {
 
 if {"" != $company_type_id && 0 != $company_type_id} {
     append company_sql "and c.company_type_id = :company_type_id\n"
+}
+
+if {"" != $profile_id && 0 != $profile_id} {
+    append company_sql "and u.user_id in (select member_id from group_distinct_member_map where group_id = :profile_id)\n"
 }
 
 set report_sql "
@@ -178,7 +183,7 @@ set report_def [list \
 			"$employee_p"
 			"$freelancer_p"
 			"$email"
-			"$user_name"
+			"<a href=$user_url$user_id>$user_name</a>"
 			"$home_phone"
 			"$work_phone"
 			"$cell_phone"
@@ -259,6 +264,12 @@ switch $output_format {
 		  <td class=form-label>Company<br>Type</td>
 		  <td class=form-widget>
 		    [im_category_select -include_empty_p 1 "Intranet Company Type" company_type_id $company_type_id]
+		  </td>
+		</tr>
+		<tr>
+		  <td class=form-label>User Profile</td>
+		  <td class=form-widget>
+		    [im_select -ad_form_option_list_style_p 1 profile_id [im_profile::profile_options_all] $profile_id]
 		  </td>
 		</tr>
 		<tr>

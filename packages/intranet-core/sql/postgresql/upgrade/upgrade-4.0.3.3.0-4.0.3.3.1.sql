@@ -2,7 +2,7 @@
 
 SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-4.0.3.3.0-4.0.3.3.1.sql','');
 
-
+update im_dynfield_attributes set also_hard_coded_p = 'f' where acs_attribute_id in (select attribute_id from acs_attributes where object_type = 'im_project');
 
 -- Delete the source_language_id DynField
 create or replace function inline_0 ()

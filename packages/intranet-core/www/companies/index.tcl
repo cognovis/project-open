@@ -170,7 +170,7 @@ array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
 			  ]
 
 # List to store the view_type_options
-set view_type_options [list [list Tabelle ""]]
+set view_type_options [list [list HTML ""]]
 
 # Run callback to extend the filter and/or add items to the view_type_options
 callback im_companies_index_filter -form_id $form_id

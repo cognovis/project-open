@@ -3,12 +3,14 @@
 
   <msg key="Approve">Approve</msg>
   <msg key="Approved">Approved</msg>
+  <msg key="Add_a_new_Conf">Add a new approval object</msg>
   <msg key="Conf_Project">Project</msg>
   <msg key="Conf_Status">Status</msg>
   <msg key="Conf_Type">Type</msg>
   <msg key="Conf_User">Employee</msg>
   <msg key="Date">Date</msg>
   <msg key="Deleted">Deleted</msg>
+  <msg key="Delete">Delete</msg>
   <msg key="Hours">Hours</msg>
   <msg key="Included_Hours">Included Hours</msg>
   <msg key="lt_Approve_the_logged">Approve the logged hours?</msg>
@@ -33,4 +35,9 @@
   <msg key="Notification_Body_Notify_Applicant_TS_Not_Approved">Your hours have not been approved:</msg>
   <msg key="Notification_Subject_Notify_Applicant_TS_Approved">Timesheet Approval</msg>
   <msg key="Notification_Subject_Notify_Applicant_TS_Not_Approved">Timesheet Approval</msg>
+  <msg key="Period">Period</msg>
+  <msg key="Project">Project</msg>
+  <msg key="Remove_checked_items">Remove checked items</msg>
+  <msg key="Timesheet_Approval">Timesheet Approval</msg>
+  <msg key="Timesheet_Conf_Object">Confirm hours logged</msg>
 </message_catalog>

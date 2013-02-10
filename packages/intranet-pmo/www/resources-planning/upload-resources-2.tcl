@@ -184,71 +184,90 @@ foreach csv_line_fields $values_list_of_lists {
 	lappend months $current_month
 	set current_month [db_string current_month "select to_char(to_date(:current_month,'YYMM') + interval '1 month','YYMM') from dual"]
     }
-    
+
+    set employee_id [db_string employee "select employee_id from im_employees where personnel_number = :personnel_number" -default ""]
+
+    set project_id ""
+        
+    if {[exists_and_not_null project_nr] && [exists_and_not_null company_id]} {
+	set project_id [db_string project "select project_id from im_projects where project_nr = :project_nr and company_id = :company_id" -default ""]
+    }
+
     # find the employee and the project
-    if {"" != $personnel_number && "" != $project_name} {
+    if {"" != $employee_id && "" != $project_id} {
 	set current_availability 0
-	set employee_id [db_string employee "select employee_id from im_employees where personnel_number = :personnel_number" -default ""]
-	set project_id [db_string project "select project_id from im_projects where project_name = :project_name" -default ""]
-	if {$employee_id eq "" || "" == $project_id} {
-	    ns_write "<li>ERROR $employee_id :: $personnel_number ---- $project_id :: $project_name</li>"
-	} else {
-	    set avail ""
-	    foreach month $months {
-		if {![info exists $month]} {
-		    continue
+	set avail ""
+	foreach month $months {
+	    if {![info exists $month]} {
+		ns_write "<li>ERROR $employee_id :: $personnel_number ---- $project_id :: $month</li>"		    
+		continue
+	    }
+	    set start_date "01$month"
+	    set availability [set $month]
+	    
+	    # we need to find out if we update or insert
+	    set planning_item_id [db_string planning_item "select item_id from im_planning_items 
+            	       		  where item_date = to_date(:start_date,'DDYYMM')
+                	          and item_project_phase_id = :project_id
+        			  and item_project_member_id = :employee_id" -default ""]
+	    
+	    if {"" != $availability} {
+		# Convert to float numbers
+		regsub -all "," $availability "." availability
+		
+		# Make sure we store percentages
+		set availability [ expr $availability * 100 ]
+		
+		# Find out if we need to create the relationship
+		set current_date "01"
+		append current_date [db_string date "select to_char(now(),'YYMM') from dual"]
+		
+		if {$current_date == $start_date} {
+		    set current_availability $availability
 		}
-		set start_date "01$month"
-		set availability [set $month]
 		
-		# we need to find out if we update or insert
-		set planning_item_id [db_string planning_item "select item_id from im_planning_items 
-                    where item_date = to_date(:start_date,'DDYYMM')
-                    and item_project_phase_id = :project_id
-                    and item_project_member_id = :employee_id" -default ""]
-		
-		if {"" != $availability} {
-		    # Convert to float numbers
-		    regsub -all "," $availability "." availability
-
-		    # Make sure we store percentages
-		    set availability [ expr $availability * 100 ]
-
-		    # Find out if we need to create the relationship
-		    set current_date "01"
-		    append current_date [db_string date "select to_char(now(),'YYMM') from dual"]
-		    
-		    if {$current_date == $start_date} {
-			set current_availability $availability
-		    }
-		    
-		    # Make this an effort
-		    if {"" == $planning_item_id} {
-			set planning_item_id [planning_item::new \
-						  -item_object_id $project_id \
-						  -item_project_phase_id $project_id \
-						  -item_project_member_id $employee_id \
-						  -item_type_id 73103 \
-						  -item_cost_type_id 3718 \
-						  -item_date [db_string date "select to_char(to_date(:start_date,'DDYYMM'),'YYYY-MM-DD')"] \
-						  -item_value $availability]
-		    } else {
-			db_dml update_planning_item "update im_planning_items set item_value = :availability, item_type_id = 73103 where item_id = :planning_item_id"
-		    }
-			
+		# Make this an effort
+		if {"" == $planning_item_id} {
+		    set planning_item_id [planning_item::new \
+					      -item_object_id $project_id \
+					      -item_project_phase_id $project_id \
+					      -item_project_member_id $employee_id \
+					      -item_type_id 73103 \
+					      -item_cost_type_id 3718 \
+					      -item_date [db_string date "select to_char(to_date(:start_date,'DDYYMM'),'YYYY-MM-DD')"] \
+					      -item_value $availability]
 		} else {
-		    if {"" != $planning_item_id} {
-			db_dml delete_planning_item "delete from im_planning_items where item_id = :planning_item_id"
-			db_dml delete_planning_item "delete from acs_objects where object_id = :planning_item_id"
-		    }
+		    db_dml update_planning_item "update im_planning_items set item_value = :availability, item_type_id = 73103 where item_id = :planning_item_id "
+		}
+		
+	    } else {
+		if {"" != $planning_item_id} {
+		    db_dml delete_planning_item "delete from im_planning_items where item_id = :planning_item_id"
+		    db_dml delete_planning_item "delete from acs_objects where object_id = :planning_item_id"
 		}
 	    }
 	}
+	
 	# Create the rel
 	if {$current_availability > 0} {
-	    # Create the relationship for this month
-	    set rel_id [im_biz_object_add_role -percentage $current_availability $employee_id $project_id 1300]
+	    # Find out if the relationship already exists
+	    set rel_id [db_string select_rel "select rel_id from acs_rels where object_id_one = :project_id and object_id_two = :employee_id" -default ""]
+	    if {"" == $rel_id} {
+		# Create the relationship for this month
+		set rel_id [im_biz_object_add_role -percentage $current_availability $employee_id $project_id 1300]
+	    } else {
+		# Update the relationship
+		db_dml update_availability "update im_biz_object_members set percentage = :current_availability where rel_id = :rel_id"
+	    }
+	} else {
+	    # Remove the relationship
+	    set rel_id [db_string select_rel "select rel_id from acs_rels where object_id_one = :project_id and object_id_two = :employee_id" -default ""]
+	    if {$rel_id ne ""} {
+		ns_log Notice "This rel $rel_id for $project_id :: $personnel_number should be removed"
+	    }
 	}
+    } else {
+	ds_comment "Can't add personnel $personnel_number for Employee $employee_id in Project $project_id :: $project_nr"
     }
 }
 

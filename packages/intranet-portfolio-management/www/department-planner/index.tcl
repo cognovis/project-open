@@ -91,7 +91,7 @@ set report_end_date $end_date
 set sub_navbar ""
 set main_navbar_label "resource_management"
 set bind_vars [ns_set create]
-set parent_menu_id [db_string parent_menu "select menu_id from im_menus where label = 'resource_management'"]
+set parent_menu_id [db_string parent_menu "select menu_id from im_menus where label = 'resource_management'" -default ""]
 set sub_navbar [im_sub_navbar \
                     -base_url "/intranet-resource-management/index" \
                     -plugin_url "/intranet-resource-management/index" \

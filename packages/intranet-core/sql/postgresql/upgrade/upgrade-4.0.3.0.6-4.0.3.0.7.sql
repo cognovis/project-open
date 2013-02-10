@@ -28,7 +28,7 @@ SELECT im_dynfield_widget__new (
                 null,                   -- creation_user
                 null,                   -- creation_ip
                 null,                   -- context_id
-                'tax_classification',              -- widget_name
+                'vat_type',              -- widget_name
                 '#intranet-core.VAT#',      -- pretty_name
                 '#intranet-core.VAT#',      -- pretty_plural
                 10007,                  -- storage_type_id
@@ -38,6 +38,24 @@ SELECT im_dynfield_widget__new (
                 '{custom {category_type "Intranet VAT Type"}}', 
                 'im_name_from_id'
 );
+
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+        v_count  integer;
+begin
+        select count(*) into v_count from user_tab_columns
+        where lower(table_name) = 'im_companies' and lower(column_name) = 'vat_type_id';
+
+        IF v_count = 0 THEN
+  	      alter table im_companies add column vat_type_id integer;
+        END IF;
+
+        return 0;
+end;$body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
 
 -- tax classification
 CREATE OR REPLACE FUNCTION inline_0 ()
@@ -49,12 +67,11 @@ DECLARE
 	row			record;
 BEGIN
 
-	 alter table im_companies add column tax_classification integer;
 	  v_attribute_id := im_dynfield_attribute_new (
 	  	 ''im_company'',			-- object_type
-		 ''tax_classification'',			-- column_name
+		 ''vat_type_id'',			-- column_name
 		 ''#intranet-core.Tax_classification#'',	-- pretty_name
-		 ''tax_classification'',			-- widget_name
+		 ''vat_type'',			-- widget_name
 		 ''integer'',				-- acs_datatype
 		 ''t'',					-- required_p   
 		 90,					-- pos y
@@ -64,6 +81,7 @@ BEGIN
 
 	  
 
+	IF v_attribute_id != 1 THEN
 	FOR row IN 
 		SELECT category_id FROM im_categories WHERE category_type = ''Intranet Company Type''
 	LOOP
@@ -79,7 +97,7 @@ BEGIN
 		END IF;
 
 	END LOOP;
-
+        END IF;
 
 	RETURN 0;
 END;' language 'plpgsql';

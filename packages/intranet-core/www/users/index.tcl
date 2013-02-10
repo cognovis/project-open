@@ -106,6 +106,7 @@ set freelancers_exist_p [db_table_exists im_freelancers]
 # Default 0 corresponds to the list of all users.
 # Use a normalized group_name in lowercase and with
 # all special characters replaced by "_".
+
 set user_group_name [im_mangle_user_group_name $user_group_name]
 set user_group_id 0
 set menu_select_label ""
@@ -127,6 +128,10 @@ switch [string tolower $user_group_name] {
         } else {
             lappend extra_wheres "u.user_id in (select object_id_two from acs_rels where rel_type = 'membership_rel' and  object_id_one = $user_group_id)"
         }
+    }
+    "none" {
+	set menu_select_label "users_all"
+	lappend extra_wheres "u.user_id not in (select object_id_two from acs_rels where rel_type = 'membership_rel' and object_id_one in (select profile_id from im_profiles))"
     }
     default {
     	# Search for the right group name.
@@ -318,6 +323,7 @@ set user_status_types [im_memoize_list select_user_status_types \
 set user_status_types [linsert $user_status_types 0 0 All]
 
 
+
 set user_types [list [list "#acs-kernel.common_All#" all]]
 db_foreach select_user_types "
 	select
@@ -329,9 +335,9 @@ db_foreach select_user_types "
 	where
 		group_id = profile_id" \
     {
-	set group_name [lang::message::lookup "" intranet-core.[lang::util::suggest_key $group_name] $group_name]
+	set group_name_pretty [lang::message::lookup "" intranet-core.[lang::util::suggest_key $group_name] $group_name]
 
-        set option [list $group_name [im_mangle_user_group_name $group_name]]
+        set option [list $group_name_pretty [im_mangle_user_group_name $group_name]]
         lappend user_types $option
     }
 
@@ -347,7 +353,7 @@ db_foreach select_user_types "
 # ---------------------------------------------------------------
 # Filter with Dynamic Fields
 # ---------------------------------------------------------------
-
+lappend user_types [list [_ intranet-dynfield.No_items] none]
 set form_id "user_filter"
 set object_type "person"
 set action_url "/intranet/users/index"

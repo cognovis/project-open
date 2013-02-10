@@ -129,6 +129,7 @@ set user_id $user_id_from_search
 # ---------------------------------------------------------------
 
 set managable_profiles [im_profile::profile_options_managable_for_user $current_user_id]
+set edit_profiles_p 0
 if {[llength $managable_profiles] > 0} { set edit_profiles_p 1 }
 if {!$current_user_is_admin_p && ($user_id == $current_user_id)} { set edit_profiles_p 0}
 
@@ -164,3 +165,6 @@ im_dynfield::append_attributes_to_form \
     -form_display_mode "display" \
     -page_url "/intranet/users/view"
 
+
+# Permissions for existing user: We need to be able to admin him:
+im_user_permissions $current_user_id $user_id view_p read_p write_p admin_p

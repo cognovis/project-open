@@ -60,11 +60,13 @@ if {"" == $return_url} {
     }
 }
 
+# ---- Check write permissions ---- 
+# Site Wide Admins can log hours for everybody
 set write_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
-if {$current_user_id == $user_id_from_search} {
-    # Can do anything to your own hours :)
-    set write_p 1
-}
+# User can do anything with its own hours
+if {$current_user_id == $user_id_from_search} { set write_p 1 }
+# Check for privilege "Add Hours All" 
+if { $add_hours_all_p } { set write_p 1 }
 
 set page_title [lang::message::lookup "" intranet-timesheet2.Timesheet_for_user_name "Timesheet for %user_name%"]
 set context_bar [im_context_bar "[_ intranet-timesheet2.Hours]"]
@@ -94,6 +96,7 @@ for { set i 0 } { $i < $start_day } { incr i } {
     if { $i ==5 } { append header_days_of_week "[_ intranet-timesheet2.Friday] " }
     if { $i ==6 } { append header_days_of_week "[_ intranet-timesheet2.Saturday] " }
 }
+
 
 set weekly_logging_days [parameter::get_from_package_key -package_key intranet-timesheet2 -parameter TimesheetWeeklyLoggingDays -default "0 1 2 3 4 5 6"]
 
@@ -371,7 +374,7 @@ set day_bgcolor "#efefef"
 set day_number_template "<!--\$julian_date--><span class='day_number'>\$day_number</span>"
 
 ns_log Debug "/intranet-timesheet2/index: calendar_details=$calendar_details"
-
+ds_comment "$header_days_of_week"
 set page_body [calendar_basic_month \
 		   -calendar_details $calendar_details \
 		   -days_of_week $header_days_of_week \
@@ -383,6 +386,7 @@ set page_body [calendar_basic_month \
 		   -prev_next_links_in_title 1 \
 		   -fill_all_days $fill_up_first_last_row_p \
 		   -empty_bgcolor "\#cccccc"]
+
 
 # ---------------------------------------------------------------
 # Render the Calendar widget
