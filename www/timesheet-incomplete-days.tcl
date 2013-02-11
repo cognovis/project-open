@@ -23,9 +23,10 @@ ad_page_contract {
 # ------------------------------------------------------------
 
 set current_user_id [ad_maybe_redirect_for_registration]
+
+# Check privileges 
 set view_hours_all_p [im_permission $current_user_id view_hours_all]
 if { [im_is_user_site_wide_or_intranet_admin $current_user_id] } { set view_hours_all_p 1 }
-
 if { !$view_hours_all_p }  {
     ad_return_complaint 1 "<li>
     [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
@@ -39,7 +40,7 @@ set read_p [db_string report_perms "
 	where	m.label = 'timesheet-incomplete-days'
 " -default 'f']
 
-if {![string equal "t" $read_p]} {
+if {![string equal "t" $read_p] && ![im_is_user_site_wide_or_intranet_admin $current_user_id]} {
     ad_return_complaint 1 "<li>
     [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
     return
