@@ -19,7 +19,7 @@
 -- @cvs-id $Id$
 --
 
-SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-4.0.3.0.9-4.0.3.0.10.sql','');
+SELECT acs_log__debug('/packages/intranet-core/sql/postgresql/upgrade/upgrade-4.0.3.3.9-4.0.3.3.10.sql','');
 
 -- Update Views with a label column
 create or replace function inline_0 ()
