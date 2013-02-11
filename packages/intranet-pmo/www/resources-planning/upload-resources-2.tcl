@@ -198,7 +198,7 @@ foreach csv_line_fields $values_list_of_lists {
 	set avail ""
 	foreach month $months {
 	    if {![info exists $month]} {
-		ns_write "<li>ERROR $employee_id :: $personnel_number ---- $project_id :: $month</li>"		    
+		ns_write "<li>ERROR: We could not find an entry for $employee_id with personnel_number $personnel_number in $project_id for $month</li>"		    
 		continue
 	    }
 	    set start_date "01$month"
