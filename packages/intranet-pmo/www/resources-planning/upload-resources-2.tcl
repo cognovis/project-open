@@ -185,8 +185,7 @@ foreach csv_line_fields $values_list_of_lists {
 	set current_month [db_string current_month "select to_char(to_date(:current_month,'YYMM') + interval '1 month','YYMM') from dual"]
     }
 
-    set employee_id [db_string employee "select employee_id from im_employees where personnel_number = :personnel_number" -default ""]
-
+    set employee_id [db_string employee "select employee_id from im_employees where trim(personnel_number) = :personnel_number" -default ""]
     set project_id ""
         
     if {[exists_and_not_null project_nr] && [exists_and_not_null company_id]} {
