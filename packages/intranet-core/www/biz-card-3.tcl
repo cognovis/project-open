@@ -143,8 +143,7 @@ catch { template::element::set_value $form_id email $email }
 template::element::set_value $form_id company_name $company_name
 template::element::set_value $form_id company_path $company_path
 
-template::element::set_value $form_id company_type_id $default_company_type_id
-
+#template::element::set_value $form_id company_type_id $default_company_type_id
 template::element::set_value $form_id office_name $office_name
 template::element::set_value $form_id office_path $office_path
 

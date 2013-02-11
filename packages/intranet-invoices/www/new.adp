@@ -250,9 +250,7 @@ function ajaxFunction() {
 </if>
 	        <tr> 
 	          <td class=roweven>#intranet-invoices.Payment_terms#</td>
-	          <td class=roweven> 
-	            <input type=text name=payment_days size=5 value='@payment_days@'>
-	            #intranet-invoices.days#</td>
+	          <td class=rowodd>@payment_term_select;noquote@</td>
 	        </tr>
 	        <tr> 
 	          <td class=rowodd>#intranet-invoices.Payment_Method#</td>

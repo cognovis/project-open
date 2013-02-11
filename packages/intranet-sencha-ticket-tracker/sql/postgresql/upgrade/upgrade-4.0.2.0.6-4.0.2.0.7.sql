@@ -18,7 +18,6 @@ begin
 		coalesce(t.ticket_note, '') || ' ' ||
 		coalesce(t.ticket_description, '') || ' ' ||
 		coalesce(t.ticket_file, '') || ' ' ||
-		coalesce(im_category_from_id(t.ticket_origin), '') || ' ' ||
 		coalesce(im_category_from_id(t.ticket_area_id), '') || ' ' ||
 		coalesce(im_category_from_id(t.ticket_incoming_channel_id), '') || ' ' ||
 		coalesce(im_category_from_id(t.ticket_outgoing_channel_id), '') || ' ' ||
@@ -28,13 +27,7 @@ begin
 		coalesce(cc_part.email, '') || ' ' ||
 
 		coalesce(cust.company_name, '') || ' ' ||
-		coalesce(cust.vat_number, '') || ' ' ||
-		coalesce(cust.company_province, '') || ' ' ||
-
-		coalesce(t.ticket_request, '') || ' ' ||
-		coalesce(t.ticket_resolution, '') || ' ' ||
-		coalesce(t.ticket_observations, '') || ' ' ||
-		coalesce(t.ticket_answer, '')
+		coalesce(cust.vat_number, '')
 	into    v_string
 	from    im_tickets t
 		LEFT OUTER JOIN persons cc_pers ON (t.ticket_customer_contact_id = cc_pers.person_id)

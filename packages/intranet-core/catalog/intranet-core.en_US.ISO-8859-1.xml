@@ -205,6 +205,7 @@
   <msg key="Clients">Clients</msg>
   <msg key="Clone_Project">Clone this project</msg>
   <msg key="Clone_Project_Help">You can 'clone' a project in order to save time to setup a similar project.</msg>
+  <msg key="Clone_View">Clone this view</msg>
   <msg key="Close">Close</msg>
   <msg key="Closed">Closed</msg>
   <msg key="CollabKM_Help">C&amp;KM Help</msg>
@@ -944,6 +945,7 @@ her contributions to the site content.</msg>
   <msg key="lt_Meineintranet-timeshe">My</msg>
   <msg key="lt_Member_state_user_sta">Member state: %user_state% (%activate_link%, %delete_link%)</msg>
   <msg key="lt_Member_state_user_sta_1">Member state: %user_state% (%activate_link%, %delete_link%)</msg>
+  <msg key="lt_Member_state">Member state</msg>
   <msg key="lt_Mineintranet-coreObje">Mine</msg>
   <msg key="lt_Mineintranet-timeshee">Mine</msg>
   <msg key="lt_Missing_group_id_and_">Missing group_id and short_name</msg>
@@ -1319,6 +1321,8 @@ other way for the user to find out.</msg>
   <msg key="Payed">Payed</msg>
   <msg key="Payment_Method">Payment Method</msg>
   <msg key="Payment_Methods">Payment Methods</msg>
+  <msg key="Payment_Term">Payment Term</msg>
+  <msg key="Payment_Terms">Payment Terms</msg>
   <msg key="Payments">Payments</msg>
   <msg key="PayPal">PayPal</msg>
   <msg key="Per">%%</msg>
@@ -1743,6 +1747,7 @@ other way for the user to find out.</msg>
   <msg key="View_1">View:</msg>
   <msg key="View_Id">View Id</msg>
   <msg key="View_Name">View Name</msg>
+  <msg key="View_Label">View Label</msg>
   <msg key="View_Projects">View Projects</msg>
   <msg key="View_sql">View sql</msg>
   <msg key="View_Status">View Status</msg>

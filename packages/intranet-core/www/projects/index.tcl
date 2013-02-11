@@ -103,6 +103,7 @@ set context_bar [im_context_bar $page_title]
 set page_focus "im_header_form.keywords"
 set upper_letter [string toupper $letter]
 set return_url [im_url_with_query]
+set cur_format [im_l10n_sql_currency_format]
 
 # Determine the default status if not set
 if { 0 == $project_status_id } {
@@ -205,7 +206,7 @@ db_foreach column_list_sql $column_sql {
     }
 
     if {"" == $visible_for || [eval $visible_for]} {
-	lappend column_headers "$column_name"
+	lappend column_headers "[lang::util::localize $column_name]"
 	lappend column_vars "$column_render_tcl"
 	lappend column_headers_admin $admin_html
 	if {"" != $extra_select} { lappend extra_selects $extra_select }
@@ -232,7 +233,7 @@ ad_form \
     -action $action_url \
     -mode $form_mode \
     -method GET \
-    -export {start_idx order_by how_many view_name include_subprojects_p include_subproject_level letter filter_advanced_p}\
+    -export {start_idx order_by how_many include_subproject_level letter filter_advanced_p}\
     -form {}
 
 if {[im_permission $current_user_id "view_projects_all"]} { 
@@ -246,12 +247,15 @@ if {[im_permission $current_user_id "view_projects_all"]} {
         {project_status_id:text(im_category_tree),optional {label \#intranet-core.Project_Status\#} {value $project_status_id} {custom {category_type "Intranet Project Status" translate_p 1}} }
     }
 }
-
+ad_form -extend -name $form_id -form {
+    {include_subprojects_p:text(select),optional {label "#intrancet-core.SubProjects#"} {options {{"#intranet-core.Yes#" "t"} {"#intranet-core.No#" "f"}}}}
+}
 if { [empty_string_p $company_id] } {
     set company_id 0
 }
 
 set company_options [im_company_options -include_empty_p 1 -include_empty_name "#intranet-core.All#" -type "CustOrIntl" ]
+set view_options [db_list_of_lists views {select view_label,view_name from im_views where view_type_id = 1451}]
 
 # Get the list of profiles readable for current_user_id
 set managable_profiles [im_profile::profile_options_managable_for_user -privilege "read" $current_user_id]
@@ -270,6 +274,7 @@ ad_form -extend -name $form_id -form {
     {user_id_from_search:text(select),optional {label \#intranet-core.With_Member\#} {options $user_options}}
     {start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {value "$start_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
     {end_date:text(text) {label "[_ intranet-timesheet2.End_Date]"} {value "$end_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('end_date', 'y-m-d');" >}}}
+    {view_name:text(select) {label \#intranet-core.View_Name\#} {value "$view_name"} {options $view_options}}
 }
 
 # List to store the view_type_options
@@ -375,24 +380,24 @@ switch [string tolower $order_by] {
     }
 }
 
-set where_clause [join $criteria " and\n            "]
+set where_clause [join $criteria " and "]
 if { ![empty_string_p $where_clause] } {
     set where_clause " and $where_clause"
 }
 
-set extra_select [join $extra_selects ",\n\t"]
+set extra_select [join $extra_selects ","]
 if { ![empty_string_p $extra_select] } {
-    set extra_select ",\n\t$extra_select"
+    set extra_select ",$extra_select"
 }
 
-set extra_from [join $extra_froms ",\n\t"]
+set extra_from [join $extra_froms ","]
 if { ![empty_string_p $extra_from] } {
-    set extra_from ",\n\t$extra_from"
+    set extra_from ",$extra_from"
 }
 
-set extra_where [join $extra_wheres "and\n\t"]
+set extra_where [join $extra_wheres " and "]
 if { ![empty_string_p $extra_where] } {
-    set extra_where ",\n\t$extra_where"
+    set extra_where " and $extra_where"
 }
 
 

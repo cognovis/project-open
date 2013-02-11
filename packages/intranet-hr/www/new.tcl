@@ -161,6 +161,20 @@ if {"" == $end_date} {
     set end_date $end_century
 }
 
+# Hidden parameter "EmployeeInformationShowDepartmentsOnly". This allows configuration option as follows:
+# Department-1
+# 	- CC-A
+#		- Employee Ben Bigboss 
+# 	- CC-B
+#		- Employee Petra Projectanager
+# Department-2 
+# ....
+# ...visible at http://[YOUR_SERVER]/cost-centers/index/
+set department_only_p [parameter::get -package_id [apm_package_id_from_key intranet-hr] -parameter "EmployeeInformationShowDepartmentsOnly" -default 1]
+set department_options [im_cost_center_options -include_empty 0 -department_only_p $department_only_p]
+
+set end_date $end_century
+
 set supervisor_options [im_employee_options 1]
 set salary_interval_options {{Month month} {Day day} {Week week} {Year year}}
 

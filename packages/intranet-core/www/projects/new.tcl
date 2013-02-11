@@ -289,14 +289,22 @@ ad_form -extend -name $form_id -new_request {
 	template::element::set_error $form_id end "[_ intranet-core.lt_End_date_must_be_afte]"
 	incr n_error
     }
-
-    # Make sure the project name has a minimum length
     if { [string length $project_nr] < $project_nr_field_min_len} {
+	# Make sure the project name has a minimum length
 	incr n_error
-	template::element::set_error $form_id project_nr "[_ intranet-core.lt_The_project_nr_that] <br>
-	   [_ intranet-core.lt_Please_use_a_project_nr_]"
+	template::element::set_error $form_id project_nr "[lang::message::lookup "" intranet-core.lt_The_project_nr_that "The Project Nr is too short."] <br>
+	   [lang::message::lookup "" intranet-core.lt_Please_use_a_project_nr_ "Please use a longer Project Nr or modify the parameter 'ProjectNrMinimumLength'."]"
     }
-	
+    if { [string length $project_nr] >= 10} {
+	incr n_error
+	template::element::set_error $form_id project_nr "[lang::message::lookup "" intranet-core.lt_The_project_nr_is_too_long "The Project Nr is too long."] <br>
+	   [lang::message::lookup "" intranet-core.lt_Please_use_a_shorter_project_nr_ "Please use a shorter Project Nr."]"
+    }
+    if {[info exists presales_probability] && ($presales_probability > 100 || $presales_probability < 0)} {
+	template::element::set_error $form_id presales_probability "Number must be in range (0 .. 100)"
+	incr n_error
+    }
+
     # Check for project number duplicates
     set project_nr_exists [db_string project_nr_exists "
 	select 	count(*)
@@ -499,7 +507,6 @@ ad_form -extend -name $form_id -new_request {
     
     set project_path $project_nr
 	
-    
     # -----------------------------------------------------------------
     # Store dynamic fields
     

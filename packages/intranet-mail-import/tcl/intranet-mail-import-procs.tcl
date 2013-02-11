@@ -247,7 +247,10 @@ namespace eval im_mail_import {
             set line [lindex $file_lines $i]
             set headers [list]
 	    
-            # walk through the headers and extract each one
+            #-- -----------------------------------------------------
+            #   Separate HEADERS/BODY      
+	    #-- -----------------------------------------------------
+
             while ![empty_string_p $line] {
                 set next_line [lindex $file_lines [expr $i + 1]]
                 if {[regexp {^[ ]*$} $next_line match] && $i > 0} {
@@ -275,7 +278,18 @@ namespace eval im_mail_import {
                 incr i
                 set line [lindex $file_lines $i]
             }
-            set body "\n[join [lrange $file_lines $i end] "\n"]"
+
+	    #-- -----------------------------------------------------
+	    #   SET MAIL BODY 
+	    #-- -----------------------------------------------------
+
+	    array set email_arr {}
+	    acs_mail_lite::parse_email -file $msg -array email_arr
+	    set body [lindex [lindex $email_arr(bodies) 0] 1]
+        
+	    #-- -----------------------------------------------------
+	    #   EXTRACT & CLEAN HEADERS 
+	    #-- -----------------------------------------------------
 
 	    ns_log Notice "im_mail_import.process_mails6: mail_header='[join $headers "' '"]'"
 
@@ -284,12 +298,17 @@ namespace eval im_mail_import {
 	    set from_header ""
 	    set to_header ""
 	    set subject_header "No Subject"
+
             catch {set from_header $email_headers(from)}
             catch {set to_header $email_headers(to)}
             catch {set subject_header $email_headers(subject)}
 
-	    # Massage the header a bit
-	    regsub {=\?iso-....-.\?.\?} $subject_header "" subject_header
+	    # Clean up header
+	    set subject_header [mime::field_decode $subject_header]
+
+	    #-- -----------------------------------------------------
+	    #   SPAM HANDLING 
+	    #-- -----------------------------------------------------
 
 	    set spam_header ""
 	    if {[info exists email_headers(x-spambayes-classification)]} {
@@ -330,6 +349,10 @@ namespace eval im_mail_import {
 		continue
             }
 
+            #-- -----------------------------------------------------
+            #   EVALUATE POTENTIAL ASSIGNMENTS (USERS / PROJECTS) 
+            #-- -----------------------------------------------------
+
 	    # The the list of emails from the To and From fields
 	    set to_emails [extract_emails $to_header]
 	    set from_emails [extract_emails $from_header]
@@ -350,14 +373,22 @@ namespace eval im_mail_import {
 	    # List of all ids: set to [list 0] if empty to avoid
 	    # syntax errors in SQL
 	    set all_ids [set_union $to_ids $from_ids]
+	    ns_log Notice "im_mail_import.process_mails15a: all_ids=$all_ids"
 
 	    # Calculate the IDs of non-Employees (=> external persons)
 	    set employee_ids [db_list employee_ids "select member_id from group_distinct_member_map where group_id=[im_profile_employees]"]
 	    set non_emp_ids [set_difference $all_ids $employee_ids]
 
-	    set all_object_ids [set_union $non_emp_ids $project_ids]
+	    # set all_object_ids [set_union [set_union $non_emp_ids $project_ids] $all_ids] 
+	    set all_object_ids [set_union $non_emp_ids $project_ids]    
+	    ns_log Notice "im_mail_import.process_mails15b: all_object_ids=$all_object_ids"
 
-	    ns_log Notice "im_mail_import.process_mails16x: to_ids=$to_ids, from_ids=$from_ids, project_ids=$project_ids, all_oids=$all_object_ids"
+	    ns_log Notice "im_mail_import.process_mails16x: to_ids=$to_ids, from_ids=$from_ids,all_ids=$all_ids, project_ids=$project_ids, all_oids=$all_object_ids, non_emp_ids: $non_emp_ids"
+
+            #-- -----------------------------------------------------
+            #   Ended search for potential objects this email can be 
+	    #   assigned to 
+            #-- -----------------------------------------------------
 
 	    # Move to "defered" if there is no object for this email right now...
             if {0 == [llength $all_object_ids]} {
@@ -373,10 +404,14 @@ namespace eval im_mail_import {
 		continue
             }
 
+            #-- -----------------------------------------------------
+            #   CREATE CR ITEM
+            #-- -----------------------------------------------------
+
 	    ns_log Notice "im_mail_import.process_mails16b: Creating email"
 
 	    # Create an OpenACS object with the mail
-	    # 
+	     
 	    set cr_item_id ""
 	    set subject $subject_header
 	    set html ""
@@ -424,9 +459,10 @@ namespace eval im_mail_import {
 		set cr_item_id [db_string get_data $sql -default 0]
 
 		ns_log Notice "im_mail_import.process_mails20: created cr_item_id: \#$cr_item_id\n"
-	        append debug "created spam_item \#$cr_item_id\n"
+		append debug "created spam_item \#$cr_item_id\n"
 
-		ns_log Notice "im_mail_import.process_mails21: No assigning non_emp_ids: $non_emp_ids"		
+		# Assigning to NON-Employees
+		ns_log Notice "im_mail_import.process_mails21: Now assigning non_emp_ids: $non_emp_ids"		
 		foreach non_emp_id $non_emp_ids {
 		    set rel_type "im_mail_from"
 		    set object_id_two $non_emp_id
@@ -450,7 +486,12 @@ namespace eval im_mail_import {
 		    set rel_id [db_string get_data $sql -default 0]
 		    ns_log Notice "im_mail_import.process_mails21a: created relationship \#$rel_id"
 		    append debug "created relationship \#$rel_id\n"
+
+		    # Store attachments
+		    im_mail_import::save_attachments_to_object -object_id $non_emp_id -email_id $msg -cr_item_id $cr_item_id
 		}
+
+		# Assigning to projects 
 		ns_log Notice "im_mail_import.process_mails22: No assigning project_ids: $project_ids"		
 		foreach project_id $project_ids {
 		    set rel_type "im_mail_related_to"
@@ -475,61 +516,18 @@ namespace eval im_mail_import {
 
 		    ns_log Notice "im_mail_import.process_mails22a: created relationship \#$rel_id"
 		    append debug "created relationship \#$rel_id\n"
+
+		    # Store attachments
+		    im_mail_import::save_attachments_to_object -object_id $project_id -email_id $msg -cr_item_id $cr_item_id
+
 		}
 	    } err_msg]} {
                     ns_log Notice "im_mail_import.process_mails19b: err creating spam item / building rel.ships: $err_msg"
 	    }
 
-	    # ###
-            # store attachments in project folder
-	    # ###
-
-            # get attachments
-            array set email {}
-            acs_mail_lite::parse_email -file $msg -array email
-            set email_files $email(files)
-
-            set file_name ""
-
-            foreach project_id $project_ids {
-                # determine project folder
-                set project_path [im_filestorage_project_path $project_id]
-                append project_path "/mails"
-
-                # Make sure the mail folder in projects exists, if not create it
-                if {![file exists $project_path]} {
-                    if {[catch { ns_mkdir $project_path } errmsg]} {
-                        ns_log Notice "im_mail_import.process_mails0: Error creating '$project_path' folder: '$errmsg'"
-                        append debug "Error creating '$project_path' folder: '$errmsg'\n"
-                        return $debug
-                    }
-                }
-
-                # create sub-directory to store attachments for cr_item
-                append project_path "/$cr_item_id"
-
-
-                if {[catch { ns_mkdir $project_path } errmsg]} {
-                        ns_log Notice "im_mail_import.process_mails0: Error creating '$project_path' folder: '$errmsg'"
-                        append debug "Error creating '$project_path' folder: '$errmsg'\n"
-                        return $debug
-                }
-
-                foreach attachment $email_files {
-                    append file_name $project_path "/" [lindex $attachment 2]
-                    set content [lindex $attachment 3]
-                    set fp [open $file_name w]
-                    fconfigure $fp -translation binary
-                    fconfigure $fp -encoding binary
-                    puts -nonewline $fp $content
-                    close $fp
-                    set file_name ""
-                }
-            }
-
-            # ###
-	    # Move to "processed" 
-            # ###
+            # -- ----------------------------------------------------
+	    #    Move to "processed" 
+            # -- ----------------------------------------------------
 
 	    if {[catch {
 		ns_log Notice "im_mail_import.process_mails23: Moving '$msg' to processed: '$processed_folder/$msg_body'"
@@ -576,6 +574,79 @@ namespace eval im_mail_import {
     } {
 	# nothing
     }
+
+    ad_proc -public save_attachments_to_object {
+        -object_id:required
+        -email_id:required
+	-cr_item_id:required
+    } {
+        object_id: Object to attach mail to 
+	email_id: Path to email 
+	Returns list with links to attachments
+    } {
+
+      set link_list {}
+
+      if [catch {
+
+	array set email {}
+        acs_mail_lite::parse_email -file $email_id -array email
+        set email_files $email(files)
+
+	set object_type [db_string get_object_type "select object_type from acs_objects where object_id = :object_id" -default 0]
+        if { "im_project" == $object_type || "user" == $object_type } {
+
+            # get attachments
+	    array set email {}
+            acs_mail_lite::parse_email -file $email_id -array email
+            set email_files $email(files)
+            set file_name ""
+
+            ns_log Notice "save_attachments_to_object: Found object type: $object_type"
+
+                # determine object folder
+	    if { "im_project" == $object_type } {
+		set object_path [im_filestorage_project_path $object_id]
+	    } else {
+		set object_path [im_filestorage_user_path $object_id]
+	    }
+            append object_path "/mails"
+
+            # Make sure the mail folder in projects exists, if not create it
+	    if {![file exists $object_path]} {
+		if {[catch { ns_mkdir $object_path } err_msg]} {
+                        ns_log Notice "save_attachments_to_object: Error creating '$object_path' folder: '$err_msg'"
+                        append debug "Error creating '$object_path' folder: '$err_msg'\n"
+                        return $debug
+		}
+	    }
+
+            # create sub-directory to store attachments for cr_item
+            append object_path "/$cr_item_id"
+
+	    if {[catch { ns_mkdir $object_path } errmsg]} {
+                    ns_log Error "save_attachments_to_object: Error creating '$object_path' folder: '$errmsg'"
+                    append debug "Error creating '$object_path' folder: '$errmsg'\n"
+                    return $debug
+	    }
+
+	    foreach attachment $email_files {
+		append file_name $object_path "/" [lindex $attachment 2]
+		lappend link_list $file_name 
+		set content [lindex $attachment 3]
+		set fp [open $file_name w]
+                fconfigure $fp -translation binary
+                fconfigure $fp -encoding binary
+                puts -nonewline $fp $content
+                close $fp
+                set file_name ""
+	    }
+        }
+      } err_msg] {
+        ns_log Error "save_attachments_to_object: Error assigning attachments for mail: $email_id: $err_msg"
+      }
+      return $link_list
+  }
 }
 
 
@@ -591,6 +662,14 @@ ad_proc im_mail_import_user_component {
 
     if {0 == $rel_user_id} {
         set rel_user_id [ad_get_user_id]
+    }
+
+    # Other users than the user himself need to be admins or have the privilege view_mails_all
+    if { $rel_user_id != [ad_get_user_id]  } {
+        if { ![im_is_user_site_wide_or_intranet_admin [ad_get_user_id]] && ![im_permission [ad_get_user_id] view_mails_all] } {
+	    return "No Permission"
+            break
+        }
     }
 
     # HTML Overlay
@@ -621,7 +700,6 @@ ad_proc im_mail_import_user_component {
         order by
                 ao.creation_date DESC
     "
-
     set ctr 0
 
     set html_lines ""

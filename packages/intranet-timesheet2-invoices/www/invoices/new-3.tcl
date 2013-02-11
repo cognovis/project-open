@@ -12,7 +12,7 @@
 
 ad_page_contract { 
     Receives the list of tasks to invoice and creates an invoice form
-    similar to /intranet-invoicing/www/new in order to create a new
+    similar to /intranet-invoices/www/new in order to create a new
     invoice.<br>
     @param include_task A list of im_timesheet_task IDs to include in the
            new invoice

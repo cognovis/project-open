@@ -497,7 +497,6 @@ ad_proc -public im_gp_save_xml {
 	lappend params [list stacktrace $stack_trace]
 	lappend params [list error_type gantt_import]
 	lappend params [list error_content $file_content]
-	lappend params [list error_content_filename $upload_gan]
 	lappend params [list top_message "
 	<h1>Error Parsing Project XML</h1>
 	<p>We have found an error parsing your project file.	<br>&nbsp;<br>
@@ -902,7 +901,7 @@ ad_proc -public im_gp_save_tasks {
 
 
 ad_proc -public im_gp_save_tasks2 {
-    {-debug_p 0}
+    {-debug_p 1}
     -create_tasks
     -save_dependencies
     task_node 
@@ -949,7 +948,7 @@ ad_proc -public im_gp_save_tasks2 {
     set is_null			0
     set milestone_p		""
     set effort_driven_p		"t"
-    set effort_driven_type_id	0
+    set effort_driven_type_id	[im_timesheet_task_effort_driven_type_fixed_work]
     set note			""
     set task_nr			""
     set task_id			0
@@ -1100,7 +1099,11 @@ ad_proc -public im_gp_save_tasks2 {
 		set cust_value [$taskchild getAttribute value ""]
 		switch $cust_key {
 		    tpc0 { set task_nr $cust_value}
-		    tpc1 { set task_id $cust_value}
+		    tpc1 { 
+			# Fraber 130124: Disabled
+			# Because importing from a different computer can cause trouble
+			# set task_id $cust_value
+		    }
 		}
             }
         }
@@ -1203,6 +1206,7 @@ ad_proc -public im_gp_save_tasks2 {
 	    set parent_id $task_hash($outline_task_key)
 	}
     }
+
 
     # -----------------------------------------------------
     # Map the M$/GanttProject uid into a ]po[ task_id
@@ -1613,14 +1617,9 @@ ad_proc -public im_gp_save_allocations {
 		    set table_name im_gantt_assignments
 		    set column_name "xml_[string tolower $nodeName]"
 		    set column_exists_p [im_column_exists $table_name $column_name]
-		    if {!$column_exists_p} {
-			# The following command will probably fail on the first import until we flush the cache again
-			# Therefore we catch it and flush the cache
-			if { [catch {
-			    db_dml add_column "alter table $table_name add column $column_name text" 
-			} err_msg] } {
-			    util_memoize_flush [list db_column_exists $table_name $column_name]
-			}
+		    if {!$column_exists_p} { 
+			db_dml add_column "alter table $table_name add column $column_name text" 
+			im_permission_flush
 		    }
 
     		    switch [string tolower $nodeName] {

@@ -875,7 +875,7 @@ a   span  {float:none;}
   height: 3px;
   top: -3px;
   width: 100%;
-  display: none;
+  display: inline-block;
 }
 
 .component-parking {
@@ -1621,6 +1621,7 @@ div.xowiki-content ul.mktree li.liOpen .bullet
 
 div.rightbox {
 	margin-top: 2em;
+	visibility: hidden;
 }
 
 div.xowiki-content ul {
@@ -1634,6 +1635,17 @@ div.xowiki-content hr {
 #search-info p.subtitle {
 	position:relative;
 	font-weight: bold;
+}
+
+#wikicmds {
+    top: -15px;
+    font-family: verdana;
+    font-size: 8pt;
+}
+
+#wikicmds a, #wikicmds a:visited, div.wiki-menu a {
+    color: #666666;
+    text-decoration: none;
 }
 
 #titleSubmenu {

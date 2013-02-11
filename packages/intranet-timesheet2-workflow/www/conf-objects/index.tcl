@@ -47,7 +47,7 @@ set bulk_actions_list "[list]"
 #[im_permission $user_id "delete_expense"]
 set delete_expense_p 1 
 if {$delete_expense_p} {
-    lappend bulk_actions_list "[_ intranet-timesheet2-workflow.Delete]" "confs-del" "[_ intranet-timesheet2-workflow.Remove_checked_items]"
+    lappend bulk_actions_list "[_ intranet-timesheet2-workflow.Delete]" "delete" "[_ intranet-timesheet2-workflow.Remove_checked_items]"
 }
 #[im_permission $user_id "add_expense_bundle"]
 set create_invoice_p 1
@@ -71,9 +71,11 @@ template::list::create \
     -multirow conf_lines \
     -key conf_id \
     -has_checkboxes \
+    -bulk_action_method GET \
     -bulk_actions $bulk_actions_list \
     -bulk_action_export_vars  {
 	object_id
+	return_url
     } \
     -row_pretty_plural "[_ intranet-timesheet2-workflow.Confs_Items]" \
     -elements {
@@ -92,7 +94,7 @@ template::list::create \
 	}
 	project_name {
 	    label "[_ intranet-timesheet2-workflow.Project]"
-	    link_url_eval {[export_vars -base "/intranet/projects/view" {project_id}]}
+	    link_url_eval {[export_vars -base "/intranet/projects/view" {{project_id $conf_project_id}}]}
 	}
         conf_user_name {
 	    label "[_ intranet-timesheet2-workflow.Conf_User]"

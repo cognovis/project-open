@@ -82,7 +82,7 @@ ad_form \
 	{visible_for:text(textarea),optional {label "Visible For"} {html {cols 50 rows 5}}}
 	{ajax_configuration:text(textarea),optional {label "Ajax Configuration"} {html {cols 50 rows 5}}}
 	{variable_name:text(text),optional {label #intranet-core.Variable_Name#} }
-	{datatype:text(text),optional {label #intranet-core.Datatype#} }
+	    {datatype:text(text),optional {label #intranet-core.Datatype#} {help_text "Could be any of date, currency, float, percentage, textarea, category_pretty"}}
     }
 
 

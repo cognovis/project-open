@@ -57,6 +57,11 @@ set user_locale [lang::user::locale]
 set locale $user_locale
 set page_title ""
 
+set gen_vars ""
+set blurb ""
+set notify_vars ""
+set url ""
+
 # Security is defered after getting the invoice information
 # from the database, because the customer's users should
 # be able to see this invoice even if they don't have any
@@ -474,13 +479,6 @@ db_1row accounting_contact_info "
 set template_type ""
 if {0 != $render_template_id} {
 
-    # Maintain compatibility with old convention "invoice-english.adp"
-    # ToDo: Remove this compatibility with V4.0
-    if {[regexp {english} $template]} { set locale en }
-    if {[regexp {spanish} $template]} { set locale es }
-    if {[regexp {german} $template]} { set locale de }
-    if {[regexp {french} $template]} { set locale fr }
-    
     # New convention, "invoice.en_US.adp"
     if {[regexp {(.*)\.([_a-zA-Z]*)\.([a-zA-Z][a-zA-Z][a-zA-Z])} $template match body loc template_type]} {
 	set locale $loc
@@ -1265,11 +1263,19 @@ if {[im_column_exists im_costs vat_type_id]} {
     # get the VAT note. We do not overwrite the VAT value stored in
     # the invoice in case the default rate has changed for the
     # vat_type_id and this is just a reprint of the invoice
-    set vat_note [db_string vat_note "select aux_string1 from im_categories where category_id = :vat_type_id" -default ""]
+    set vat_note [im_category_string1 -category_id $vat_type_id -locale $locale]
 } else {
     set vat_note ""
 }
     
+# -------------------------
+# Deal with payment terms and variables in them
+# -------------------------
+
+set payment_terms [im_category_from_id -locale $locale $payment_term_id]
+set payment_terms_note [im_category_string1 -category_id $payment_term_id -locale $locale]
+eval [template::adp_compile -string $payment_terms_note]
+set payment_terms_note $__adp_output
 
 # Set these values to 0 in order to allow to calculate the
 # formatted grand total
@@ -1588,8 +1594,6 @@ if {0 != $render_template_id || "" != $send_to_user_as} {
 
 } 
 
-
-
 # ---------------------------------------------------------------------
 # Surcharge / Discount section
 # ---------------------------------------------------------------------
@@ -1603,7 +1607,7 @@ if {[info exists default_pm_fee_percentage] && "" != $default_pm_fee_percentage}
     set pm_fee_perc $default_pm_fee_percentage 
     set pm_fee_checked "checked"
 }
-set pm_fee_msg [lang::message::lookup "" intranet-invoicing.PM_Fee_Msg "Project Management %pm_fee_perc%%"]
+set pm_fee_msg [lang::message::lookup "" intranet-invoices.PM_Fee_Msg "Project Management %pm_fee_perc%%"]
 
 # Surcharge. 
 set surcharge_checked ""
@@ -1611,7 +1615,7 @@ set surcharge_perc ""
 if {[info exists default_surcharge_perc]} { set surcharge_perc $default_surcharge_perc }
 if {"" == $surcharge_perc} { set surcharge_perc [ad_parameter -package_id [im_package_invoices_id] "DefaultSurchargePercentage" "" "10.0"] }
 if {[info exists default_surcharge_percentage]} { set surcharge_perc $default_surcharge_percentage }
-set surcharge_msg [lang::message::lookup "" intranet-invoicing.Surcharge_Msg "Rush Surcharge %surcharge_perc%%"]
+set surcharge_msg [lang::message::lookup "" intranet-invoices.Surcharge_Msg "Rush Surcharge %surcharge_perc%%"]
 
 # Discount
 set discount_checked ""
@@ -1619,9 +1623,9 @@ set discount_perc ""
 if {[info exists default_discount_perc]} { set discount_perc $default_discount_perc }
 if {"" == $discount_perc} { set discount_perc [ad_parameter -package_id [im_package_invoices_id] "DefaultDiscountPercentage" "" "10.0"] }
 if {[info exists default_discount_percentage]} { set discount_perc $default_discount_percentage }
-set discount_msg [lang::message::lookup "" intranet-invoicing.Discount_Msg "Discount %discount_perc%%"]
+set discount_msg [lang::message::lookup "" intranet-invoices.Discount_Msg "Discount %discount_perc%%"]
 
-set submit_msg [lang::message::lookup "" intranet-invoicing.Add_Discount_Surcharge_Lines "Add Discount/Surcharge Lines"]
+set submit_msg [lang::message::lookup "" intranet-invoices.Add_Discount_Surcharge_Lines "Add Discount/Surcharge Lines"]
 
 
 # ---------------------------------------------------------------------
@@ -1667,7 +1671,6 @@ set memorized_transaction_installed_p [db_string memorized_transaction_installed
 if { "" != $err_mess } {
     set err_mess [lang::message::lookup "" $err_mess "Document Nr. not available anymore, please note and verify newly assigned number"]
 }
-
 
 # ---------------------------------------------------------------------
 # Dynfields
@@ -1807,3 +1810,5 @@ where
 	</table>
         </form>\n"
 }
+
+#set admin_p 1

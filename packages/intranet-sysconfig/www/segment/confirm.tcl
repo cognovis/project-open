@@ -43,7 +43,7 @@ set iframe_url "http://www.project-open.org/en/install_${platform}_${core_versio
 
 
 switch [string tolower $platform] {
-    win32 {
+    win32 - win64 {
 	set iframe_url "http://www.project-open.org/en/install_${platform}_${core_version_id}"
     }
     linux {
