@@ -10,7 +10,7 @@
     <inherit-templates-p>t</inherit-templates-p>
     <auto-mount>intranet-timesheet2-workflow</auto-mount>
 
-    <version name="4.0.3.4.0" url="http://www.project-open.org/download/apm/intranet-timesheet2-workflow-4.0.3.4.0.apm">
+    <version name="4.0.3.5.0" url="http://www.project-open.org/download/apm/intranet-timesheet2-workflow-4.0.3.5.0.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Provides a &quot;confirmation object&quot; to allow for workflows confirming logged hours by PM.</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
@@ -25,7 +25,7 @@
         <callbacks>
         </callbacks>
         <parameters>
-            <parameter scope="instance" datatype="string"  min_n_values="1"  max_n_values="1"  name="DefaultWorkflowKey"  default="timesheet_approval_wf" description="Workflow-Key of the default Time Sheet Approval Workflow"/>
+            <parameter scope="instance" datatype="string"  min_n_values="1"  max_n_values="1"  name="DefaultWorkflowKey"  default="" description="Workflow-Key of the default Time Sheet Approval Workflow, for example 'timesheet_approval_wf'. Default is empty for no workflow."/>
             <parameter scope="instance" datatype="string"  min_n_values="1"  max_n_values="1"  name="ConfirmationPeriod"  default="monthly" description="Show button to confirm hours on monthly or weekly basis. Value range: 'monthly' or 'weekly'"/>
 	    <parameter scope="instance" datatype="number"  min_n_values="1"  max_n_values="1"  name="ShowCommentsInPanel"  default="0" description="Show comments made during the approval process. (Requires pg/sql function to be set in WF writing comments to table 'im_timesheet_conf_object')"/>
         </parameters>

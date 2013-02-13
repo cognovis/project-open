@@ -211,7 +211,7 @@ if {[im_column_exists im_costs vat_type_id]} {
     
     set vat_type_id [db_string vat_type_info "select vat_type_id from im_costs where cost_id = :invoice_id" -default ""]
     if {"" == $vat_type_id} {
-	set vat_type_id [db_string vat_info "select tax_classification from im_companies where company_id = :company_id" -default ""]
+	set vat_type_id [db_string vat_info "select vat_type_id from im_companies where company_id = :company_id" -default ""]
     }
     set vat_type_enabled_p 1
 } else {

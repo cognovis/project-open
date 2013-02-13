@@ -68,12 +68,13 @@ if {!$write_p} {
 
 # Look for common super-projects for multi-project documents
 set select_project [im_invoices_unify_select_projects $select_project]
+regsub "\{" $select_project {} select_project
+regsub "\}" $select_project {} select_project
 
 set project_id ""
 if {1 == [llength $select_project]} {
     set project_id [lindex $select_project 0]
 }
-
 
 # ---------------------------------------------------------------
 # Determine and check invoice currency

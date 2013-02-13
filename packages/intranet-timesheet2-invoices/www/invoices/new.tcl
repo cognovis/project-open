@@ -135,17 +135,13 @@ set column_headers [list]
 set column_vars [list]
 
 set column_sql "
-select
-	column_name,
+select	column_name,
 	column_render_tcl,
 	visible_for
-from
-	im_view_columns
-where
-	view_id=:view_id
+from	im_view_columns
+where	view_id=:view_id
 	and group_id is null
-order by
-	sort_order"
+order by sort_order"
 
 db_foreach column_list_sql $column_sql {
     if {"" == $visible_for || [eval $visible_for]} {
@@ -153,7 +149,6 @@ db_foreach column_list_sql $column_sql {
 	lappend column_vars "$column_render_tcl"
     }
 }
-
 
 
 # ---------------------------------------------------------------
@@ -307,13 +302,16 @@ if { ![empty_string_p $query_string] } {
 }
 
 append table_header_html "<tr>\n"
+set ctr 0
 foreach col $column_headers {
     set col_txt [lang::util::suggest_key $col]
-    if { [string compare $order_by $col] == 0 } {
-	append table_header_html "  <td class=rowtitle>[_ intranet-timesheet2-invoices.$col_txt]</td>\n"
+    set col_l10n [lang::message::lookup "" intranet-timesheet2-invoices.$col_txt $col]
+    if {0 == $ctr || [string compare $order_by $col] == 0 } {
+	append table_header_html "  <td class=rowtitle>$col_l10n</td>\n"
     } else {
-	append table_header_html "  <td class=rowtitle><a href=\"${url}order_by=[ns_urlencode $col]\">[_ intranet-timesheet2-invoices.$col_txt]</a></td>\n"
+	append table_header_html "  <td class=rowtitle><a href=\"${url}order_by=[ns_urlencode $col]\">$col_l10n</a></td>\n"
     }
+    incr ctr
 }
 append table_header_html "</tr>\n"
 

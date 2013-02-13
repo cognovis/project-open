@@ -58,6 +58,7 @@ ad_form \
     -form {
 	view_id:key(im_views_seq)
 	{view_name:text(text) {label #intranet-core.View_Name#} }
+	{view_label:text(text) {label #intranet-core.View_Label#} }
 	{view_type_id:text(im_category_tree),optional {label #intranet-core.View_Type#} {custom {category_type "Intranet DynView Type"}} {value ""} }
 	{view_status_id:text(im_category_tree),optional {label #intranet-core.View_Status#} {custom {category_type "Intranet DynView Status"}} {value ""} }
 	{sort_order:integer(text),optional {label #intranet-core.Sort_Order#} {html {size 10 maxlength 15}}}
@@ -92,9 +93,9 @@ ad_form -extend -name view -on_request {
 
     db_dml view_insert "
     insert into IM_VIEWS
-    (view_id, view_name, view_status_id, view_type_id, sort_order, view_sql)
+    (view_id, view_name, view_status_id, view_type_id, sort_order, view_sql, view_label)
     values
-    (:view_id, :view_name, :view_status_id, :view_type_id, :sort_order, :view_sql)
+    (:view_id, :view_name, :view_status_id, :view_type_id, :sort_order, :view_sql, :view_label)
     "
 
 } -edit_data {
@@ -105,7 +106,8 @@ ad_form -extend -name view -on_request {
 	        view_status_id  = :view_status_id,
 	        view_type_id    = :view_type_id,
 	        sort_order      = :sort_order,
-	        view_sql  = :view_sql
+	        view_sql  = :view_sql,
+	        view_label  = :view_label
 	where
 		view_id = :view_id
 "
@@ -130,7 +132,7 @@ ad_form -extend -name view -on_request {
 # ------------------------------------------------------
 
 if { [exists_and_not_null view_id] } {
-	set action_list [list [_ intranet-core.Add_new_Column] [export_vars -base "new-column" {view_id return_url}] [_ intranet-core.Add_new_Column]]
+    set action_list [list [_ intranet-core.Add_new_Column] [export_vars -base "new-column" {view_id return_url}] [_ intranet-core.Add_new_Column] [_ intranet-core.Clone_View] [export_vars -base "clone" {{old_view_id $view_id} return_url}] [_ intranet-core.Clone_View]]
 
 	set elements_list {
 	  column_id {

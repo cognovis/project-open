@@ -1,4 +1,4 @@
-# /packages/intranet-invoicing/tcl/intranet-cost-center-procs.tcl
+# /packages/intranet-invoices/tcl/intranet-cost-center-procs.tcl
 #
 # Copyright (C) 2003 - 2009 ]project-open[
 #
@@ -81,13 +81,14 @@ ad_proc -public im_cost_center_select {
     {-include_empty 0} 
     {-include_empty_name "" }
     {-department_only_p 0} 
+    {-manager_id ""}
     select_name 
     {default ""} 
     {cost_type_id ""} 
 } {
     Returns a select box with all Cost Centers in the company.
 } {
-    set options [im_cost_center_options -include_empty $include_empty -include_empty_name $include_empty_name -department_only_p $department_only_p -cost_type_id $cost_type_id]
+    set options [im_cost_center_options -include_empty $include_empty -include_empty_name $include_empty_name -department_only_p $department_only_p -cost_type_id $cost_type_id -manager_id $manager_id]
 
     # Only one option, so 
     # write out string instead of select component
@@ -109,6 +110,9 @@ ad_proc -public im_cost_center_options {
     {-include_empty_name "" }
     {-department_only_p 0} 
     {-cost_type_id ""} 
+    {-parent_id ""}
+    {-indent_level 0}
+    {-manager_id ""}
 } {
     Returns a list of all Cost Centers in the company.
     Takes into account the permission of the user to 
@@ -134,33 +138,63 @@ ad_proc -public im_cost_center_options {
 	set department_only_sql "and cc.department_p = 't'"
     }
 
+    set parent_sql ""
+    if {"" != $parent_id} {
+	set parent_sql "and cc.parent_id = :parent_id"
+    } 
+
+    set manager_sql ""
+    if {"" != $manager_id} {
+	set manager_sql "and cc.manager_id = :manager_id"
+    } else {
+	if {"" == $parent_id} {	
+	    set parent_sql "and cc.parent_id is null"
+	}
+    }
+
     set options_sql "
         select	cc.cost_center_name,
-                cc.cost_center_id,
-                cc.cost_center_label,
-    		(length(cc.cost_center_code) / 2) - 1 as indent_level
+                cc.cost_center_id
         from	im_cost_centers cc
 	where	cost_center_status_id in (
 			select * from im_sub_categories([im_cost_center_status_active])
 		)
 		$department_only_sql
 		$cost_type_sql
+                $parent_sql
+                $manager_sql
 	order by
-		cc.cost_center_code
+		cc.cost_center_name
     "
 
+    
     set options [list]
-    if {$include_empty} { lappend options [list $include_empty_name ""] }
+    if {$include_empty && $parent_id eq ""} { lappend options [list $include_empty_name ""] }
 
-    db_foreach cost_center_options $options_sql {
-        set spaces ""
-        for {set i 0} {$i < $indent_level} { incr i } {
-            append spaces "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
-        }
-        lappend options [list "$spaces$cost_center_name" $cost_center_id]
+    # make sure we pass the correct indent level
+    set sub_indent_level $indent_level
+    incr sub_indent_level
+
+    set cost_center_options [db_list_of_lists cost_center_options $options_sql]
+    if {$cost_center_options != ""} {
+	foreach cost_center_option $cost_center_options {
+	    set cost_center_name [lindex $cost_center_option 0]
+	    set cost_center_id [lindex $cost_center_option 1]
+	    set spaces ""
+	    for {set i 0} {$i < $indent_level} { incr i } {
+		append spaces "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+	    }
+	    lappend options [list "$spaces$cost_center_name" $cost_center_id]
+	    set options [concat $options  [im_cost_center_options \
+					       -include_empty $include_empty \
+					       -include_empty_name $include_empty_name \
+					       -department_only_p $department_only_p \
+					       -cost_type_id $cost_type_id \
+					       -indent_level $sub_indent_level \
+					       -parent_id $cost_center_id]]
+	}
     }
-
-    if {$include_empty && [llength $options] == 0} {
+    if {$include_empty && [llength $options] == 0 && $parent_id == ""} {
 	set invalid_cc [lang::message::lookup "" intranet-cost.No_CC_permissions_for_cost_type "No CC permissions for \"%cost_type%\""]
 	lappend options [list $invalid_cc ""]
     }

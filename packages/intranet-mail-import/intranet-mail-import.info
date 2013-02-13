@@ -9,7 +9,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-mail-import</auto-mount>
 
-    <version name="4.0.3.4.0" url="http://www.project-open.org/download/apm/intranet-mail-import-4.0.3.4.0.apm">
+    <version name="4.0.3.5.0" url="http://www.project-open.org/download/apm/intranet-mail-import-4.0.3.5.0.apm">
         <owner url="mailto:eric@openforce.biz">Eric Lorenzo</owner>
         <owner url="mailto:timo@studio-k4.de">Timo Hentschel</owner>
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
@@ -19,7 +19,7 @@
 	  Reads emails from QMail Maildir and integrates with ]project-open[
         </description>
 
-        <provides url="intranet-mail-import" version="3.4.0.2.0"/>
+        <provides url="intranet-mail-import" version="4.0.3.4.1"/>
         <requires url="intranet-core" version="3.4.0.0.0"/>
 	<requires url="intranet-notes" version="3.4.0.0.0"/>
 

@@ -62,7 +62,8 @@ if {![info exists task]} {
     set view_name "standard"
 
     # Don't show this page in WF panel.
-    ad_returnredirect "/intranet-helpdesk/quote?ticket_id=$task(object_id)"
+    # Fraber 130116: Commented out on Project, I guess I also comment out here...
+    # ad_returnredirect "/intranet-helpdesk/quote?ticket_id=$task(object_id)"
 
 }
 

@@ -520,7 +520,7 @@ switch $action_type {
     "reply_message" { 
 	set action_type_found 1
 	set importance 1
-	set subject [lang::message::lookup "" intranet-forum.Reply_to_topic2 "Reply to $topic_type in $object_name: $subject"]
+	set subject [lang::message::lookup "" intranet-forum.Reply_to_topic2a "Reply to %topic_type% in %object_name%: %subject%"]
 	set message "
 <p>[_ intranet-forum.lt_A_new_topic_type_has_]</p>
 <hr />

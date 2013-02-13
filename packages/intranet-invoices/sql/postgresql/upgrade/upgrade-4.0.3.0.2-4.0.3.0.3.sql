@@ -1,4 +1,4 @@
--- upgrade-4.0.3.0.-4.0.3.0.3.sql
+-- upgrade-4.0.3.0.2-4.0.3.0.3.sql
 
 SELECT acs_log__debug('/packages/intranet-invoices/sql/postgresql/upgrade/upgrade-4.0.3.0.2-4.0.3.0.3.sql','');
 

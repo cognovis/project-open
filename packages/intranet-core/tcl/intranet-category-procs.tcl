@@ -817,3 +817,30 @@ ad_proc -public im_category_all_parents {
     }
     return $all_parent_ids
 }
+
+ad_proc -public im_category_string1 {
+    -category_id
+    {-locale "" }
+} {
+    Return the localized version of string1 for the category
+} {
+    set category_key "intranet-core.string1_$category_id"
+    set string1_en_US [db_string string1 "select aux_string1 from im_categories where category_id = :category_id" -default ""]
+    if {"" == $string1_en_US} {
+	# The string is not set
+	return ""
+    } else {
+	return [lang::message::lookup $locale $category_key]
+    }
+}
+
+ad_proc -public im_category_string2 {
+    -category_id
+    {-locale "" }
+} {
+    Return the localized version of string1 for the category
+} {
+    set category_key "intranet-core.string2_$category_id"
+    set default_string1 [db_string string2 "select aux_string2 from im_categories where category_id = :category_id" -default ""]
+    return [lang::message::lookup $locale $category_key $default_string2]
+}

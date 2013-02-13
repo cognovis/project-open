@@ -27,11 +27,13 @@ ad_page_contract {
     profiles_array:array,optional
 }
 
+global tcl_platform
+set platform [lindex $tcl_platform(platform) 0]
+
 # Default value if profiles_array wasn't specified in a default call
 if {![info exists profiles_array]} {
     array set profiles_array {employees,all_projects on project_managers,all_projects on project_managers,all_companies on}
 }
-
 
 
 # ---------------------------------------------------------------
@@ -122,6 +124,46 @@ if { ![empty_string_p $logo_file]
     } err_msg
     ns_write "done<br>\n"
 }
+
+
+
+# ---------------------------------------------------------------
+# Check if the AOLDIR environment variable is set to something
+# different from C:\project-open for Windows
+# ---------------------------------------------------------------
+
+set aoldir_exists_p [env exists aoldir]
+if {"windows" == $platform && $aoldir_exists_p} {
+    # Something like D:\project-open\blabla
+    set aoldir [string tolower [env get aoldir]]
+    # Replace backslash by forward slash
+    regsub -all {\\} $aoldir "/" aoldir
+    # Split by forward slash
+    set aoldir_pieces [split $aoldir "/"]
+    set aoldir_len [llength $aoldir_pieces]
+    # Extract only the first path
+    set aoldir [join [lrange $aoldir_pieces 0 1] "/"]
+    # Now it's D:/project-open (without trailing slash)
+
+    if {$aoldir_len >= 2} {
+        ns_write "<li>setting pathes ... "
+        parameter::set_from_package_key -package_key "acs-workflow" -parameter "graphviz_dot_path" -value "$aoldir/bin/dot.bat"
+        parameter::set_from_package_key -package_key "intranet-core" -parameter "BackupBasePathUnix" -value "$aoldir/servers/projop/filestorage/backup"
+        parameter::set_from_package_key -package_key "intranet-invoices" -parameter "InvoiceTemplatePathUnix" -value "$aoldir/servers/projop/filestorage/templates"
+        parameter::set_from_package_key -package_key "intranet-filestorage" -parameter "BackupBasePathUnix" -value "$aoldir/servers/projop/filestorage/backup"
+        parameter::set_from_package_key -package_key "intranet-filestorage" -parameter "BugBasePathUnix" -value "$aoldir/servers/projop/filestorage/bugs"
+        parameter::set_from_package_key -package_key "intranet-filestorage" -parameter "CompanyBasePathUnix" -value "$aoldir/servers/projop/filestorage/projects"
+        parameter::set_from_package_key -package_key "intranet-filestorage" -parameter "HomeBasePathUnix" -value "$aoldir/servers/projop/filestorage/home"
+        parameter::set_from_package_key -package_key "intranet-filestorage" -parameter "ProjectBasePathUnix" -value "$aoldir/servers/projop/filestorage/projects"
+        parameter::set_from_package_key -package_key "intranet-filestorage" -parameter "TicketBasePathUnix" -value "$aoldir/servers/projop/filestorage/tickets"
+        parameter::set_from_package_key -package_key "intranet-filestorage" -parameter "ProjectSalesBasePathUnix" -value "$aoldir/servers/projop/filestorage/project_sales"
+        parameter::set_from_package_key -package_key "intranet-filestorage" -parameter "UserBasePathUnix" -value "$aoldir/servers/projop/filestorage/users"
+        parameter::set_from_package_key -package_key "intranet-filestorage" -parameter "CostBasePathUnix" -value "$aoldir/servers/projop/filestorage/costs"
+        parameter::set_from_package_key -package_key "intranet-filestorage" -parameter "TmpPathUnix" -value "$aoldir/tmp"
+        ns_write "done<br>\n"
+    }
+}
+
 
 # ---------------------------------------------------------------
 # Profile Configuration

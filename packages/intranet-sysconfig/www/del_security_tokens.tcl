@@ -84,7 +84,7 @@ set future_projects_sql "
 	where	end_date > now()
 "
 
-set future_projects [db_string future_projects $future_projects_sql]
+set future_projects [db_string future_projects1 $future_projects_sql]
 while {0 == $future_projects} {
 
     db_dml move_projects "
@@ -92,6 +92,7 @@ while {0 == $future_projects} {
 		start_date = start_date::date + 30,
 		end_date = end_date::date + 30
     "
+    set future_projects [db_string future_projects2 $future_projects_sql]
 }
 
 

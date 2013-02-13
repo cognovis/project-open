@@ -136,12 +136,20 @@ ad_page_contract {
 	set from_header ""
 	set to_header ""
 	set subject_header "No Subject"
-	catch {set from_header $email_headers(from)}
-	catch {set to_header $email_headers(to)}
-	catch {set subject_header $email_headers(subject)}
+	set date_email "Date not found"
+
+	# array set email_arr {}
+        # acs_mail_lite::parse_email -file $msg -array email_arr
+	# ad_return_complaint 1 $email_arr(headers)
+
+	catch {set from_header [string map { "\"" "" } $email_headers(from)]}
+	catch {set to_header [string map { "\"" "" } $email_headers(to)]}
+	catch {set subject_header [mime::field_decode $email_headers(subject)]}
+	catch {set date_email $email_headers(date)}
 
 	# Massage the header a bit
-	regsub {=\?iso-....-.\?.\?} $subject_header "" subject_header
+	# regsub {=\?iso-....-.\?.\?} $subject_header "" subject_header
+	set subject_header [mime::field_decode $subject_header]
 
 	# remove double quotes from 'from' and 'to'
 	regsub -all "\"" $from_header "" from_header
@@ -166,7 +174,8 @@ ad_page_contract {
 	append json_record_list "{\"msg_name\":\"$msg\",\n"
         append json_record_list "\"from_header\":\"$from_header\",\n"
         append json_record_list "\"to_header\":\"$to_header\",\n"
-        append json_record_list "\"subject_header\":\"$subject_header\"\n"
+        append json_record_list "\"subject_header\":\"$subject_header\",\n"
+        append json_record_list "\"date_email\":\"$date_email\"\n"
 	append json_record_list "}\n"
         lappend record_list_tmp $json_record_list
         incr ctr

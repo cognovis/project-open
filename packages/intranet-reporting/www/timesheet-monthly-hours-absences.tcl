@@ -18,6 +18,8 @@ ad_page_contract {
     { customer_id 0 }
     { daily_hours 0 }
     { different_from_project_p "" }
+    { cost_center_id 0 }
+    { department_id 0 }
 }
 
 # ------------------------------------------------------------
@@ -317,7 +319,7 @@ ad_proc -private im_report_display_absences {
 # ------------------------------------------------------------
 
 # Label: Provides the security context for this report
-set menu_label "timesheet-productivity-calendar-view-workdays-simple"
+set menu_label "timesheet-monthly-hours-absences"
 
 set current_user_id [ad_maybe_redirect_for_registration]
 
@@ -357,7 +359,7 @@ if { [im_is_user_site_wide_or_intranet_admin $current_user_id] } { set view_hour
 
 set timesheet_hours_per_day [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2] -parameter "TimesheetHoursPerDay" -default 8]
 
-set page_title [lang::message::lookup "" intranet-reporting.Timesheet_Logging_Report___Monthly_View___Simple "Timesheet Productivity Report - Monthly View - Simple"]
+set page_title [lang::message::lookup "" intranet-reporting.TimesheetMonthlyViewIncludingAbsences "Timesheet - Monthly View including Absences"]
 set context_bar [im_context_bar $page_title]
 set context ""
 set todays_date [db_string todays_date "select to_char(now(), :date_format) from dual" -default ""]
@@ -450,14 +452,51 @@ if { !$view_hours_all_p } {
 	lappend criteria "u.user_id = :current_user_id"
 }
 
+# Put everything together
 set where_clause [join $criteria " and\n            "]
 if { ![empty_string_p $where_clause] } {
     set where_clause " and $where_clause"
 }
 
-# Check for filter "Employee"  
+# -----------------------------------------------------------
+# Outer where 
+# -----------------------------------------------------------
+
 set outer_where ""
-if { "" != $user_id } { set outer_where "and user_id = :user_id" }
+set criteria_outer [list]
+
+# Check for filter "Employee"  
+if { "" != $user_id && $view_hours_all_p} { lappend criteria_outer "user_id = :user_id" }
+
+# Check for filter "Cost Center"  
+if { "0" != $cost_center_id &&  "" != $cost_center_id } {
+        lappend criteria_outer "
+        	user_id in (select employee_id from im_employees where department_id in (select object_id from acs_object_context_index where ancestor_id = $cost_center_id))
+	"
+}
+
+# Check for filter "Department"  
+
+if { "0" != $department_id &&  "" != $department_id } {
+  	lappend criteria_outer "
+                user_id in (
+                        select employee_id from im_employees where department_id in (
+                                select
+                                        object_id
+                                from
+                                        acs_object_context_index
+                                where
+                                        ancestor_id = $department_id
+                	)
+           	)
+        "
+}
+
+# Create "outer where" 
+if { ![empty_string_p $criteria_outer] } { 
+   set outer_where [join $criteria_outer " and\n   "] 
+} 
+if {"" != $outer_where} { set outer_where "and $outer_where" }
 
 # if {"" != $daily_hours && 0 != $daily_hours} {
 #    set criteria_inner_sql "and h.hours > :daily_hours"
@@ -523,12 +562,6 @@ set sql "
 		sub_project_id,
 		CASE WHEN t.sub_project_id = t.top_parent_project_id THEN NULL ELSE t.sub_project_name END as sub_project_name,
                 CASE WHEN t.sub_project_id = t.top_parent_project_id THEN NULL ELSE t.sub_project_nr END as sub_project_nr,
-                -- (select count(*) from (select * from im_absences_working_days_month(user_id,$report_month,$report_year) t(days int))ct) as work_days,
-                -- (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_vacation) AS (days date)) absence_query) as vacation_days,
-                -- (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_training) AS (days date)) absence_query) as training_days,
-                -- (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_travel) AS (days date)) absence_query) as travel_days,
-                -- (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_sick) AS (days date)) absence_query) as sick_days,
-                -- (select count(distinct absence_query.days) from (select * from im_absences_month_absence_type (user_id, $report_month, $report_year, $im_absence_type_personal) AS (days date)) absence_query) as personal_days,
 	        $outer_sql
 	from
         	(select
@@ -669,6 +702,18 @@ switch $output_format {
 	if { $view_hours_all_p } {
 	    ns_write "
 		<tr>
+                  <td class=form-label>[_ intranet-core.Cost_Center]:</td>
+                  <td class=form-widget>
+		      [im_cost_center_select -include_empty 1  -department_only_p 0  cost_center_id $cost_center_id [im_cost_type_timesheet]]
+                 </td>
+		</tr>
+		<tr>
+                  <td class=form-label>[_ intranet-core.Department]:</td>
+                  <td class=form-widget>
+		      [im_cost_center_select -include_empty 1  -department_only_p 1  department_id $department_id [im_cost_type_timesheet]]
+                 </td>
+		</tr>
+		<tr>
 		  <td class=form-label>Employee</td>
 		  <td class=form-widget>
 		    [im_user_select -include_empty_p 1 user_id $user_id]
@@ -710,7 +755,6 @@ switch $output_format {
                   </td>
                 </tr>
 		--> 
-
                 <tr>
                   <td class=form-label>Format</td>
                   <td class=form-widget>
@@ -730,10 +774,10 @@ switch $output_format {
 	<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
 	<td valign='top' width='600px'>
 	    	<ul>
-	        	<li>Please note: Report does not show absences for Saturday and Sunday</li>
-		    	<!-- 
-			<li>Hours logged on sub-projects are accumulated</li>
-			--> 
+			<li>Report shows max two project/task levels. Hours tracked on projects and tasks of lower level will be accumulated</li>
+	        	<li>Report never shows absence entries for Saturday and Sunday</li>
+			<li>Report assumes that absences with duration > 1 day are always \"Full day\" absences</li>
+			<li>For partial absences to be considered correctly, start date and end date of an absence need to be equal</li>
 		</ul>
 	</td>
 	</tr>
