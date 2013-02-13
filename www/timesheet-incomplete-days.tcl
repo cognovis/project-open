@@ -131,6 +131,13 @@ if { "0" != $department_id &&  "" != $department_id } {
         "
 }
 
+set skill_profile_id [im_profile_skill_profile]
+if { 0 != $skill_profile_id  } {
+        lappend criteria_inner "
+		u.user_id not in (select object_id_two from acs_rels where object_id_one = :skill_profile_id) 
+	"
+}
+
 # Create "inner where" 
 if { ![empty_string_p $criteria_inner] } { 
    set inner_where [join $criteria_inner " and\n   "] 
