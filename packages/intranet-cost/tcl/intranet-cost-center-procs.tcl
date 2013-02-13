@@ -81,13 +81,14 @@ ad_proc -public im_cost_center_select {
     {-include_empty 0} 
     {-include_empty_name "" }
     {-department_only_p 0} 
+    {-manager_id ""}
     select_name 
     {default ""} 
     {cost_type_id ""} 
 } {
     Returns a select box with all Cost Centers in the company.
 } {
-    set options [im_cost_center_options -include_empty $include_empty -include_empty_name $include_empty_name -department_only_p $department_only_p -cost_type_id $cost_type_id]
+    set options [im_cost_center_options -include_empty $include_empty -include_empty_name $include_empty_name -department_only_p $department_only_p -cost_type_id $cost_type_id -manager_id $manager_id]
 
     # Only one option, so 
     # write out string instead of select component
@@ -111,6 +112,7 @@ ad_proc -public im_cost_center_options {
     {-cost_type_id ""} 
     {-parent_id ""}
     {-indent_level 0}
+    {-manager_id ""}
 } {
     Returns a list of all Cost Centers in the company.
     Takes into account the permission of the user to 
@@ -139,8 +141,15 @@ ad_proc -public im_cost_center_options {
     set parent_sql ""
     if {"" != $parent_id} {
 	set parent_sql "and cc.parent_id = :parent_id"
+    } 
+
+    set manager_sql ""
+    if {"" != $manager_id} {
+	set manager_sql "and cc.manager_id = :manager_id"
     } else {
-	set parent_sql "and cc.parent_id is null"
+	if {"" == $parent_id} {	
+	    set parent_sql "and cc.parent_id is null"
+	}
     }
 
     set options_sql "
@@ -153,6 +162,7 @@ ad_proc -public im_cost_center_options {
 		$department_only_sql
 		$cost_type_sql
                 $parent_sql
+                $manager_sql
 	order by
 		cc.cost_center_name
     "
