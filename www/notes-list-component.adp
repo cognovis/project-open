@@ -1,12 +1,14 @@
-
-	<table cellspacing="1" cellpadding="3">
-	  <form action=/intranet-notes/action method=POST>
-	  <%= [export_form_vars return_url] %>
+	<form action=/intranet-notes/action method=POST>
+	<%= [export_form_vars return_url] %>
+	<table class="table_list_page">
+	<thead>	  
 	  <tr class="rowtitle">
-	    <th>&nbsp;</td>
-	    <th><%= [lang::message::lookup "" intranet-notes.Note_Type "Type"] %></th>
-	    <th><%= [lang::message::lookup "" intranet-notes.Notes_Note "Note"] %></th>
+	    <td>&nbsp;</td>
+	    <td><%= [lang::message::lookup "" intranet-notes.Note_Type "Type"] %></td>
+	    <td><%= [lang::message::lookup "" intranet-notes.Notes_Note "Note"] %></td>
 	  </tr>
+	</thead>	  
+	<tbody>
 	  <multiple name="notes">
 	    <if @notes.rownum@ odd><tr class="roweven"></if>
 	    <else><tr class="rowodd"></else>
@@ -23,7 +25,8 @@
 	    </td>
 	</tr>
 </if>
-
+	</tbody>
+	<tfoot>
 	<tr class="rowodd">
 	    <td colspan=3 align=left>
 		<select name=action>
@@ -32,10 +35,10 @@
 		<input type=submit value=Apply>
 	    </td>
 	</tr>
-
-	</form>
-	</table>
+	</tfoot>
 	
+	</table>
+	</form>	
 <if @object_write@>
 	<ul>
 	<li><a href="@new_note_url;noquote@"
