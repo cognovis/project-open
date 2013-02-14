@@ -174,17 +174,20 @@ for { set i 0 } { $i < $duration_in_days } { incr i } {
     append day_placeholders "\\" "\$hours_total_$this_day_key "
 
     # Setting headers 
-
-    set date_elements [split $this_day -]
-    set this_day_html "[lindex $date_elements 0]<br>[lindex $date_elements 1]<br>[lindex $date_elements 2]"
-    set dow [clock format [clock scan "$this_day"] -format %w]
-    if { 0 == $dow || 6 == $dow } {
-        append day_header "\"<span style='color:#800000'>$this_day_html</span>\""
+    if { "html" == $output_format  } {
+	set date_elements [split $this_day -]
+	set this_day_html "[lindex $date_elements 0]<br>[lindex $date_elements 1]<br>[lindex $date_elements 2]"
+	set dow [clock format [clock scan "$this_day"] -format %w]
+	if { 0 == $dow || 6 == $dow } {
+	    append day_header "\"<span style='color:#800000'>$this_day_html</span>\""
+	} else {
+	    append day_header \"$this_day_html\"
+	}
     } else {
-        append day_header \"$this_day_html\"
+	set date_elements [split $this_day -]
+	append day_header "[lindex $date_elements 0]/[lindex $date_elements 1]/[lindex $date_elements 2]"
     }
     append day_header " "
-
     set this_day [clock format [clock add [clock scan $this_day] 1 day] -format %Y-%m-%d]
 }
 
