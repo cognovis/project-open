@@ -165,11 +165,24 @@ for { set i 0 } { $i < $duration_in_days } { incr i } {
     }
 
     lappend inner_sql_list "
-    (select sum(hours) from im_hours h where h.user_id = s.user_id and date_trunc('day', day) = '$this_day') as day_$this_day_key,
-    (select sum(duration_days) from im_absences_get_absences_for_user_duration(s.user_id, '$this_day', '$this_day', null) AS (absence_date date, absence_type_id int, absence_id int, duration_days numeric)) as duration_days_$this_day_key" 
-
+	    -- (select sum(hours) from im_hours h where h.user_id = s.user_id and date_trunc('day', day) = '$this_day') as day_$this_day_key,
+	    CASE (select sum(hours) from im_hours h where h.user_id = s.user_id and date_trunc('day', day) = '$this_day') IS NULL 
+	        WHEN true THEN 
+			0 
+		ELSE 
+			(select sum(hours) from im_hours h where h.user_id = s.user_id and date_trunc('day', day) = '$this_day')
+		END 
+			as day_$this_day_key,
+	    (select sum(duration_days) from im_absences_get_absences_for_user_duration(s.user_id, '$this_day', '$this_day', null) AS (absence_date date, absence_type_id int, absence_id int, duration_days numeric)) as duration_days_$this_day_key
+    "
     lappend outer_sql_list "
-	((t.duration_days_$this_day_key * $timesheet_hours_per_day) + t.day_$this_day_key) as hours_total_$this_day_key
+		CASE t.duration_days_$this_day_key IS NULL 
+		WHEN true THEN 
+			t.day_$this_day_key
+		ELSE 
+			((t.duration_days_$this_day_key * 8.0) + t.day_$this_day_key) 
+		END 
+			as hours_total_$this_day_key
     " 
     append day_placeholders "\\" "\$hours_total_$this_day_key "
 
@@ -319,7 +332,10 @@ switch $output_format {
 	<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
 	<td valign='top' width='600px'>
 	    	<ul>
-			<li>Report considers hours logged and absences</li>
+			<li> 
+[lang::message::lookup "" intranet-core.TimesheetIncompleteDaysHint1 "Report shows only users for which the total of absences registered and hours logged is less than the number of hours as defined in parameter 'TimesheetHoursPerDay' (Default is '8')"]
+			</li>
+			<li> [lang::message::lookup "" intranet-core.TimesheetIncompleteDaysHint3 "Weekends are not evaluated and show in any case 'ok'"]</li>
 		</ul>
 		<br><br><br><strong> [lang::message::lookup "" intranet-reporting.Statistics "Statistics"]:</strong><br> 
 		&nbsp;&nbsp;&nbsp;[lang::message::lookup "" intranet-reporting.TotalUsersSelected "Total users selected/Users with exception"]:&nbsp;
@@ -380,13 +396,19 @@ db_foreach sql $sql {
 	    set cmd "set var_helper \$hours_total_$this_day_key"
 	    eval $cmd
 	    if { "" == $var_helper  } {
-		set cmd "set hours_total_$this_day_key 0"
+		set cmd "set hours_total_$this_day_key \"OK\""
 		eval $cmd
 	    }
 	    if { $var_helper < $timesheet_hours_per_day } {
 		set found_missing_hours_p 1
+	    } else {
+                set cmd "set hours_total_$this_day_key \"OK\""
+                eval $cmd
 	    }
-	} 
+	} else {
+                set cmd "set hours_total_$this_day_key \"OK\""
+                eval $cmd
+	}
 	set this_day [clock format [clock add [clock scan $this_day] 1 day] -format %Y-%m-%d]
     }
 
