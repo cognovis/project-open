@@ -177,7 +177,11 @@ where
     db_foreach project_profiles $project_profile_sql {
 	set profile_name_txt [lang::util::suggest_key $profile_name]
 	if {"" == $profile_gif} { set profile_gif "profile" }
-	lappend profiles [list $profile_id $profile_gif [_ intranet-filestorage.$profile_name_txt] ]
+	if {"" == $profile_name_txt} {
+	    lappend profiles [list $profile_id $profile_gif "" ]
+	} else {
+	    lappend profiles [list $profile_id $profile_gif [_ intranet-filestorage.$profile_name_txt] ]
+	}
     }
     return $profiles
 }
