@@ -146,10 +146,15 @@ foreach header_name $headers {
     set args "<input type=text name=parser_args.$cnt value=\"$default_parser_args\">\n"
 
     # Mapping - Map to which object field?
-    set default_map [string tolower $header_name]
+    set default_map [im_csv_import_guess_map -object_type $object_type -field_name $header_name -sample_values $parser_sample_values]
     if {"" != $override_map} { set default_map $override_map }
     set map [im_select map.$cnt $object_type_pairs $default_map]
+
+    ns_log Notice "import-2: header_name=$header_name, default_map=$default_map, override_map=$override_map, map=$map"
+
+
     if {"hard_coded" == $default_parser} { set map [im_select map.$cnt $object_type_pairs "hard_coded"] }
+
 
     multirow append mapping $header_name $column $map $parser $args [lindex $row_1 $cnt] [lindex $row_2 $cnt] [lindex $row_3 $cnt] [lindex $row_4 $cnt] [lindex $row_5 $cnt]
 

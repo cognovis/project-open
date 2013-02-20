@@ -212,7 +212,7 @@ ad_proc -public im_csv_import_parsers {
     Returns the list of available parsers
 } {
     switch $object_type {
-	im_project - im_timesheet_task - im_ticket {
+	im_project - im_risk - im_timesheet_task - im_ticket {
 	    set parsers {
 		no_change	"No Change"
 		hard_coded	"Hard Coded Functionality"
@@ -346,6 +346,84 @@ ad_proc -public im_csv_import_guess_parser {
     return $result
 }
 
+
+# ---------------------------------------------------------------------
+# Guess the most probable DynField for a column
+# ---------------------------------------------------------------------
+
+ad_proc -public im_csv_import_guess_map {
+    -object_type:required
+    -field_name:required
+    {-sample_values {}}
+} {
+    Returns the best guess for a DynField for the field.
+} {
+    set field_name_lower [string tolower $field_name]
+    ns_log Notice "im_csv_import_guess_map: trying to guess attribute_name for field_name=$field_name_lower"
+
+    set dynfield_sql "
+	select  lower(aa.attribute_name) as attribute_name,
+		lower(aa.pretty_name) as pretty_name,
+		w.widget as tcl_widget,
+		w.widget_name as dynfield_widget
+	from	im_dynfield_attributes a,
+		im_dynfield_widgets w,
+		acs_attributes aa
+	where	a.widget_name = w.widget_name and 
+		a.acs_attribute_id = aa.attribute_id and
+		aa.object_type = '$object_type'
+	order by aa.sort_order, aa.attribute_id
+    "
+
+    # Check if the header name is the attribute_name of a DynField
+    set dynfield_attribute_names [util_memoize [list db_list otype_dynfields "select attribute_name from ($dynfield_sql) t"]]
+    ns_log Notice "im_csv_import_guess_map: attribute_names=$dynfield_attribute_names"
+    if {[lsearch $dynfield_attribute_names $field_name_lower] >= 0} {
+	ns_log Notice "im_csv_import_guess_map: found attribute_name match with field_name=$field_name"
+	return $field_name_lower
+    }
+
+    # Check for a pretty_name of a DynField
+    set dynfield_pretty_names [util_memoize [list db_list otype_dynfields "select pretty_name from ($dynfield_sql) t"]]
+    ns_log Notice "im_csv_import_guess_map: pretty_names=$dynfield_pretty_names"
+    set idx [lsearch $dynfield_pretty_names $field_name_lower]
+    if {$idx >= 0} {
+	ns_log Notice "im_csv_import_guess_map: found pretty_name match with field_name=$field_name"
+	return [lindex $dynfield_attribute_names $idx]
+    }
+
+#    set static_mapping_lol {}
+    catch { }
+    set static_mapping_lol [im_csv_import_guess_map_$object_type]
+    ns_log Notice "im_csv_import_guess_map: static_mapping=$static_mapping_lol"
+    foreach tuple $static_mapping_lol {
+	set attribute_name [lindex $tuple 0]
+	set pretty_name [lindex $tuple 1]
+	if {$field_name_lower == [string tolower $pretty_name]} {
+	    ns_log Notice "im_csv_import_guess_map: found statically encoded match with field_name=$field_name"
+	    return $attribute_name
+	} else {
+	    ns_log Notice "im_csv_import_guess_map: $pretty_name!=$field_name_lower"
+	}
+    }
+
+    ns_log Notice "im_csv_import_guess_map: Did not find any match with a DynField for field_name=$field_name"
+    ns_log Notice "im_csv_import_guess_map:"
+    return ""
+}
+
+ad_proc -public im_csv_import_guess_map_im_risk { } {} {
+    set mapping {
+	{risk_name "Risk Name" no_change ""}
+	{risk_project_id "Project" parser ""}
+	{risk_status_id "Status" category_parser "Intranet Risk Status"}
+	{risk_type_id "Type" category_parser "Intranet Risk Type"}
+	{risk_description "Description" no_change ""}
+	{risk_impact "Impact" parser ""}
+	{risk_probability_percent "Probability" parser ""}
+    }
+    return $mapping
+}
 
 # ---------------------------------------------------------------------
 # Convert the list of parent_nrs into the parent_id
