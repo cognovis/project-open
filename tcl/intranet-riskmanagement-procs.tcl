@@ -13,6 +13,18 @@ ad_library {
 
 
 # ----------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------
+
+ad_proc -public im_risk_status_active {} { return 75000 }
+ad_proc -public im_risk_status_deleted {} { return 75002 }
+
+ad_proc -public im_risk_type_default {} { return 75100 }
+
+ad_proc -public im_risk_action_delete {} { return 75210 }
+
+
+# ----------------------------------------------------------------------
 # Components
 # ---------------------------------------------------------------------
 

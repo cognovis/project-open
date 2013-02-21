@@ -95,6 +95,13 @@ set levels [list \
 # Report SQL
 #
 
+# Get dynamic risk fields
+#
+set deref_list [im_dynfield_object_attributes_derefs -object_type "im_risk" -prefix "r."]
+set deref_extra_select [join $deref_list ",\n\t"]
+if {"" != $deref_extra_select} { set deref_extra_select ",\n\t$deref_extra_select" }
+
+
 set project_sql ""
 if {"" != $project_id && 0 != $project_id} {
     set project_sql "and p.project_id = :project_id\n"
@@ -112,6 +119,7 @@ set report_sql "
 		p.project_id,
 		p.project_nr,
 		p.project_name
+		$deref_extra_select
 	from
 		im_risks r,
 		im_projects p
@@ -124,11 +132,12 @@ set report_sql "
 		risk_value DESC
 "
 
+
 # ------------------------------------------------------------
 # Report Definition
 #
 
-# Global Header Line
+# Global Header
 set header0 {
 	"Project"
 	"Risk Name"
@@ -140,45 +149,74 @@ set header0 {
 	"Description"
 }
 
+# Main content line
+set risk_header_vars {
+	"$project_nr"
+	"<a href='$risk_url$risk_id'>$risk_name_pretty</a>"
+	$risk_value_pretty
+	$risk_probability_percent_pretty
+	$risk_impact_pretty
+	$risk_type
+	$risk_status
+	$risk_description
+}
+
+
+# ------------------------------------------------------------
+# Add risk DynFields
+
+set dynfield_sql "
+	select  aa.attribute_name,
+		aa.pretty_name,
+		w.widget as tcl_widget,
+		w.widget_name as dynfield_widget
+	from	im_dynfield_attributes a,
+		im_dynfield_widgets w,
+		acs_attributes aa
+	where	a.widget_name = w.widget_name and 
+		a.acs_attribute_id = aa.attribute_id and
+		aa.object_type in ('im_risk') and
+		-- Exclude the default hard-coded fields
+		aa.attribute_name not in ('risk_impact', 'risk_probability_percent')
+	order by
+		aa.object_type,
+		aa.sort_order
+"
+
+set derefs [list]
+db_foreach dynfield_attributes $dynfield_sql {
+    lappend header0 $pretty_name
+    lappend risk_header_vars "\$${attribute_name}_deref"
+}
+
+
+set project_header {
+	"\#colspan=10 <a href=$this_url&project_id=$project_id&level_of_detail=3
+	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
+	<b><a href=$project_url$project_id>$project_name</a></b>"
+}
+
+# Disable project headers for CSV output
+# in order to create one homogenous exportable  lst
+if {"csv" == $output_format} { set project_header "" }
+
 # The entries in this list include <a HREF=...> tags
 # in order to link the entries to the rest of the system (New!)
 #
 set report_def [list \
     group_by project_id \
-    header {
-	"\#colspan=10 <a href=$this_url&project_id=$project_id&level_of_detail=3
-	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
-	<b><a href=$project_url$project_id>$project_name</a></b>"
-    } \
-        content [list \
-            group_by risk_id \
-	    header {
-		"$project_nr"
-		"<a href='$risk_url$risk_id'>$risk_name_pretty</a>"
-		$risk_value_pretty
-		$risk_probability_percent_pretty
-		$risk_impact_pretty
-		$risk_type
-		$risk_status
-		$risk_description
-	    } \
-	    content {} \
+    header $project_header \
+    content [list \
+	group_by risk_id \
+	header $risk_header_vars \
+	content {} \
     ] \
-    footer {  
-	""
-	""
-	""
-	""
-    } \
+    footer {} \
 ]
 
 
 # Global Footer Line
-set footer0 {
-	"" 
-	"" 
-	""
-}
+set footer0 {}
 
 
 # ------------------------------------------------------------
@@ -189,17 +227,17 @@ set footer0 {
 # Subtotal Counters (per project)
 #
 set project_risk_value_counter [list \
-        pretty_name "Risk Value" \
-        var risk_value \
-        reset \$project_id \
-        expr "\$risk_value+0" \
+	pretty_name "Risk Value" \
+	var risk_value \
+	reset \$project_id \
+	expr "\$risk_value+0" \
 ]
 
 set project_risk_value_total_counter [list \
-        pretty_name "Risk Value Total" \
-        var risk_value_total \
-        reset 0 \
-        expr "\$risk_value+0" \
+	pretty_name "Risk Value Total" \
+	var risk_value_total \
+	reset 0 \
+	expr "\$risk_value+0" \
 ]
 
 
@@ -220,7 +258,7 @@ im_report_write_http_headers -report_name $menu_label -output_format $output_for
 
 switch $output_format {
     html {
-        ns_write "
+	ns_write "
 	[im_header]
 	[im_navbar]
 	<table cellspacing=0 cellpadding=0 border=0>
@@ -242,18 +280,18 @@ switch $output_format {
 		  <td>[lang::message::lookup "" intranet-core.Project Project]:</td>
 		  <td>[im_project_select -include_empty_p 1 project_id $project_id]</td>
 		</tr>
-                <tr>
-                  <td class=form-label>[lang::message::lookup "" intranet-reporting.Output_Format Format]</td>
-                  <td class=form-widget>
-                    [im_report_output_format_select output_format "" $output_format]
-                  </td>
-                </tr>
-                <tr>
-                  <td class=form-label><nobr>[lang::message::lookup "" intranet-reporting.Number_Format "Number Format"]</nobr></td>
-                  <td class=form-widget>
-                    [im_report_number_locale_select number_locale $number_locale]
-                  </td>
-                </tr>
+		<tr>
+		  <td class=form-label>[lang::message::lookup "" intranet-reporting.Output_Format Format]</td>
+		  <td class=form-widget>
+		    [im_report_output_format_select output_format "" $output_format]
+		  </td>
+		</tr>
+		<tr>
+		  <td class=form-label><nobr>[lang::message::lookup "" intranet-reporting.Number_Format "Number Format"]</nobr></td>
+		  <td class=form-widget>
+		    [im_report_number_locale_select number_locale $number_locale]
+		  </td>
+		</tr>
 		<tr>
 		  <td</td>
 		  <td><input type=submit value='Submit'></td>
@@ -353,9 +391,9 @@ im_report_render_row \
 #
 switch $output_format {
     html {
-        ns_write "</table>\n"
-        ns_write "<br>&nbsp;<br>"
-        ns_write [im_footer]
+	ns_write "</table>\n"
+	ns_write "<br>&nbsp;<br>"
+	ns_write [im_footer]
     }
 }
 
