@@ -12,12 +12,14 @@
 	<td>#intranet-csv-import.Object_Type#</td>
 	<td> 
 <%= [im_select object_type [list \
-	      im_company "Company" \
 	      im_project "Project" \
 	      im_risk "Risk" \
 	      im_timesheet_task "Timesheet Task" \
 	      person "User" \
 ] $object_type] %>
+
+<!--	      im_company "Company" \ -->
+
 	</td>
      </tr>
 

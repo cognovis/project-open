@@ -311,6 +311,25 @@ ad_proc -public im_csv_import_guess_parser {
     </ul>
 } {
     # --------------------------------------------------------
+    # Check for static mapping
+    set field_name_lower [string tolower $field_name]
+    set static_mapping_lol {}
+    catch {
+	set static_mapping_lol [im_csv_import_guess_$object_type]
+    }
+    ns_log Notice "im_csv_import_guess_parser: static_mapping=$static_mapping_lol"
+    foreach tuple $static_mapping_lol {
+	set attribute_name [lindex $tuple 0]
+	set pretty_name [lindex $tuple 1]
+	set parser [lindex $tuple 2]
+	set parser_args [lindex $tuple 3]
+	if {$field_name_lower == [string tolower $pretty_name]} {
+	    ns_log Notice "im_csv_import_guess_map: found statically encoded match with field_name=$field_name"
+	    return [list $parser $parser_args $attribute_name]
+	}
+    }
+
+    # --------------------------------------------------------
     # Hard Coded Mappings
 
     switch $object_type {
@@ -453,13 +472,17 @@ ad_proc -public im_csv_import_guess_map {
 	return [lindex $dynfield_attribute_names $idx]
     }
 
-#    set static_mapping_lol {}
-    catch { }
-    set static_mapping_lol [im_csv_import_guess_map_$object_type]
+    # Check for static mapping
+    set static_mapping_lol {}
+    catch {
+	set static_mapping_lol [im_csv_import_guess_$object_type]
+    }
     ns_log Notice "im_csv_import_guess_map: static_mapping=$static_mapping_lol"
     foreach tuple $static_mapping_lol {
 	set attribute_name [lindex $tuple 0]
 	set pretty_name [lindex $tuple 1]
+	set parser [lindex $tuple 2]
+	set parser_args [lindex $tuple 3]
 	if {$field_name_lower == [string tolower $pretty_name]} {
 	    ns_log Notice "im_csv_import_guess_map: found statically encoded match with field_name=$field_name"
 	    return $attribute_name
@@ -473,15 +496,20 @@ ad_proc -public im_csv_import_guess_map {
     return ""
 }
 
-ad_proc -public im_csv_import_guess_map_im_risk { } {} {
+
+# ---------------------------------------------------------------------
+# Default mapping for built-in ]po[ reports
+# ---------------------------------------------------------------------
+
+ad_proc -public im_csv_import_guess_im_risk { } {} {
     set mapping {
 	{risk_name "Risk Name" no_change ""}
-	{risk_project_id "Project" parser ""}
-	{risk_status_id "Status" category_parser "Intranet Risk Status"}
-	{risk_type_id "Type" category_parser "Intranet Risk Type"}
+	{risk_project_id "Project" project_nr ""}
+	{risk_status_id "Status" category "Intranet Risk Status"}
+	{risk_type_id "Type" category "Intranet Risk Type"}
 	{risk_description "Description" no_change ""}
-	{risk_impact "Impact" parser ""}
-	{risk_probability_percent "Probability" parser ""}
+	{risk_impact "Impact" number_european ""}
+	{risk_probability_percent "Probability" number_european ""}
     }
     return $mapping
 }
