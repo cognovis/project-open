@@ -33,6 +33,39 @@ ad_proc -public im_id_from_user_name { name } {
     return $user_id
 }
 
+ad_proc -public im_csv_import_parser_no_change { 
+    {-parser_args "" }
+    arg 
+} {
+    Dummy parser without transformation
+} {
+    return [list $arg ""]
+}
+
+ad_proc -public im_csv_import_parser_project_nr { 
+    {-parser_args "" }
+    arg 
+} {
+    Returns a project_id from project_nr
+} {
+    if {[regexp {'} $arg match]} { 
+       set err "Found a Project Nr with single quote"
+       im_security_alert -location "im_csv_import_parser_project_nr" -message $err -value $arg 
+       return [list $arg $err]
+    }
+
+    set sql "
+	select	min(p.project_id)
+	from	im_projects p
+	where	p.project_nr = '$arg'
+    "
+    set project_id [db_string project_id_from_nr $sql -default ""]
+    set err ""
+    if {"" == $project_id} { set err "Didn't find project with project_nr='$arg'" }
+    return [list $project_id $err]
+}
+
+
 ad_proc -public im_csv_import_parser_date_european { 
     {-parser_args "" }
     arg 
@@ -61,6 +94,30 @@ ad_proc -public im_csv_import_parser_date_american {
     }
     return [list "" "Error parsing American date format '$arg': expected 'dd.mm.yyyy'"]
 }
+
+
+ad_proc -public im_csv_import_parser_number_european {
+    {-parser_args "" }
+    arg 
+} {
+    Parses a European number format like '20.000,00' as twenty thousand 
+} {
+    set result [string map -nocase {"." ""} $arg]
+    set result [string map -nocase {"," "."} $result]
+    return [list $result ""]
+}
+
+
+ad_proc -public im_csv_import_parser_number_american {
+    {-parser_args "" }
+    arg 
+} {
+    Parses a European number format like '20.000,00' as twenty thousand 
+} {
+    set result [string map -nocase {"," ""} $result]
+    return [list $result ""]
+}
+
 
 ad_proc -public im_csv_import_parser_category { 
     {-parser_args "" }
@@ -217,9 +274,13 @@ ad_proc -public im_csv_import_parsers {
 		no_change	"No Change"
 		hard_coded	"Hard Coded Functionality"
 		date_european	"European Date Parser (DD.MM.YYYY)"
+		number_european	"European Number Parser (20.000,00)"
 		date_american	"American Date Parser (MM/DD/YYYY)"
+		number_american	"American Number Parser (20,000.00)"
 		category	"Category Parser"
 		cost_center	"Cost Center Parser"
+		project_nr	"Project from Project Nr"
+		project_name	"Project from Project Name"
 	    }
 	}
 	default {
