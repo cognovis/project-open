@@ -77,6 +77,7 @@ ad_form \
 	{parent_id:text(select),optional {label "Parent Cost Center"} {options $cost_center_parent_options} }
 	{manager_id:text(select),optional {label Manager} {options $manager_options }}
 	{description:text(textarea),optional {label Description} {html {cols 40}}}
+	{invoice_text:text(textarea),optional {label "Invoice Text"} {html {cols 40}}}
 	{note:text(hidden),optional}
     }
 
@@ -97,7 +98,10 @@ im_dynfield::append_attributes_to_form \
 
 ad_form -extend -name cost_center -on_request {
     # Populate elements from local variables
-
+    if {[exists_and_not_null cost_center_id]} {
+	set invoice_text [lang::message::lookup "" intranet-cost.cc_invoice_text_${cost_center_id}]
+	template::element set_value cost_center invoice_text $invoice_text
+    }
 } -select_query {
 
 	select	cc.*
@@ -114,6 +118,10 @@ ad_form -extend -name cost_center -on_request {
 	-object_id $cost_center_id \
 	-form_id cost_center
     
+    # Write the invoice text
+    lang::message::register en_US intranet-cost cc_invoice_text_${cost_center_id} $invoice_text
+    lang::message::register [ad_conn locale] intranet-cost cc_invoice_text_${cost_center_id} $invoice_text
+
     # Write Audit Trail
     im_audit -object_type "im_cost_center" -object_id $cost_center_id -action after_create -status_id $cost_center_status_id -type_id $cost_center_type_id
 
@@ -140,6 +148,12 @@ ad_form -extend -name cost_center -on_request {
 	-object_type "im_cost_center" \
 	-object_id $cost_center_id \
 	-form_id cost_center
+    
+    if {![lang::message::message_exists_p en_US intranet-cost.cc_invoice_text_${cost_center_id}]} {
+	# First register the default locale
+	lang::message::register en_US intranet-cost cc_invoice_text_${cost_center_id} $invoice_text
+    }
+    lang::message::register [ad_conn locale] intranet-cost cc_invoice_text_${cost_center_id} $invoice_text
     
     # Write Audit Trail
     im_audit -object_type "im_cost_center" -object_id $cost_center_id -action after_update -status_id $cost_center_status_id -type_id $cost_center_type_id
