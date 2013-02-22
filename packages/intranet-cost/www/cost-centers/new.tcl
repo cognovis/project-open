@@ -99,7 +99,7 @@ im_dynfield::append_attributes_to_form \
 ad_form -extend -name cost_center -on_request {
     # Populate elements from local variables
     if {[exists_and_not_null cost_center_id]} {
-	set invoice_text [lang::message::lookup "" intranet-cost.cc_invoice_text_${cost_center_id}]
+	set invoice_text [lang::message::lookup "" intranet-cost.cc_invoice_text_${cost_center_id} " "]
 	template::element set_value cost_center invoice_text $invoice_text
     }
 } -select_query {
