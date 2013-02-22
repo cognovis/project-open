@@ -242,6 +242,25 @@ if {"" == $project_id} {
     set risk_chart_html ""
 }
 
+
+
+# ---------------------------------------------------------
+# Format risk related reports
+# ---------------------------------------------------------
+
+
+# Add the <ul>-List of associated menus
+set bind_vars [list user_id [ad_get_user_id]]
+set menu_html [im_menu_ul_list -no_cache -package_key "intranet-reporting" "reporting-other" $bind_vars]
+if {"" != $menu_html} {
+	append hours_html "
+		<br>
+		<b>[lang::message::lookup "" intranet-timesheet2.Associated_reports "Associated Reports"]:</b>
+		$menu_html
+	"
+}
+
+
 # ---------------------------------------------------------
 # Table footer
 # with action box
