@@ -1,0 +1,24 @@
+<h1> Monitoring DB para o Postresql</h1>
+
+<p> Monitora o tamanho do banco de dados e da pasta content-repository! </p>
+
+
+<h3> PostgreSQL 7.4 até 8.0 </h3>
+
+<p> Precisa compilar o aplicativo dbsize que fica na pasta contrib!</p>
+
+<p>
+#cd /usr/local/src/postgresql-7.4.9/contrib/dbsize <br>
+#make <br>
+#make install <br>
+</p>
+
+<p> aplicar o dbsize.sql que ele a instalação do dbsize gera na pasta dbsize para o banco de dados que está usando! </p>
+
+<p> # psql banco_de_dados < /usr/local/src/postgresql-7.4.9/contrib/dbsize/dbsize.sql </p>
+
+
+<h3> PostgreSQL 8.1 ou superior </h3>
+
+<p> É preciso setar o parametro VersionDB do monitoring como "8.1" </p>
+

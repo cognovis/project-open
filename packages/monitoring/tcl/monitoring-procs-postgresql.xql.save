@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+
+<queryset>
+   <rdbms><type>postgresql</type><version>7.1</version></rdbms>
+
+<fullquery name="ad_monitor_top.top_misc_info_insert">      
+    <querytext>
+
+    insert into ad_monitoring_top (
+        top_id, 
+        timestamp, 
+        timehour, 
+        load_avg_1, 
+        load_avg_5, 
+        load_avg_15,
+        memory_real, 
+        memory_free, 
+        memory_swap_in_use, 
+        memory_swap_free,
+	procs_total,
+	procs_sleeping,
+	procs_zombie,
+	procs_stopped,
+	procs_on_cpu
+    ) values (
+        :top_id, 
+        current_timestamp, 
+        to_char(current_timestamp, 'HH24')::integer, 
+        :load_1, 
+        :load_5, 
+        :load_15,
+        :memory_real, 
+        :memory_free, 
+        :memory_swap_in_use, 
+        :memory_swap_free,
+	:procs_total,
+	:procs_sleeping,
+	:procs_zombie,
+	:procs_stopped,
+	:procs_on_cpu
+    )
+
+    </querytext>
+</fullquery>
+
+
+<fullquery name="ad_monitor_db.db_misc_size_insert">      
+    <querytext>
+
+    insert into ad_monitoring_db (
+        db_id, 
+        timestamp, 
+        timehour, 
+        db_size,
+        sizeCREATE TABLE ad_monitoring_db
+(
+  db_id int4 NOT NULL,
+  "timestamp" timestamptz DEFAULT ('now'::text)::timestamp(6) with time zone,
+  timehour numeric(2),
+  db_size numeric,
+  size_content_repository numeric,
+  CONSTRAINT ad_mntr_db_id_pk PRIMARY KEY (db_id)
+) 
+WITH OIDS;
+ALTER TABLE ad_monitoring_db OWNER TO postgres;
+    ) values (
+        :db_id, 
+        current_timestamp, 
+        to_char(current_timestamp, 'HH24')::integer, 
+        :db_size
+    )
+
+    </querytext>
+</fullquery>
+ 
+</queryset>
