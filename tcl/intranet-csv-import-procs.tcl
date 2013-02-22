@@ -549,3 +549,44 @@ ad_proc -public im_csv_import_convert_project_parent_nrs {
 
     return [im_csv_import_convert_project_parent_nrs -parent_id $parent_id $parent_nrs]
 }
+
+
+
+# ---------------------------------------------------------------------
+# 
+# ---------------------------------------------------------------------
+
+ad_proc -public im_csv_import_check_list_of_lists {
+    lol
+} {
+    Check that the parameter is a list of lists with all
+    line having the same length.
+    Returns a HTML string of LI error messages or an emtpy
+    string if there was no issue.
+} {
+    set length_list [list]
+    set min_length 1000
+    set max_length 0
+    set result ""
+    foreach line $lol {
+	set length [llength $line]
+	if {$length > $max_length} { set max_length $length }
+	if {$length < $min_length} { set min_length $length }
+	lappend length_list $length
+    }
+
+    set ctr 0
+    foreach line $lol {
+	set length [llength $line]
+	if {$length < 4} { 
+	    append result "<li>Line #$ctr: Found a (nearly) empty line with only $length columns.\n"
+	}
+	if {$length < $max_length} { 
+#	    append result "<li>Line #$ctr: Found a line with $length elements which doesn't match the $max_length width.\n"
+	}
+
+	incr ctr
+    }
+
+    return $result
+}

@@ -66,7 +66,6 @@ set header_fields [im_csv_split $header $separator]
 set header_len [llength $header_fields]
 set values_list_of_lists [im_csv_get_values $lines_content $separator]
 
-
 # ad_return_complaint 1 "<pre>[array get column]<br>[array get map]<br>[array get parser]<br>[array get parser_args]<br>$header_fields</pre>"
 
 
@@ -125,6 +124,15 @@ foreach csv_line_fields $values_list_of_lists {
 
     if {$ns_write_p} { ns_write "</ul><hr><ul>\n" }
     if {$ns_write_p} { ns_write "<li>Starting to parse line $cnt\n" }
+
+    if {[llength $csv_line_fields] < 4} {
+	if {$ns_write_p} {
+	    ns_write "<li><font color=red>Error: We found a row with only [llength $csv_line_fields] columns.<br>
+	        This is probabily because of a multi-line field in the row before.<br>Please correct the CSV file.</font>\n"
+	}
+	continue
+    }
+
 
     # Preset values, defined by CSV sheet:
     set risk_name		""
@@ -213,13 +221,13 @@ foreach csv_line_fields $values_list_of_lists {
     # Status is a required field
     if {"" == $risk_status_id} {
 	if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Didn't find risk status '$risk_status', using default status 'Open'</font>\n" }
-	set risk_status_id [im_risk_status_active]
+	set risk_status_id [im_risk_status_open]
     }
 
     # Type is a required field
     if {"" == $risk_type_id} {
 	if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Didn't find risk type '$risk_type', using default type 'Other'</font>\n" }
-	set risk_type_id [im_risk_type_default]
+	set risk_type_id [im_risk_type_risk]
     }
 
     # -------------------------------------------------------

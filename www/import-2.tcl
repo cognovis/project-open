@@ -97,6 +97,11 @@ set headers [im_csv_split $header $separator]
 set header_len [llength $headers]
 set values_lol [im_csv_get_values $lines_content $separator]
 
+# Check if there are lines with less then 4 elements
+# set error [im_csv_import_check_list_of_lists $values_lol]
+# if {"" != $error} { ad_return_complaint 1 $error }
+
+
 # Take a sample of max_row rows from the file and show
 set max_row 10
 for {set i 1} {$i <= $max_row} {incr i} {
