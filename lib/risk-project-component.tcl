@@ -250,15 +250,12 @@ if {"" == $project_id} {
 
 
 # Add the <ul>-List of associated menus
-set bind_vars [list user_id [ad_get_user_id]]
-set menu_html [im_menu_ul_list -no_cache -package_key "intranet-reporting" "reporting-other" $bind_vars]
-if {"" != $menu_html} {
-	append hours_html "
-		<br>
-		<b>[lang::message::lookup "" intranet-timesheet2.Associated_reports "Associated Reports"]:</b>
-		$menu_html
-	"
-}
+set bind_vars [list project_id $project_id]
+set menu_html [im_menu_li -bind_vars $bind_vars "reporting-project-risks"]
+
+set import_exists_p [llength [info commands im_csv_import_object_fields]]
+set import_html "<li><a href=[export_vars -base "/intranet-csv-import/index" {{object_type im_risk}}]>[lang::message::lookup "" intranet-timesheet2.Import_Risk_CSV "Import Risk CSV"]</a>"
+if {!$import_exists_p} { set import_html "" }
 
 
 # ---------------------------------------------------------
@@ -278,6 +275,8 @@ set table_footer_html "
 <input type=submit>
 <ul>
 <li><a href='$new_risk_url'>$new_risk_msg</a>
+$menu_html
+$import_html
 </ul>
 </td>
 </tr>
