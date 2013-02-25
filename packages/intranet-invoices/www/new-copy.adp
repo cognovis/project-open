@@ -145,7 +145,7 @@
           <td class=rowtitle>#intranet-invoices.Line#</td>
           <td class=rowtitle>#intranet-invoices.Description#</td>
 
-<if @$material_enabled_p@>
+<if @material_enabled_p@>
           <td class=rowtitle>#intranet-invoices.Material#</td>
 </if>
 <if @project_type_enabled_p@>
