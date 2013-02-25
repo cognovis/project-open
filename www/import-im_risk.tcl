@@ -220,13 +220,13 @@ foreach csv_line_fields $values_list_of_lists {
 
     # Status is a required field
     if {"" == $risk_status_id} {
-	if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Didn't find risk status '$risk_status', using default status 'Open'</font>\n" }
+	if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Didn't find risk status '$risk_status_id', using default status 'Open'</font>\n" }
 	set risk_status_id [im_risk_status_open]
     }
 
     # Type is a required field
     if {"" == $risk_type_id} {
-	if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Didn't find risk type '$risk_type', using default type 'Other'</font>\n" }
+	if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Didn't find risk type '$risk_type_id', using default type 'Other'</font>\n" }
 	set risk_type_id [im_risk_type_risk]
     }
 
