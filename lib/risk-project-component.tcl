@@ -208,7 +208,7 @@ for {set x 0} {$x < [expr [llength $probab_classifier]-1]} {incr x} {
 }
 set risk_chart_header "<tr>$risk_chart_header</tr>\n"
 
-set risk_chart_html "<table id=risk_chart border=1 align=right>\n"
+set risk_chart_html "<table id=risk_chart border=1 align=right style='border-collapse:separate'>\n"
 for {set y [expr [llength $impact_classifier]-2]} {$y >= 0} {incr y -1} {
     set risk_chart_line ""
     set val [lindex $impact_classifier [expr $y+1]]
