@@ -55,47 +55,24 @@ set site_url "/intranet-timesheet2"
 set return_url "$site_url/weekly_report"
 set date_format "YYYYMMDD"
 
-if { $owner_id != $user_id && ![im_permission $user_id "view_hours_all"] } {
-    ad_return_complaint 1 "<li>[_ intranet-timesheet2.lt_You_have_no_rights_to]"
-    return
-
+if {![im_permission $user_id "view_hours_all"] && $owner_id == ""} {
+    set owner_id $user_id
 }
 
-if { $start_at == "" && $project_id != 0 } {
-
-    set hours_start_date [db_string get_new_start_at "
-	select	to_char(max(day), :date_format) 
-	from	im_hours 
-	where	project_id = :project_id
-    " -default ""]
-
-    set project_lead_p [db_string project_lead "select 1 from acs_rels r, im_biz_object_members bom 
-       where object_id_one = :project_id 
-         and object_id_two = :user_id
-         and r.rel_id = bom.rel_id 
-         and bom.object_role_id = 1301" -default 0]
-
-    set todays_date [db_string todays_date "
-	select	to_char(now(), :date_format) 
-	from	dual
-    " -default ""]
-
-    set start_at $hours_start_date
-    if {"" == $start_at} { 
-	set start_at $project_start_date 
+# Allow the manager to see the department
+if {"" != $cost_center_id} {
+    set manager_id [db_string manager "select manager_id from im_cost_centers where cost_center_id = :cost_center_id" -default ""]
+    if {$manager_id == $user_id || [im_permission $user_id "view_hours_all"]} {
+	set owner_id ""
     }
-    if {"" == $start_at} { 
-	set start_at $todays_date 
-    }
-    if {"" == $start_at} {
-	ad_return_complaint 1 "Unable to determine start date for project \#$project_id:<br>
-        please set the 'Start Date' of the project"
-	return
-    }
+}
 
-    ad_returnredirect "$return_url?[export_url_vars start_at duration project_id owner_id workflow_key]"
-    return
-
+# Allow the project_manager to see the hours of this project
+if {"" != $project_id} {
+    set manager_p [db_string manager "select count(*) from acs_rels ar, im_biz_object_members bom where ar.rel_id = bom.rel_id and object_id_one = :project_id and object_id_two = :user_id and object_role_id = 1301" -default 0]
+    if {$manager_p || [im_permission $user_id "view_hours_all"]} {
+	set owner_id ""
+    }
 }
 
 if { $start_at == "" } {
@@ -117,8 +94,10 @@ if { $project_id != 0 } {
 
 set sel_all ""
 set sel_pro ""
+set sel_sub ""
 
 if { $display == "all" } { set sel_all "selected" }
+if { $display == "subproject" } { set sel_sub "selected" }
 if { $display == "project" } { set sel_pro "selected" }
 
 if { $project_id != 0 } {
@@ -126,7 +105,7 @@ if { $project_id != 0 } {
     # As we allow Project Managers to view the timesheet, do not allow them to change the view to all 
     # users if they don't have the permission view_hours_all
     if {[im_permission $user_id "view_hours_all"]} {
-    set filter_form_html "
+	set filter_form_html "
 	<form method=get action='$return_url' name=filter_form>
 	[export_vars -form {start_at duration project_id owner_id workflow_key}]
 	<table border=0 cellpadding=0 cellspacing=0>
@@ -139,7 +118,7 @@ if { $project_id != 0 } {
 	  <td valign=top>[_ intranet-timesheet2.Display] </td>
 	<td valign=top><select name=display size=1>
 	<option value=\"project\" $sel_pro>[_ intranet-timesheet2.lt_hours_spend_on_projec]</option>
-	<option value=\"subproject\" $sel_pro>[_ intranet-timesheet2.lt_hours_spend_on_projec_and_sub]</option>
+	<option value=\"subproject\" $sel_sub>[_ intranet-timesheet2.lt_hours_spend_on_projec_and_sub]</option>
 	<option value=\"all\" $sel_all>[_ intranet-timesheet2.hours_spend_overall]</option>
 	</select></td>
 	</tr>
@@ -153,20 +132,19 @@ if { $project_id != 0 } {
 	</form>"
     } else {
 	set filter_form_html ""
-	set sel_pro "selected"
-	set display "project"
     }
 } else {
 
         # ad_return_complaint 1 $workflow_key
 
-	set include_empty 1
-	set department_only_p 1
-	set im_department_select [im_cost_center_select -include_empty $include_empty  -department_only_p $department_only_p  department_id $department_id [im_cost_type_timesheet]]
-
         set include_empty 1
-        set department_only_p 
-        set im_cc_select [im_cost_center_select -include_empty $include_empty  -department_only_p $department_only_p  cost_center_id $cost_center_id [im_cost_type_timesheet]]
+        set department_only_p 0
+	if {[im_permission $user_id "view_hours_all"]} {
+	    set im_cc_select [im_cost_center_select -include_empty $include_empty  -department_only_p $department_only_p  cost_center_id $cost_center_id [im_cost_type_timesheet]]
+	} else {
+	    # Limit to Cost Centers where he is the manager
+	    set im_cc_select [im_cost_center_select -include_empty $include_empty  -department_only_p $department_only_p  -manager_id $user_id cost_center_id $cost_center_id [im_cost_type_timesheet]]
+	}
 
 	set filter_form_html "
 	<form method=post action='$return_url' name=filter_form>
@@ -180,9 +158,6 @@ if { $project_id != 0 } {
                 <tr>
                 <td valign=top>&nbsp;</td>
                 </tr>
-        	<tr>
-	        <td valign=top><strong>[_ intranet-core.Department]:</strong><br>$im_department_select</td>
-	        </tr>
 	        <tr>
 	          <td valign=top colspan='2'>
 		        <input type=submit value='[_ intranet-timesheet2.Apply]' name=submit>
@@ -194,24 +169,7 @@ if { $project_id != 0 } {
 "
 }
 
-if { [im_permission $user_id "add_absences"] } {
-    append admin_html "<li><a href=/intranet-timesheet2/absences/new>[_ intranet-timesheet2.Add_a_new_Absence]</a></li>\n"
-}
-if { [im_permission $user_id "view_absences_all"] } {
-    append admin_html "<li><a href=/intranet-timesheet2/absences>[_ intranet-timesheet2.View_all_Absences]</a></li>\n"
-}
-if { [im_permission $user_id "add_hours"] } {
-    append admin_html "<li><a href=/intranet-timesheet2/hours>[_ intranet-timesheet2.Log_your_hours]</a></li>\n"
-}
-
-
-# 2010-12-10: Links should no more appear on this report, moved to /intranet-timesheet2/absences/index 
-# 
-# if { $admin_html != "" } {
-#     set filter_html [append filter_form_html "<ul>$admin_html</ul>"]
-# } else {
-    set filter_html $filter_form_html
-# }
+set filter_html $filter_form_html
 
 # ---------------------------------------------------------------
 # Get the Column Headers and prepare some SQL
@@ -340,29 +298,14 @@ if { "0" != $cost_center_id &&  "" != $cost_center_id } {
 "
 }
 
-set department_filter_where ""
-set cost_center_code [db_string get_cc_code "select cost_center_code from im_cost_centers where cost_center_id = :department_id" -default ""]
 
-if { "0" != $department_id &&  "" != $department_id } {
-	set department_filter_where "
-	   and 
-		u.user_id in (
-			select employee_id from im_employees where department_id in (
-				select 
-					object_id 
-				from 
-					acs_object_context_index 
-				where 
-					ancestor_id = $department_id  
-		) 
-	   )
-        "
-}
+set cost_center_code [db_string get_cc_code "select cost_center_code from im_cost_centers where cost_center_id = :cost_center_id" -default ""]
+
 
 set name_order [parameter::get -package_id [apm_package_id_from_key intranet-core] -parameter "NameOrder" -default 1]
 
 set sql "
-select
+select 
 	u.user_id as curr_owner_id,
 	im_name_from_user_id(u.user_id, $name_order) as owner_name,
 	i.val,
@@ -385,7 +328,6 @@ where
 	and trunc(to_date(to_char(d.day,:date_format),:date_format),'Day')=trunc(to_date(to_char(i.day,:date_format),:date_format),'Day')
 	and u.user_id = active_users.party_id
 	$sql_where
-	$department_filter_where
 	$cc_filter_where
 order by
 	owner_name, curr_day
@@ -458,10 +400,7 @@ db_foreach get_hours $sql {
     incr ctr
 }
 
-append table_body_html [im_do_row [array get bgcolor] $ctr $curr_owner_id $owner_name $days [array get user_days] [array get user_absences] $holydays $today_date [array get user_ab_descr] $workflow_key]
-
 set colspan [expr [llength $days]+1]
-
 
 if { $ctr > 0 } {
     # Writing last record 

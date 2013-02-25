@@ -12,7 +12,7 @@ ad_library {
 nsv_set intranet_helpdesk_sourceforge_sweeper sweeper_p 0
 
 # Check for changed files every X minutes
-ad_schedule_proc -thread t [parameter::get_from_package_key -package_key intranet-cost -parameter SourceForgeTrackerSweeperInterval -default 3600] im_helpdesk_sourceforge_tracker_import_sweeper
+# ad_schedule_proc -thread t [parameter::get_from_package_key -package_key intranet-cost -parameter SourceForgeTrackerSweeperInterval -default 3600] im_helpdesk_sourceforge_tracker_import_sweeper
 
 ad_proc -public -callback im_ticket_after_create -impl intranet-helpdesk  {
     {-object_id:required}

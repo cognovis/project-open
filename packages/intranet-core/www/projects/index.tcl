@@ -248,7 +248,7 @@ if {[im_permission $current_user_id "view_projects_all"]} {
     }
 }
 ad_form -extend -name $form_id -form {
-    {include_subprojects_p:text(select),optional {label "#intrancet-core.SubProjects#"} {options {{"#intranet-core.Yes#" "t"} {"#intranet-core.No#" "f"}}}}
+    {include_subprojects_p:text(select),optional {label "#intranet-core.Subprojects#"} {options {{"#intranet-core.Yes#" "t"} {"#intranet-core.No#" "f"}}}}
 }
 if { [empty_string_p $company_id] } {
     set company_id 0
