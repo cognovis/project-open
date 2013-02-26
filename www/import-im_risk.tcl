@@ -28,11 +28,7 @@ ad_page_contract {
 set current_user_id [ad_maybe_redirect_for_registration]
 set page_title [lang::message::lookup "" intranet-cvs-import.Upload_Objects "Upload Objects"]
 set context_bar [im_context_bar "" $page_title]
-set admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
-if {!$admin_p} {
-    ad_return_complaint 1 "Only administrators have the right to import objects"
-    ad_script_abort
-}
+
 
 
 # ---------------------------------------------------------------------
@@ -214,6 +210,15 @@ foreach csv_line_fields $values_list_of_lists {
 	if {$ns_write_p} {
 	    ns_write "<li><font color=red>Error: We have found a bad value '$risk_project_id' for 'Project' in line $cnt.<br>
 	    Please check that you are using the 'Project from Project Nr' or 'Project from Project Name' parser.</font>"
+	}
+	continue
+    }
+
+    # Check permissions
+    im_project_permissions $current_user_id $risk_project_id view_p read_p write_p admin_p
+    if {!$write_p} {
+	if {$ns_write_p} {
+	    ns_write "<li><font color=red>Error: You don't have write permissions for project #$risk_project_id.</font>"
 	}
 	continue
     }

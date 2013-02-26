@@ -19,10 +19,12 @@ set current_user_id [ad_maybe_redirect_for_registration]
 set page_title [lang::message::lookup "" intranet-cvs-import.Upload_Objects "Upload Objects"]
 set context_bar [im_context_bar "" $page_title]
 set admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
-if {!$admin_p} {
-    ad_return_complaint 1 "Only administrators have the right to import objects"
-    ad_script_abort
-}
+
+# fraber 130225: Permissions are now handled by the import-* files
+# if {!$admin_p} {
+#     ad_return_complaint 1 "Only administrators have the right to import objects"
+#     ad_script_abort
+# }
 
 # Get the file from the user.
 # number_of_bytes is the upper-limit
