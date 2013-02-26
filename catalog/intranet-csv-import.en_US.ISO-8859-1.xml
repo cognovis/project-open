@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-csv-import" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Filename">File name</msg>
+  <msg key="Object_Type">Object Type</msg>
+  <msg key="Upload_file">Upload File</msg>
+</message_catalog>

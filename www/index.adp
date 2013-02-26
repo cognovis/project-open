@@ -24,7 +24,7 @@
      </tr>
 
      <tr> 
-	<td>Filename</td>
+	<td><%= [lang::message::lookup "" intranet-csv-import.Filename] %></td>
 	<td> 
 	  <input type=file name=upload_file size=30>
 	<%= [im_gif help "Use the &quot;Browse...&quot; button to locate your file, then click &quot;Open&quot;."] %>
