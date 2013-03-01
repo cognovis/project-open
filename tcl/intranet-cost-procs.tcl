@@ -2226,6 +2226,7 @@ ad_proc -public im_cost_project_document_icons_helper {
 
     set costs_sql "
 	select	ci.cost_id,
+		ci.cost_type_id,
 		trim(to_char(ci.amount * im_exchange_rate(ci.effective_date::date, ci.currency, :default_currency), :num_format)) as amount_converted
 	from	im_projects main_p,
 		im_projects p,
