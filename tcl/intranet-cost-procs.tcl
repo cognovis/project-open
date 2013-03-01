@@ -1269,21 +1269,21 @@ ad_proc im_costs_project_finance_component {
     "
 
 
-	# If user = freelancer limit docs to PO
-	if { [im_profile::member_p -profile_id [im_freelance_group_id] -user_id $user_id] } {
-	    set limit_to_freelancers "and ci.cost_type_id = [im_cost_type_po] "
-	}
-	# If user = inco customer limit docs to Quotes & Invoices & InterCo Quotes & InterCo Invoices
-	if { [im_profile::member_p -profile_id [im_inco_customer_group_id] -user_id $user_id] } {
-	    set limit_to_inco_customers "and ci.cost_type_id in ( [im_cost_type_quote],[im_cost_type_invoice],[im_cost_type_interco_invoice],[im_cost_type_interco_quote] ) "
-	}
-	# If user = customer limit docs to Quotes & Invoices
-	if { [im_profile::member_p -profile_id [im_customer_group_id] -user_id $user_id] } {
+    # If user = freelancer limit docs to PO
+    if { [im_profile::member_p -profile_id [im_freelance_group_id] -user_id $user_id] } {
+	set limit_to_freelancers "and ci.cost_type_id = [im_cost_type_po] "
+    }
+    # If user = inco customer limit docs to Quotes & Invoices & InterCo Quotes & InterCo Invoices
+    if { [im_profile::member_p -profile_id [im_inco_customer_group_id] -user_id $user_id] } {
+	set limit_to_inco_customers "and ci.cost_type_id in ( [im_cost_type_quote],[im_cost_type_invoice],[im_cost_type_interco_invoice],[im_cost_type_interco_quote] ) "
+    }
+    # If user = customer limit docs to Quotes & Invoices
+    if { [im_profile::member_p -profile_id [im_customer_group_id] -user_id $user_id] } {
 	set limit_to_customers "and ci.cost_type_id in ( [im_cost_type_quote],[im_cost_type_invoice] ) "
-		}
-
+    }
+    
     set cost_type_excludes [list [im_cost_type_employee] [im_cost_type_repeating] [im_cost_type_expense_item]]
-
+    
     # Exclude intranet-planning planning types
     lappend cost_type_excludes 73100
     lappend cost_type_excludes 73102
@@ -2185,4 +2185,81 @@ ad_proc -public im_navbar_tree_finance {
 }
 
 
+# -----------------------------------------------------------
+# Show a list of icons representing financial documents
+# -----------------------------------------------------------
 
+ad_proc -public im_cost_project_document_icons {
+    {-no_cache_p 1}
+    project_id
+} {
+    Shows a list of icons for each financial document
+    available as part of the project.
+} {
+    set current_user_id [ad_get_user_id]
+    if {![im_permission $current_user_id view_costs]} { return "" }
+
+    if {$no_cache_p} {
+	return [im_cost_project_document_icons_helper $project_id]
+    } else {
+	return [util_memoize [list im_cost_project_document_icons_helper $project_id]]
+    }
+}
+
+
+ad_proc -public im_cost_project_document_icons_helper {
+    project_id
+} {
+    Helper for:
+    Shows a list of icons for each financial document
+    available as part of the project.
+} {
+    set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
+    set date_format "YYYY-MM-DD"
+    set num_format "9999999999.99"
+    set view_mode "view"
+
+    set costs_sql "
+	select	ci.*,
+		trim(to_char(ci.amount * im_exchange_rate(ci.effective_date::date, ci.currency, :default_currency), :num_format)) as amount_converted,
+		url.url,
+		im_cost_center_code_from_id(ci.cost_center_id) as cost_center_code
+	from
+		im_projects main_p,
+		im_projects p,
+		im_costs ci,
+		acs_objects o,
+		(select * from im_biz_object_urls where url_type=:view_mode) url
+	where
+		main_p.project_id = :project_id and
+		p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
+		p.project_id = ci.project_id and
+		ci.cost_id = o.object_id and
+		o.object_type = url.object_type and 
+		ci.cost_type_id in ([im_cost_type_invoice], [im_cost_type_quote], [im_cost_type_bill], [im_cost_type_po])
+	order by
+		ci.cost_type_id,
+		ci.effective_date desc
+    "
+
+
+    set result ""
+    set alt_txt [lang::message::lookup "" intranet-cost.Financial Financials]
+    append result "<a href='[export_vars -base "/intranet/projects/view" {project_id {view_name finance}}]' target='_'>[im_gif "money_dollar" $alt_txt]</a>\n"
+    db_foreach fin_docs $costs_sql {
+
+	switch $cost_type_id {
+	    3700 { set gif "i" }
+	    3702 { set gif "q" }
+	    3704 { set gif "b" }
+	    3706 { set gif "p" }
+	    default { set gif "cross" }
+	}
+
+	set alt_txt "[lang::message::lookup "" intranet-cost.Amount Amount]:$amount_converted"
+	append result "<a href='$url$cost_id' target='_'>[im_gif $gif $alt_txt]</a>\n"
+    }
+
+
+    return $result
+}
