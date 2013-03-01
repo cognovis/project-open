@@ -2226,6 +2226,7 @@ ad_proc -public im_cost_project_document_icons_helper {
 
     set costs_sql "
 	select	ci.cost_id,
+		ci.cost_name,
 		ci.cost_type_id,
 		trim(to_char(ci.amount * im_exchange_rate(ci.effective_date::date, ci.currency, :default_currency), :num_format)) as amount_converted
 	from	im_projects main_p,
@@ -2251,7 +2252,7 @@ ad_proc -public im_cost_project_document_icons_helper {
 	    3706 { set gif "p" }
 	    default { set gif "cross" }
 	}
-	set alt_txt "[lang::message::lookup "" intranet-cost.Amount Amount]:$amount_converted"
+	set alt_txt "$cost_name, [lang::message::lookup "" intranet-cost.Amount Amount]:$amount_converted"
 	append result "<a href='[export_vars -base "/intranet-invoices/view" {cost_id}]' target='_'>[im_gif $gif $alt_txt]</a>\n"
     }
 
