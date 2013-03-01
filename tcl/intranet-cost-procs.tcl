@@ -2190,7 +2190,7 @@ ad_proc -public im_navbar_tree_finance {
 # -----------------------------------------------------------
 
 ad_proc -public im_cost_project_document_icons {
-    {-no_cache_p 1}
+    {-no_cache_p 0}
     {-cache_seconds 300}
     project_id
 } {
