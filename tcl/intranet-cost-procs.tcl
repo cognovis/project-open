@@ -2191,6 +2191,7 @@ ad_proc -public im_navbar_tree_finance {
 
 ad_proc -public im_cost_project_document_icons {
     {-no_cache_p 1}
+    {-cache_seconds 300}
     project_id
 } {
     Shows a list of icons for each financial document
@@ -2202,7 +2203,7 @@ ad_proc -public im_cost_project_document_icons {
     if {$no_cache_p} {
 	return [im_cost_project_document_icons_helper $project_id]
     } else {
-	return [util_memoize [list im_cost_project_document_icons_helper $project_id]]
+	return [util_memoize [list im_cost_project_document_icons_helper $project_id] $cache_seconds]
     }
 }
 
@@ -2214,40 +2215,34 @@ ad_proc -public im_cost_project_document_icons_helper {
     Shows a list of icons for each financial document
     available as part of the project.
 } {
+    # Skip main projects
+    set parent_id [db_string parent_id "select parent_id from im_projects where project_id = :project_id" -default ""]
+    if {"" == $parent_id} { return "" }
+
     set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
     set date_format "YYYY-MM-DD"
     set num_format "9999999999.99"
     set view_mode "view"
 
     set costs_sql "
-	select	ci.*,
-		trim(to_char(ci.amount * im_exchange_rate(ci.effective_date::date, ci.currency, :default_currency), :num_format)) as amount_converted,
-		url.url,
-		im_cost_center_code_from_id(ci.cost_center_id) as cost_center_code
-	from
-		im_projects main_p,
+	select	ci.cost_id,
+		trim(to_char(ci.amount * im_exchange_rate(ci.effective_date::date, ci.currency, :default_currency), :num_format)) as amount_converted
+	from	im_projects main_p,
 		im_projects p,
-		im_costs ci,
-		acs_objects o,
-		(select * from im_biz_object_urls where url_type=:view_mode) url
-	where
-		main_p.project_id = :project_id and
+		im_costs ci
+	where	main_p.project_id = :project_id and
 		p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
 		p.project_id = ci.project_id and
-		ci.cost_id = o.object_id and
-		o.object_type = url.object_type and 
 		ci.cost_type_id in ([im_cost_type_invoice], [im_cost_type_quote], [im_cost_type_bill], [im_cost_type_po])
 	order by
 		ci.cost_type_id,
 		ci.effective_date desc
     "
 
-
     set result ""
     set alt_txt [lang::message::lookup "" intranet-cost.Financial Financials]
     append result "<a href='[export_vars -base "/intranet/projects/view" {project_id {view_name finance}}]' target='_'>[im_gif "money_dollar" $alt_txt]</a>\n"
     db_foreach fin_docs $costs_sql {
-
 	switch $cost_type_id {
 	    3700 { set gif "i" }
 	    3702 { set gif "q" }
@@ -2255,11 +2250,9 @@ ad_proc -public im_cost_project_document_icons_helper {
 	    3706 { set gif "p" }
 	    default { set gif "cross" }
 	}
-
 	set alt_txt "[lang::message::lookup "" intranet-cost.Amount Amount]:$amount_converted"
-	append result "<a href='$url$cost_id' target='_'>[im_gif $gif $alt_txt]</a>\n"
+	append result "<a href='[export_vars -base "/intranet-invoices/view" {cost_id}]' target='_'>[im_gif $gif $alt_txt]</a>\n"
     }
-
 
     return $result
 }
