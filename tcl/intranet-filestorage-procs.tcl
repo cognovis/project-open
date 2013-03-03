@@ -566,13 +566,6 @@ ad_proc im_filestorage_project_path_helper { project_id } {
 	return
     }
 
-    # Return a demo path for all project, clients etc.
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	set path [ad_parameter "TestDemoDevPath" intranet "internal/demo"]
-	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
-	return "$base_path_unix/$path"
-    }
-
     set query "
 	select
 		p.project_nr,
@@ -643,13 +636,6 @@ ad_proc im_filestorage_ticket_path_helper { ticket_id } {
 	return
     }
 
-    # Return a demo path for all ticket, clients etc.
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	set path [ad_parameter "TestDemoDevPath" intranet "internal/demo"]
-	ns_log Notice "im_filestorage_ticket_path: TestDemoDevServer: $path"
-	return "$base_path_unix/$path"
-    }
-
     if {![db_0or1row tickets_info_query ""]} {
 	ad_return_complaint 1 "Can't find the ticket with ticket_id = $ticket_id"
 	return
@@ -684,13 +670,6 @@ ad_proc im_filestorage_project_sales_path_helper { project_id } {
         </blockquote><br>
         "
 	return
-    }
-
-    # Return a demo path for all project, clients etc.
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	set path [ad_parameter "TestDemoDevPath" "" "internal/demo"]
-	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
-	return "$base_path_unix/$path"
     }
 
     set query "
@@ -737,13 +716,6 @@ ad_proc im_filestorage_user_path { user_id } {
 	return
     }
 
-    # Return a demo path for all project, clients etc.
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	set path [ad_parameter "TestDemoDevUserPath" "" "users"]
-	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
-	return "$base_path_unix/$path"
-    }
-    
     return "$base_path_unix/$user_id"
 }
 
@@ -792,14 +764,6 @@ ad_proc im_filestorage_bug_path { bug_id } {
     set package_key "intranet-filestorage"
     set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
     set base_path_unix [parameter::get -package_id $package_id -parameter "BugBasePathUnix" -default "/tmp/bugs"]
-
-    # Return a demo path for all project, clients etc.
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	set path [ad_parameter "TestDemoDevUserPath" "" "users"]
-	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
-	return "$base_path_unix/$path"
-    }
-    
     return "$base_path_unix/$bug_id"
 }
 
@@ -824,13 +788,6 @@ ad_proc im_filestorage_cost_path { cost_id } {
 	return
     }
 
-    # Return a demo path for all project, clients etc.
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	set path [ad_parameter "TestDemoDevCostPath" "" "costs"]
-	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
-	return "$base_path_unix/$path"
-    }
-    
     return "$base_path_unix/$cost_id"
 }
 
@@ -944,12 +901,6 @@ ad_proc im_filestorage_copy_source_directory { project_id sub_project_id } {
     # Localize the workflow stage directories
     set locale "en_US"
     set source [lang::message::lookup $locale intranet-translation.Workflow_source_directory "source"]
-
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	# We're at a demo server, so don't create any directories!
-	return
-    }
-
     set project_path [im_filestorage_project_path $project_id]
     set sub_project_path [im_filestorage_project_path $sub_project_id]
 
@@ -988,12 +939,6 @@ ad_proc im_filestorage_create_directories { project_id } {
     # Localize the workflow stage directories
     set locale "en_US"
     set source [lang::message::lookup $locale intranet-translation.Workflow_source_directory "source"]
-
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	# We're at a demo server, so don't create any directories!
-	return
-    }
-
     # Get some missing variables about the project and the company
     set query "
 select
