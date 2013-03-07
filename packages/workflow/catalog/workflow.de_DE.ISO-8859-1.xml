@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="workflow" package_version="2.1.1" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="workflow" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Case">Fall</msg>
   <msg key="lt_Please_click_here_to_">Bitte klicken Sie hier, um dieses %object_type.pretty_name% zu besuchen:</msg>

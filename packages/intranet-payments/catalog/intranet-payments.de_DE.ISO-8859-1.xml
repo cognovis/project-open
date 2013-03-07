@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-payments" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-payments" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="_Previous">Seite</msg>
   <msg key="Add_New">Neu</msg>

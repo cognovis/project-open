@@ -368,6 +368,7 @@
   <msg key="el">el</msg>
   <msg key="El Salvador">El Salvador</msg>
   <msg key="El_Salvador">El Salvador</msg>
+  <msg key="EMail">EMail</msg>
   <msg key="Email">E-Mail</msg>
   <msg key="Email_address">E-Mail</msg>
   <msg key="Email_sent">E-Mail gesendet</msg>
@@ -458,6 +459,7 @@
   <msg key="g">G</msg>
   <msg key="Gantt">Gantt</msg>
   <msg key="Gen">Gen</msg>
+  <msg key="Gender">Geschlecht</msg>
   <msg key="Generic_PM">Generic PM</msg>
   <msg key="Generic_Table_Header_ocs_inputs">Eingabegeräte</msg>
   <msg key="Generic_Table_Header_ocs_memories">Speicher</msg>
@@ -571,6 +573,7 @@
   <msg key="Home_ZIP">Privat PLZ</msg>
   <msg key="Honduras">Honduras</msg>
   <msg key="Hour">Stunde</msg>
+  <msg key="Hour_Reduction">Reduction in Working Hours</msg>
   <msg key="hr">Personal</msg>
   <msg key="HR_Help">HR Hilfe</msg>
   <msg key="HR_Managers">Personalchefs</msg>
@@ -1192,6 +1195,7 @@ Passwort: %password%
   <msg key="Ouch">Autsch!</msg>
   <msg key="Our_employees_related">Unsere Account Manager</msg>
   <msg key="Outstanding">Offene Forderung</msg>
+  <msg key="Overtime">Überstundenausgleich</msg>
   <msg key="p">P</msg>
   <msg key="Package">Paket</msg>
   <msg key="Package_Manager">Paketmanager</msg>
@@ -1459,6 +1463,7 @@ Passwort: %password%
   <msg key="Spam">Spam</msg>
   <msg key="Spam_Members">Spam Mitglied</msg>
   <msg key="Spam_Users">Spam Benutzer</msg>
+  <msg key="Special_Leave">Special Leave</msg>
   <msg key="sq">sq</msg>
   <msg key="SQL_Profiling">SQL Profiling</msg>
   <msg key="sr">sr</msg>
@@ -1599,6 +1604,7 @@ Passwort: %password%
   <msg key="user_administration">Benutzerverwaltung</msg>
   <msg key="User_Exists">User Exists</msg>
   <msg key="User_Exits">User Exits</msg>
+  <msg key="User_ID">User_ID</msg>
   <msg key="User_Id">Benutzer ID</msg>
   <msg key="User_Matrix">Benutzermatrix</msg>
   <msg key="User_name">Benutzer Name</msg>

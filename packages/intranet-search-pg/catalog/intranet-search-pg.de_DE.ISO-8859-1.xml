@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-search-pg" package_version="3.4.0.7.0" locale="de_DE" charset="ISO-8859-1">
+<message_catalog package_key="intranet-search-pg" locale="de_DE" charset="ISO-8859-1">
 
   <msg key="Advanced_Search">Fortgeschrittene Suche</msg>
   <msg key="Bad_Query_Msg">Die &amp;amp;#93;po&amp;amp;#91; Suchmaschine kann komplexe Abfragen, die mehr als ein Wort enthalten, bearbeiten. &amp;lt;br&amp;gt;
