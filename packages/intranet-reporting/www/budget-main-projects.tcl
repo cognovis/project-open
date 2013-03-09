@@ -498,7 +498,11 @@ db_foreach sql $report_sql {
 	    set eop_costs_pretty [im_report_format_number [expr round(10.0 * $eop_costs) / 10.0] $output_format $number_locale]
 	}
 
-	set percent_completed_pretty [im_report_format_number [expr round(10.0 * $percent_completed) / 10.0] $output_format $number_locale]
+	set percent_completed_pretty ""
+	if {"" != $percent_completed} {
+	    set percent_completed_pretty [im_report_format_number [expr round(10.0 * $percent_completed) / 10.0] $output_format $number_locale]
+	}
+
 	set budget_hours_pretty [im_report_format_number $budget_hours $output_format $number_locale]
 	set logged_hours_pretty [im_report_format_number $logged_hours $output_format $number_locale]
 	set budget_providers_pretty [im_report_format_number $budget_providers $output_format $number_locale]
