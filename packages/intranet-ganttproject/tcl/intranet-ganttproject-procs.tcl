@@ -3166,7 +3166,7 @@ ad_proc -public im_ganttproject_gantt_component {
 		    set cell_html "<td><img src=\"/intranet-ganttproject/images/gant_bar_single_15.gif\"></td>\n"
 
 		    set cell_html "<td>
-			  <table width='100%' border=1 cellspacing=0 cellpadding=0 bordercolor=black bgcolor='\#8CB6CE'>
+			  <table width='100%' border=0 cellspacing=0 cellpadding=0 bordercolor=black style='background-color:\#8CB6CE'>
 			    <tr height=11><td></td></tr>
 			  </table>
 		    </td>\n"
@@ -3185,7 +3185,7 @@ ad_proc -public im_ganttproject_gantt_component {
 		    incr last_colspan
 		    set cell_html "
 			<td colspan=$last_colspan>
-			  <table width='100%' border=1 cellspacing=0 cellpadding=0 bordercolor=black bgcolor='\#8CB6CE'>
+			  <table width='100%' border=0 cellspacing=0 cellpadding=0 bordercolor=black style='background-color:\#8CB6CE'>
 			    <tr height=11><td></td></tr>
 			  </table>
 			</td>\n"
