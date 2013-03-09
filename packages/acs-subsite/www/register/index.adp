@@ -10,7 +10,7 @@
   <tr><td>
         <br><br><br>
     Comments? Contact:
-    <A href="mailto:support@project-open.com">support@project-open.com</A>
+    <A href="mailto:[ad_system_owner]">[ad_system_owner]</A>
   </td></tr>
 </table>
 

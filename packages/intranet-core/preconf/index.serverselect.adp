@@ -311,7 +311,7 @@ function setBgImage (id,img) {
   <table border="0" cellpadding="5" cellspacing="0" width="100%">
     <tbody>
       <tr>
-	<td> Comments? Contact: <a href="mailto:support@project-open.com">support@project-open.com</a> </td>
+	<td> Comments? Contact: <a href="mailto:[ad_admin_owner]">[ad_admin_owner]</a> </td>
       </tr>
     </tbody>
   </table>

@@ -205,7 +205,7 @@ foreach package_str $package_list {
 
 # Get toplevel ConfItem for ]po[ internal development
 set po_conf_id [db_string cvs "select conf_item_id from im_conf_items where conf_item_nr = 'po'" -default 0]
-if {0 == $po_conf_id} { ad_return_complaint 1 "Didn't find ConfItem 'po'.<br>Please inform support@project-open.com." }
+if {0 == $po_conf_id} { ad_return_complaint 1 "Didn't find ConfItem 'po'.<br>Please inform [ad_admin_owner]." }
 
 # Get ConfItem of package below 'po'
 set package_conf_item_id [db_string cvs "
@@ -240,11 +240,11 @@ if {0 == $package_conf_item_id} {
     "
 
     if {[catch { set package_conf_item_id [db_string new $conf_item_new_sql] } errmsg ]} {
-	ad_return_complaint 1 "Unable to handle your submission, pls. contact support@project-open.com"
+	ad_return_complaint 1 "Unable to handle your submission, pls. contact [ad_admin_owner]"
     }
 
     if {[catch { db_dml update [im_conf_item_update_sql -include_dynfields_p 1] } errmsg ]} {
-	ad_return_complaint 1 "Unable to handle your submission, pls. contact support@project-open.com"
+	ad_return_complaint 1 "Unable to handle your submission, pls. contact [ad_admin_owner]"
     }
 }
 
@@ -413,7 +413,7 @@ if {[catch {
                 )
     }
 } errmsg ]} {
-        ad_return_complaint 1 "Unable to handle submission, please contact support@project-open.com"
+        ad_return_complaint 1 "Unable to handle submission, please contact [ad_admin_owner]"
 }
 
 set resolved_p 0

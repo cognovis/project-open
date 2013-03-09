@@ -104,7 +104,7 @@ if {[string tolower $tag1] == "/table" || [string tolower $tag1] == "html" || [s
 	'$service_url'.<br>
 	The retreived result seems to be a HTML document and not an XML document.<br>
 	Please check the URL above and/or send an error report to 
-	<a href=\"mailto:support@project-open.com\">support@project-open.com</a>.
+	<a href=\"mailto:[ad_admin_owner]\">[ad_admin_owner]</a>.
 	<br>&nbsp;</br>
 	Here is what the server returned:
 	<br>&nbsp;</br>
