@@ -13,6 +13,23 @@ ad_library {
 
 
 # ----------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------
+
+# Risk Status
+ad_proc -public im_risk_status_open {} { return 75000 }
+ad_proc -public im_risk_status_closed {} { return 75002 }
+ad_proc -public im_risk_status_deleted {} { return 75098 }
+
+# Risk Type
+ad_proc -public im_risk_type_risk {} { return 75100 }
+ad_proc -public im_risk_type_issue {} { return 75102 }
+
+# Risk Action
+ad_proc -public im_risk_action_delete {} { return 75210 }
+
+
+# ----------------------------------------------------------------------
 # Components
 # ---------------------------------------------------------------------
 

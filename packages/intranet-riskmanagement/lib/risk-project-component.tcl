@@ -208,7 +208,7 @@ for {set x 0} {$x < [expr [llength $probab_classifier]-1]} {incr x} {
 }
 set risk_chart_header "<tr>$risk_chart_header</tr>\n"
 
-set risk_chart_html "<table id=risk_chart border=1 align=right>\n"
+set risk_chart_html "<table id=risk_chart border=1 align=right style='border-collapse:separate'>\n"
 for {set y [expr [llength $impact_classifier]-2]} {$y >= 0} {incr y -1} {
     set risk_chart_line ""
     set val [lindex $impact_classifier [expr $y+1]]
@@ -242,6 +242,22 @@ if {"" == $project_id} {
     set risk_chart_html ""
 }
 
+
+
+# ---------------------------------------------------------
+# Format risk related reports
+# ---------------------------------------------------------
+
+
+# Add the <ul>-List of associated menus
+set bind_vars [list project_id $project_id]
+set menu_html [im_menu_li -bind_vars $bind_vars "reporting-project-risks"]
+
+set import_exists_p [llength [info commands im_csv_import_object_fields]]
+set import_html "<li><a href=[export_vars -base "/intranet-csv-import/index" {{object_type im_risk}}]>[lang::message::lookup "" intranet-timesheet2.Import_Risk_CSV "Import Risk CSV"]</a>"
+if {!$import_exists_p} { set import_html "" }
+
+
 # ---------------------------------------------------------
 # Table footer
 # with action box
@@ -259,6 +275,8 @@ set table_footer_html "
 <input type=submit>
 <ul>
 <li><a href='$new_risk_url'>$new_risk_msg</a>
+$menu_html
+$import_html
 </ul>
 </td>
 </tr>

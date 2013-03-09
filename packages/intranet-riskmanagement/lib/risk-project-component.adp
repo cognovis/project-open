@@ -1,8 +1,13 @@
 <div class="risk_outer">
+
 <table cellpadding="0" cellspacing="0" border="0" width="100%">
-<tr valign=top>
+<tr>
 <td valign=top>
-<table align=right border=0 cellpadding=0 cellspacing=0>
+
+</td>
+<td valign=top>
+
+	<table align=right border=0 cellpadding=0 cellspacing=0>
 	<tr valign=bottom>
 		<td>
 		<div style="float: left; position: relative; -moz-transform: rotate(270deg); -o-transform: rotate(270deg); -webkit-transform: rotate(270deg); filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3); -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=3);"><%= [lang::message::lookup "" intranet-riskmanagement.Impact Impact] %></div>
@@ -21,7 +26,7 @@
 </td>
 </tr>
 <tr>
-<td>
+<td colspan=2>
 	<div class="risk_table">
                 <form action="/intranet-riskmanagement/action" method=GET>
                 <%= [export_form_vars return_url] %>
