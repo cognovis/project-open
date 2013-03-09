@@ -122,6 +122,7 @@ set return_url [im_url_with_query]
 set todays_date [db_string get_today "select to_char(sysdate,'YYYY-MM-DD') from dual"]
 set page_focus "im_header_form.keywords"
 set view_name "invoice_tasks"
+set payment_term_id ""
 
 set bgcolor(0) " class=roweven"
 set bgcolor(1) " class=rowodd"
@@ -284,6 +285,7 @@ if {$invoice_id} {
     set canned_note ""
     set canned_note_id ""
     set payment_method_id ""
+    set payment_term_id ""
     set template_id ""
     set company_contact_id [im_invoices_default_company_contact $company_id $project_id]
     set read_only_p "f"
