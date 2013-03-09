@@ -1,0 +1,5 @@
+#!/bin/bash
+git remote set-url $1 /home/git/repos/$1.git
+git fetch $1
+git merge -s subtree $1/master
+

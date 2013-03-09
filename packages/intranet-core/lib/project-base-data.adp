@@ -1,4 +1,6 @@
-  <table valign="top" align="center" width="350px">
+
+  <table valign="top" align="center" width="350px" border=0>
+<tbody>
     <multiple name="project_info">
       <if @project_info.heading@ not nil>
 	<tr>
@@ -38,5 +40,6 @@
 	</table>
       </td>
     </tr>
-   </if>
-  </table>
+  </if>
+</tbody>
+</table>

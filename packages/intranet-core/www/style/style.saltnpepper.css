@@ -80,6 +80,10 @@
 	vertical-align: top;
 }
 
+.fullwidth-list .component .double_calendar table {
+	width: 440px;
+}
+
 /*  START: TEST WITH INCLUDE STYLE.LEFT.CSS */
 
 .filter-list {
@@ -907,9 +911,7 @@ a   span  {float:none;}
   overflow: hidden;
 }
 
-
-.fullwidth-list .component table tr.rowodd,
-.fullwidth-list .component table tr.roweven {
+.fullwidth-list .component table tr {
 	height: 22px;
 	border-top: 1px solid #EEEEEE;
 	border-bottom: 1px solid #EEEEEE;
@@ -1313,8 +1315,9 @@ table.list td {
     .form-widget {font-size: 8pt; background-color: #FFF;padding-top: 5px;vertical-align: middle;}
     .form-required-mark {color: #FF0000;}
 
-    .form-element, .component_body tbody tr.roweven, .component_body tbody tr.rowodd {
-	height:17px; 
+    .form-element, 
+    .component_body tbody tr {
+	height:22px; 
         border-top: 1px solid #F0EDED;
         border-bottom: 1px solid #F0EDED;
 	background-color: #fff;

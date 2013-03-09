@@ -9,11 +9,11 @@ ad_page_contract {
     @param start_date 
     @param end_date 
 } {
-    { start_date "2012-08-02" }
-    { end_date "2012-08-03" }
+    { start_date "" }
+    { end_date "" }
     { level_of_detail 3 }
     { output_format "html" }
-    { user_id 0 }
+    { user_id:optional }
     { cost_center_id 0 }
     { department_id 0 }
 }
@@ -23,9 +23,10 @@ ad_page_contract {
 # ------------------------------------------------------------
 
 set current_user_id [ad_maybe_redirect_for_registration]
+
+# Check privileges 
 set view_hours_all_p [im_permission $current_user_id view_hours_all]
 if { [im_is_user_site_wide_or_intranet_admin $current_user_id] } { set view_hours_all_p 1 }
-
 if { !$view_hours_all_p }  {
     ad_return_complaint 1 "<li>
     [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
@@ -39,7 +40,7 @@ set read_p [db_string report_perms "
 	where	m.label = 'timesheet-incomplete-days'
 " -default 'f']
 
-if {![string equal "t" $read_p]} {
+if {![string equal "t" $read_p] && ![im_is_user_site_wide_or_intranet_admin $current_user_id]} {
     ad_return_complaint 1 "<li>
     [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
     return
@@ -49,15 +50,19 @@ if {![string equal "t" $read_p]} {
 # Validate form 
 # ------------------------------------------------------------
 
+# Preset dates 
+if { "" == $start_date } { set start_date [clock format [clock scan $start_date] -format %Y-%m-01] }
+if { "" == $end_date } { set end_date [clock format [clock add [clock add [clock scan $start_date] +1 month ] -1 day] -format %Y-%m-%d] }
+
 # Check that Start & End-Date have correct format
-if {"" != $start_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $start_date]} {
-    ad_return_complaint 1 "<strong>Start Date</strong> doesn't have the right format.<br>
+if { $start_date != [dt_julian_to_ansi [dt_ansi_to_julian_single_arg $start_date]] } {
+    ad_return_complaint 1 "<strong>Start Date</strong> doesn't have the right format or date is not valid.<br>
     Current value: '$start_date'<br>
-    Expected format: 'YYYY-MM-DD'"
+    Expected format: 'YYYY-MM-DD'"    
 }
 
-if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$} $end_date]} {
-    ad_return_complaint 1 "<strong>End Date</strong> doesn't have the right format.<br>
+if { $end_date != [dt_julian_to_ansi [dt_ansi_to_julian_single_arg $end_date]] } {
+    ad_return_complaint 1 "<strong>End Date</strong> doesn't have the right format or date is not valid.<br>
     Current value: '$end_date'<br>
     Expected format: 'YYYY-MM-DD'"
 }
@@ -75,6 +80,7 @@ if { $duration_in_days > 365 } {
 # ------------------------------------------------------------
 # Defaults
 # ------------------------------------------------------------
+
 set date_format "YYYY-MM-DD"
 set debug 0
 set timesheet_hours_per_day [parameter::get -package_id [apm_package_id_from_key intranet-timesheet2] -parameter "TimesheetHoursPerDay" -default 8]
@@ -85,6 +91,13 @@ set todays_date [db_string todays_date "select to_char(now(), :date_format) from
 
 set user_url "/intranet/users/view?user_id="
 
+# Default values for start/end 
+
+
+# include jQuery date picker
+template::head::add_javascript -src "/intranet/js/jquery-ui.custom.min.js" -order "99"
+template::head::add_css -href "/intranet/style/jquery/overcast/jquery-ui.custom.css" -media "screen" -order "99"
+
 # ------------------------------------------------------------
 # Conditional SQL Where-Clause
 # ------------------------------------------------------------
@@ -93,7 +106,7 @@ set inner_where ""
 set criteria_inner [list]
 
 # Check for filter "Employee"  
-if { "" != $user_id && $view_hours_all_p} { lappend criteria_inner "user_id = :user_id" }
+if { [info exists user_id] && $user_id != "" } { lappend criteria_inner "user_id = :user_id" } else { set user_id ""}
 
 # Check for filter "Cost Center"  
 if { "0" != $cost_center_id &&  "" != $cost_center_id } {
@@ -116,6 +129,13 @@ if { "0" != $department_id &&  "" != $department_id } {
                 	)
            	)
         "
+}
+
+set skill_profile_id [im_profile_skill_profile]
+if { 0 != $skill_profile_id  } {
+        lappend criteria_inner "
+		u.user_id not in (select object_id_two from acs_rels where object_id_one = :skill_profile_id) 
+	"
 }
 
 # Create "inner where" 
@@ -145,26 +165,42 @@ for { set i 0 } { $i < $duration_in_days } { incr i } {
     }
 
     lappend inner_sql_list "
-    (select sum(hours) from im_hours h where h.user_id = s.user_id and date_trunc('day', day) = '$this_day') as day_$this_day_key,
-    (select sum(duration_days) from im_absences_get_absences_for_user_duration(s.user_id, '$this_day', '$this_day', null) AS (absence_date date, absence_type_id int, absence_id int, duration_days numeric)) as duration_days_$this_day_key" 
-
+	    -- (select sum(hours) from im_hours h where h.user_id = s.user_id and date_trunc('day', day) = '$this_day') as day_$this_day_key,
+	    CASE (select sum(hours) from im_hours h where h.user_id = s.user_id and date_trunc('day', day) = '$this_day') IS NULL 
+	        WHEN true THEN 
+			0 
+		ELSE 
+			(select sum(hours) from im_hours h where h.user_id = s.user_id and date_trunc('day', day) = '$this_day')
+		END 
+			as day_$this_day_key,
+	    (select sum(duration_days) from im_absences_get_absences_for_user_duration(s.user_id, '$this_day', '$this_day', null) AS (absence_date date, absence_type_id int, absence_id int, duration_days numeric)) as duration_days_$this_day_key
+    "
     lappend outer_sql_list "
-	((t.duration_days_$this_day_key * $timesheet_hours_per_day) + t.day_$this_day_key) as hours_total_$this_day_key
+		CASE t.duration_days_$this_day_key IS NULL 
+		WHEN true THEN 
+			t.day_$this_day_key
+		ELSE 
+			((t.duration_days_$this_day_key * 8.0) + t.day_$this_day_key) 
+		END 
+			as hours_total_$this_day_key
     " 
     append day_placeholders "\\" "\$hours_total_$this_day_key "
 
     # Setting headers 
-
-    set date_elements [split $this_day -]
-    set this_day_html "[lindex $date_elements 0]<br>[lindex $date_elements 1]<br>[lindex $date_elements 2]"
-    set dow [clock format [clock scan "$this_day"] -format %w]
-    if { 0 == $dow || 6 == $dow } {
-        append day_header "\"<span style='color:#800000'>$this_day_html</span>\""
+    if { "html" == $output_format  } {
+	set date_elements [split $this_day -]
+	set this_day_html "[lindex $date_elements 0]<br>[lindex $date_elements 1]<br>[lindex $date_elements 2]"
+	set dow [clock format [clock scan "$this_day"] -format %w]
+	if { 0 == $dow || 6 == $dow } {
+	    append day_header "\"<span style='color:#800000'>$this_day_html</span>\""
+	} else {
+	    append day_header \"$this_day_html\"
+	}
     } else {
-        append day_header \"$this_day_html\"
+	set date_elements [split $this_day -]
+	append day_header "[lindex $date_elements 0]/[lindex $date_elements 1]/[lindex $date_elements 2]"
     }
     append day_header " "
-
     set this_day [clock format [clock add [clock scan $this_day] 1 day] -format %Y-%m-%d]
 }
 
@@ -178,7 +214,7 @@ set sql "
 		t.user_id,
 		t.department_name,
 		(select cost_center_name from im_cost_centers where cost_center_id in (select parent_id from im_cost_centers where cost_center_id=t.department_id)) as cc_name,
-		im_name_from_user_id(t.user_id) as user_name,
+		im_name_from_user_id(t.user_id,3) as user_name,
 		$outer_sql
 	from
 		(select 
@@ -206,7 +242,7 @@ set sql "
          where
                1=1
          order by
-              user_id
+              user_name
 "
 
 # -----------------------------------------------
@@ -244,18 +280,18 @@ switch $output_format {
 		<table border=0 cellspacing=1 cellpadding=1>
 		<tr>
 		<td>
-		<form>
+		<form id='timesheet-incomplete-days' name='timesheet-incomplete-days'>
 			<table border=0 cellspacing=1 cellpadding=1>
                 <tr>
                   <td class=form-label>Start Date</td>
                   <td class=form-widget>
-                    <input type=textfield name=start_date value=$start_date>
+		     <input size='10' maxlength='10' name='start_date' id='start_date' value='$start_date' type='input'>
                   </td>
                 </tr>
                 <tr>
                   <td class=form-label>End Date</td>
                   <td class=form-widget>
-                    <input type=textfield name=end_date value=$end_date>
+		     <input size='10' maxlength='10' name='end_date' id='end_date' value='$end_date' type='input'>
                   </td>
                 </tr>
 
@@ -296,12 +332,26 @@ switch $output_format {
 	<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
 	<td valign='top' width='600px'>
 	    	<ul>
-			<li>Report considers hours logged and absences</li>
-			<li>Report shows only users with at least one weekday entry in period that is below number of hours set in parameter 'TimesheetHoursPerDay'</li>
+			<li> 
+[lang::message::lookup "" intranet-core.TimesheetIncompleteDaysHint1 "Report shows only users for which the total of absences registered and hours logged is less than the number of hours as defined in parameter 'TimesheetHoursPerDay' (Default is '8')"]
+			</li>
+			<li> [lang::message::lookup "" intranet-core.TimesheetIncompleteDaysHint3 "Weekends are not evaluated and show in any case 'ok'"]</li>
 		</ul>
+		<br><br><br><strong> [lang::message::lookup "" intranet-reporting.Statistics "Statistics"]:</strong><br> 
+		&nbsp;&nbsp;&nbsp;[lang::message::lookup "" intranet-reporting.TotalUsersSelected "Total users selected/Users with exception"]:&nbsp;
+                <span id='total_users_ctr'>calculating ...</span>/<span id='output_users_ctr'>calculating...</span>
 	</td>
-	</tr>
 	</table>
+
+        <script>
+        jQuery().ready(function(){
+                \$(function() {
+                \$( \"\#start_date\" ).datepicker({ dateFormat: \"yyyy-mm-dd\" });
+                \$( \"\#end_date\" ).datepicker({ dateFormat: \"yyyy-mm-dd\" });
+                });
+
+        });
+        </script>
 	<table border=0 cellspacing=5 cellpadding=5>\n
 	"
     }
@@ -328,9 +378,12 @@ set counters [list]
 
 set saved_user_id 0
 set number_hours_project_ctr 0
+set total_users_ctr 0 
+set output_users_ctr 0 
 
 db_foreach sql $sql {
-
+    
+    incr total_users_ctr
     set found_missing_hours_p 0
     set this_day $start_date
 
@@ -343,18 +396,25 @@ db_foreach sql $sql {
 	    set cmd "set var_helper \$hours_total_$this_day_key"
 	    eval $cmd
 	    if { "" == $var_helper  } {
-		set cmd "set hours_total_$this_day_key 0"
+		set cmd "set hours_total_$this_day_key \"OK\""
 		eval $cmd
 	    }
 	    if { $var_helper < $timesheet_hours_per_day } {
 		set found_missing_hours_p 1
+	    } else {
+                set cmd "set hours_total_$this_day_key \"OK\""
+                eval $cmd
 	    }
-	} 
+	} else {
+                set cmd "set hours_total_$this_day_key \"OK\""
+                eval $cmd
+	}
 	set this_day [clock format [clock add [clock scan $this_day] 1 day] -format %Y-%m-%d]
     }
 
     if { !$found_missing_hours_p } { continue }
-
+    incr output_users_ctr
+    
     im_report_display_footer \
 	-output_format $output_format \
 	-group_def $report_def \
@@ -402,7 +462,15 @@ im_report_display_footer \
      -cell_class $class
 
 switch $output_format {
-    html { ns_write "</table>\n[im_footer]\n" }
+    html { 
+	ns_write "</table>\n[im_footer]\n" 
+	ns_write "
+		<script type='text/javascript'>
+			document.getElementById('total_users_ctr').innerHTML = '$total_users_ctr';
+			document.getElementById('output_users_ctr').innerHTML = '$output_users_ctr';
+		</script>
+	"
+    }
     cvs { }
 }
 
