@@ -28,6 +28,7 @@ ad_proc -public im_timesheet_conf_obj_status_deleted {} { return 17090 }
 ad_proc -public im_timesheet_workflow_spawn_update_workflow {
     -project_id:required
     -user_id:required
+    -wf_user_id:required
     -start_date:required
     -end_date:required
     {-workflow_key "timesheet_approval_workflow_wf" }
@@ -41,12 +42,6 @@ ad_proc -public im_timesheet_workflow_spawn_update_workflow {
     @author frank.bergmann@project-open.com
 } {
     set result_html ""
-
-    # ---------------------------------------------------------------
-    # Setup & Defaults
-
-    set wf_user_id $user_id
-    set user_id [ad_maybe_redirect_for_registration]
 
     # ---------------------------------------------------------------
     # Check if the conf_object already exists
