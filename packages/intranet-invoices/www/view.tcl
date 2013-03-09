@@ -1277,6 +1277,11 @@ set payment_terms_note [im_category_string1 -category_id $payment_term_id -local
 eval [template::adp_compile -string $payment_terms_note]
 set payment_terms_note $__adp_output
 
+# -------------------------------
+# Support for cost center text
+# -------------------------------
+set cost_center_note [lang::message::lookup $locale intranet-cost.cc_invoice_text_${cost_center_id} " "]
+
 # Set these values to 0 in order to allow to calculate the
 # formatted grand total
 if {"" == $vat} { set vat 0}
