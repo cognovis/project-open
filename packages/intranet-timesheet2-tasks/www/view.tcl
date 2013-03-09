@@ -62,6 +62,28 @@ im_project_permissions $user_id $project_id project_view project_read project_wr
 # user_admin_p controls the "add members" link of the member components
 set user_admin_p $project_admin
 
+# most used material...
+set default_material_id [db_string default_cost_center "
+	select material_id
+	from im_timesheet_tasks_view
+	group by material_id
+	order by count(*) DESC
+	limit 1
+" -default ""]
+
+# Catch the case that there is no materials yet.
+if {"" == $default_material_id} { set default_material_id [im_material_default_material_id] }
+
+# Deal with no default material
+if {"" == $default_material_id || 0 == $default_material_id} {
+     ad_return_complaint 1 "
+      <b>No default 'Material'</b>:<br>
+      It seems somebody has deleted all materials in the system.<br>
+      Please tell your System Administrator to go to Home - Admin -
+      Materials and create at least one Material.
+    "
+}
+
 if {!$project_read && ![im_permission $user_id view_timesheet_tasks_all]} {
     ad_return_complaint 1 "You have insufficient privileges to see timesheet tasks for this project"
 }

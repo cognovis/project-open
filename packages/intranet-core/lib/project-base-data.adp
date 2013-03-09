@@ -1,5 +1,5 @@
 
-  <table valign="top" align="center" width="350px" border=0>
+<table valign="top" width="100%">
 <tbody>
     <multiple name="project_info">
       <if @project_info.heading@ not nil>
@@ -10,7 +10,7 @@
 	</tr>
       </if>
       <tr>
-	<td align="right" valign="top" class="attribute">@project_info.pretty_name;noquote@:</td>
+	<td align="right" valign="top" class="attribute" width="20%">@project_info.pretty_name;noquote@:</td>
 	<td align="left" valign="top" class="value">@project_info.value;noquote@</td>
       </tr>
     </multiple>

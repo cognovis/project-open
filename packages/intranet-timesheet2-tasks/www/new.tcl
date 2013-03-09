@@ -1,6 +1,7 @@
 # /packages/intranet-timesheet2-task/www/new.tcl
 #
 # Copyright (c) 2003-2008 ]project-open[
+# Copyright (c) 2011, cognovís GmbH, Hamburg, Germany
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -8,6 +9,7 @@
 ad_page_contract {
     @param form_mode edit or display
     @author frank.bergmann@project-open.com
+    @author Malte Sussdorff (malte.sussdorff@cognovis.de)
 } {
     task_id:integer,optional
     { project_id:integer 0 }
@@ -71,6 +73,7 @@ if {0 == $project_id} {
     }
 }
 
+set ::super_project_id $project_id
 
 
 set project_name [db_string project_name "select project_name from im_projects where project_id=:project_id" -default "Unknown"]
@@ -82,6 +85,11 @@ set user_admin_p $project_admin
 
 # Is the current user allowed to edit the timesheet task hours?
 set edit_task_estimates_p [im_permission $user_id edit_timesheet_task_estimates]
+
+if {!$project_read && ![im_permission $user_id view_timesheet_tasks_all]} {
+    ad_return_complaint 1 "You have insufficient privileges to see timesheet tasks for this project"
+    return
+}
 
 if {!$project_write} {
     ad_return_complaint 1 "You have insufficient privileges to add/modify timesheet tasks for this project"

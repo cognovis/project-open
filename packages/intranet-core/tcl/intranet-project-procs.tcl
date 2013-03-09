@@ -3330,3 +3330,60 @@ ad_proc -public im_project_gantt_main_project {
 }
 
 
+ad_proc -public im_project_get_all_members {
+    {-project_status_id ""}
+} {
+    returns a [list] of all the users who are in projects with an OPEN status (or subcategories of open).
+} {
+    
+    if {"" == $project_status_id} {
+	set project_status_id [im_project_status_open]
+    }
+
+    set project_list [im_project_options -include_empty 0 -project_status_id $project_status_id -exclude_tasks_p 1 -no_conn_p 1]
+    
+    set user_ids [list]
+    
+    foreach element $project_list {
+	set project_id [lindex $element 1]
+	
+	set members [db_list_of_lists select_members {
+	    select
+	    im_name_from_user_id(u.user_id) as name,
+	    u.user_id
+	    from
+	    users u,
+	    acs_rels rels
+	    LEFT OUTER JOIN im_biz_object_members bo_rels ON (rels.rel_id = bo_rels.rel_id)
+	    LEFT OUTER JOIN im_categories c ON (c.category_id = bo_rels.object_role_id),
+	    group_member_map m,
+	    membership_rels mr
+	    where
+	    rels.object_id_one = :project_id
+	    and rels.object_id_two = u.user_id
+	    and mr.member_state = 'approved'
+	    and u.user_id = m.member_id
+	    and mr.member_state = 'approved'
+	    and m.group_id = acs__magic_object_id('registered_users'::character varying)
+	    and m.rel_id = mr.rel_id
+	    and m.container_id = m.group_id
+	    and m.rel_type = 'membership_rel'	
+	    order by lower(im_name_from_user_id(u.user_id))
+	}]
+	
+	foreach element $members {
+	    set user_id_exists_p 0
+	    foreach id $user_ids {
+		if {$id eq [lindex $element 1]} {
+		    set user_id_exists_p 1
+		}
+	    }
+	    
+	    if {$user_id_exists_p eq 0} {
+		lappend user_ids [lindex $element 1]
+	    }
+	}
+    }
+    
+    return $user_ids
+}
