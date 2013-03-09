@@ -367,6 +367,17 @@ ad_proc -public im_ticket_project_component {
     return [string trim $result]
 }
 
+ad_proc -public im_ticket_info_component {
+    ticket_id
+    return_url
+} {
+
+    set params [list  [list base_url "/intranet-helpdesk/"]  [list ticket_id  $ticket_id] [list return_url [im_url_with_query]]]
+    
+    set result [ad_parse_template -params $params "/packages/intranet-helpdesk/lib/ticket-info"]
+
+    return [string trim $result]
+}
 
 # ----------------------------------------------------------------------
 # Components
