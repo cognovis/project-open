@@ -332,7 +332,7 @@ if {[im_column_exists im_companies default_invoice_template_id]} {
     }
     
     set company_payment_term_id [db_string default_payment_days "select payment_term_id from im_companies where company_id = :company_id" -default ""]
-    if {"" != $company_payment_term_id} {
+    if {"" != $company_payment_term_id && "" == $payment_term_id} {
 	set payment_term_id $company_payment_term_id
     }
 }
