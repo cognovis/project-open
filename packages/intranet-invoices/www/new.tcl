@@ -252,7 +252,7 @@ if {$invoice_id} {
 	set ajax_company_widget "provider_id"
 	set custprov "provider"
     }
-    
+
 } else {
 
 # ---------------------------------------------------------------
