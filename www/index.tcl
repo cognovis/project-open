@@ -429,7 +429,7 @@ switch $mine_p {
 }
 
 
-set order_by_clause "order by lower(t.ticket_id) DESC"
+set order_by_clause "order by t.ticket_id DESC"
 switch [string tolower $order_by] {
     "creation date" { set order_by_clause "order by p.start_date DESC" }
     "type" { set order_by_clause "order by t.ticket_type_id, p.start_date" }
