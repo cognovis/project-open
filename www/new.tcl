@@ -609,8 +609,8 @@ ad_form -extend -name helpdesk_ticket -on_request {
 	}
 	db_release_unused_handles
     } else {
-	ad_return_complaint 1 [lang::message::lookup "" intranet-helpdesk.TicketNotFound "Ticket not found."]
-	return 
+	# ad_return_complaint 1 [lang::message::lookup "" intranet-helpdesk.TicketNotFound "Ticket not found."]
+	# return 
     }
 
 } -select_query {
