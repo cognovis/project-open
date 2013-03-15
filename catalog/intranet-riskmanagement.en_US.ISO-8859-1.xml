@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-riskmanagement" locale="en_US" charset="ISO-8859-1">
+
+  <msg key="Add_a_new_risk">Add a new Risk</msg>
+  <msg key="Admin_Risks">Admin Risks</msg>
+  <msg key="Filter_Risks">Risk Filter</msg>
+  <msg key="Project">Project</msg>
+  <msg key="Risk_Status">Risk Status</msg>
+  <msg key="Risk_Type">Risk Type</msg>
+</message_catalog>
