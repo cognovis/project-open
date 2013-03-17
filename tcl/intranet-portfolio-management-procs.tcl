@@ -31,14 +31,16 @@ ad_proc -public im_program_portfolio_sweeper {
     set admin_user_id [db_string cur_user "select min(user_id) from users where user_id > 0"]
     foreach program_id $programs {
 	im_program_portfolio_list_component \
-		-program_id $program_id \
-		-current_user_id $admin_user_id
+	    -cron_mode_p 1 \
+	    -program_id $program_id \
+	    -current_user_id $admin_user_id
     }
 }
 
 
 ad_proc -public im_program_portfolio_list_component {
     -program_id:required
+    {-cron_mode_p 0}
     {-show_empty_project_list_p 1}
     {-view_name "program_portfolio_list" }
     {-order_by_clause ""}
@@ -54,6 +56,8 @@ ad_proc -public im_program_portfolio_list_component {
     @param show_empty_project_list_p Should we show an empty project list?
            Setting this parameter to 0 the component will just disappear
            if there are no projects.
+    @param cron_mode_p Is set to 1 if the page is executed from a schedule
+           procedure.
 } {
     # The owner of the system...
     set admin_user_id [db_string cur_user "select min(user_id) from users where user_id > 0"]
@@ -72,12 +76,23 @@ ad_proc -public im_program_portfolio_list_component {
     db_1row program_inf $program_info_sql
     if {![im_category_is_a $program_type_id [im_project_type_program]]} { return "" }
 
+    set date_format "YYYY-MM-DD"
+
+    # Execute only when running as a normal HTML page
+    if {!$cron_mode_p} {
+	# This code is running as part of a normal HTML page
+	set return_url [im_url_with_query]
+	set wrench_gif [im_gif wrench ""]
+    } else {
+	# This code is running as part of a schduled procedure
+	set current_user_id $admin_user_id
+	set return_url ""
+	set wrench_gif ""
+    }
+
     if {"" == $current_user_id || 0 == $current_user_id} { set current_user_id [ad_get_user_id] }
     set admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 
-    set date_format "YYYY-MM-DD"
-
-    set return_url [im_url_with_query]
 
     if {"" == $order_by_clause} {
 	set order_by_clause  [parameter::get_from_package_key -package_key "intranet-portfolio-management" -parameter "ProgramPortfolioListSortClause" -default "project_nr DESC"]
@@ -220,7 +235,7 @@ ad_proc -public im_program_portfolio_list_component {
 	set admin_html ""
 	if {$admin_p} {
 	    set url [export_vars -base "/intranet/admin/views/new-column" {column_id return_url}]
-	    set admin_html "<a href='$url'>[im_gif wrench ""]</a>"
+	    set admin_html "<a href='$url'>$wrench_gif</a>"
 	}
 
 	regsub -all " " $col "_" col_txt
@@ -283,15 +298,17 @@ ad_proc -public im_program_portfolio_list_component {
 	}
 
 	# Append together a line of data based on the "column_vars" parameter list
-	set row_html "<tr$bgcolor([expr $ctr % 2])>\n"
-	foreach column_var $column_vars {
-	    append row_html "\t<td valign=top>"
-	    set cmd "append row_html $column_var"
-	    eval "$cmd"
-	    append row_html "</td>\n"
+	if {!$cron_mode_p} {
+	    set row_html "<tr$bgcolor([expr $ctr % 2])>\n"
+	    foreach column_var $column_vars {
+		append row_html "\t<td valign=top>"
+		set cmd "append row_html $column_var"
+		eval "$cmd"
+		append row_html "</td>\n"
+	    }
+	    append row_html "</tr>\n"
+	    append table_body_html $row_html
 	}
-	append row_html "</tr>\n"
-	append table_body_html $row_html
 
 	# Avoid error due to NULL values
 	if {"" == $cost_quotes_cache} { set cost_quotes_cache 0 }
@@ -305,16 +322,17 @@ ad_proc -public im_program_portfolio_list_component {
 	set budget_done [expr $budget_done + $project_budget * $percent_completed / 100.0]
 	set plain_done [expr $plain_done + 1.0 * $percent_completed / 100.0]
 
-	foreach var $var_list {
-
-	    # Sum up the column's values into totals
-	    set val [set $var]
-	    if {"" == $val} { set val 0 }
-	    if {[catch { 
-		set cmd "set ${var}_total \[expr \$${var}_total + $val\]"
-		eval $cmd
-	    } err_msg]} {
-		ad_return_complaint 1 "<pre>$err_msg</pre>"
+	if {!$cron_mode_p} {
+	    foreach var $var_list {
+		# Sum up the column's values into totals
+		set val [set $var]
+		if {"" == $val} { set val 0 }
+		if {[catch { 
+		    set cmd "set ${var}_total \[expr \$${var}_total + $val\]"
+		    eval $cmd
+		} err_msg]} {
+		    ad_return_complaint 1 "<pre>$err_msg</pre>"
+		}
 	    }
 	}
 
@@ -343,7 +361,7 @@ ad_proc -public im_program_portfolio_list_component {
 
     # Total summary line:
     # Copy the *_total values into the values without _total
-    if {$ctr > 0} {
+    if {!$cron_mode_p && $ctr > 0} {
 	foreach var $var_list { set $var [set ${var}_total] }
 	set project_name ""
 	set project_nr ""
@@ -377,7 +395,7 @@ ad_proc -public im_program_portfolio_list_component {
 		where
 			project_id = :program_id
 	"
-	im_audit -object_id $program_id
+	im_audit -user_id $current_user_id -object_id $program_id
 	set update_html "<font color=red>[lang::message::lookup "" intranet-portfolio-management.Updated_the_program_budget_and_advance "Updated the program's budget=%budget_total% and advance=%completed%"]</font>"
     }
 
