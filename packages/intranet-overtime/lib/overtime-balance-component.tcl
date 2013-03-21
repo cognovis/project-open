@@ -91,7 +91,7 @@ list::create \
 set overtime_sql "
 	select
 		comment, 
-		days,
+		coalesce(days,0) as days,
 		to_char(booking_date, :date_format) as booking_date_pretty,
 		im_name_from_user_id(user_id) as user_name,
 		0 as absence_p
