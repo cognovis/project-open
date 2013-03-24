@@ -32,7 +32,7 @@
 		  <tr valign="top">
 		    <td width="50%">
 			<%= [im_box_header [lang::message::lookup "" intranet-confdb.Conf_Item "Configuration Item"]] %>
-			<formtemplate id="conf_item"></formtemplate>
+			<formtemplate id="conf_item_form"></formtemplate>
 			<%= [im_box_footer] %>
 			<%= [im_component_bay left] %>
 		    </td>
