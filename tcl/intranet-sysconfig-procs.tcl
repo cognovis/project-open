@@ -86,6 +86,136 @@ ad_proc -public im_sysconfig_component { } {
 
 
 
+
+
+# ----------------------------------------------------------------------
+# 
+# ----------------------------------------------------------------------
+
+ad_proc -public im_sysconfig_admin_guide { 
+    {-show_items "open"}
+} {
+    Returns a formatted HTML block with a wizard tht
+    guides new users through the configuration of PO
+    @param show_items {"open","all"}
+} {
+    # Only show to administrators
+    set user_id [ad_get_user_id]
+    set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
+    if {!$user_is_admin_p} { return "" }
+
+    set po "<span class=brandsec>&\#93;</span><span class=brandfirst>po</span><span class=brandsec>&\#91;</span>"
+    set project_open "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>"
+    set title "Guide to $po Configuration"
+    set main_menu_id [util_memoize [list db_string main_menu "select menu_id from im_menus where label='main'" -default 0]]
+    set return_url [im_url_with_query]
+    set help_site "http://www.project-open.org/en"
+    set pageroot [ns_info pageroot]
+    set serverroot [join [lrange [split $pageroot "/"] 0 end-1] "/"]
+    set package_intranet_core [db_string cost "select min(package_id) from apm_packages where package_key = 'intranet-core'" -default ""]
+    set package_intranet_cost [db_string cost "select min(package_id) from apm_packages where package_key = 'intranet-cost'" -default ""]
+
+    # Get a list of the labesl of already processed items
+    set items_done [parameter::get_from_package_key -package_key "intranet-sysconfig" -parameter "AdminGuideItemsDone" -default ""]
+
+
+    # Get the CSV file
+    set csv_file "$serverroot/packages/intranet-sysconfig/www/admin-guide/admin-guide-items.csv"
+    if {[catch {
+	set fl [open $csv_file]
+	set content [read $fl]
+	close $fl
+    } err]} {
+	ad_return_complaint 1 "Unable to open file $csv_file:<br><pre>\n$err</pre>"
+	ad_script_abort
+    }
+
+    # Split the CSV file into lines
+    set html ""
+    set items [split $content "\n"]
+    foreach line $items {
+
+    	ns_log Notice "im_sysconfig_admin_guide: line=$line"
+
+	# Split each line into a list based on tabs ("\t")
+	set item [split $line ";"]
+	if {[llength $item] < 3} { continue }
+
+	set label [lindex $item 0]
+	set indent [lindex $item 1]
+	set title [lindex $item 2]
+	set a ""
+	set link [eval set a "[lindex $item 3]"]
+	set help [lindex $item 4]
+	set desc [lindex $item 5]
+
+	if {[lsearch $items_done $label] >= 0} {
+	    # The label is in the list of already processed items
+	    continue
+	}
+
+	set link_html "<a href='$link' target='_'><b>$title</b></a>"
+	if {"" == $link} { set link_html "<b>$title</b>" }
+
+	set help_html "<a href='$help_site/$help' target='_' >[im_gif help $title]</a>"
+	if {"" == $help} { set help_html "" }
+
+	if {$indent > 0} {
+	    # Normal line - Write out link
+	    append html "
+		<tr>
+			<td align=center><input type=checkbox name=item value=$label title='$title'><br>$help_html</td>
+			<td>$link_html:<br>$desc</td>
+		</tr>
+	    "
+	} else {
+	    # ident=0: Title row
+	    append html "
+		<tr>
+			<td colspan=2><h2>$link_html</h2><br>$desc</td>
+		</tr>
+	    "	    
+	}
+    }
+
+    set html "
+	<style>.fullwidth-list .component table.taskboard td { vertical-align:top; } </style>
+	<form action='/intranet-sysconfig/admin-guide/admin-guide-action.tcl'>
+	[export_form_vars return_url]
+	<table class=taskboard>
+	<tr><td colspan=2>
+		<h2>$po Services</h2>
+	<nobr>
+	<a href='http://www.project-open.com/en/shop/remote-training.html'><img src='/intranet/images/badges/badge_training_services.jpg'></a>
+	<a href='http://www.project-open.com/en/services/project-open-support.html'><img src='/intranet/images/badges/badge_support_services.jpg'></a>
+	<a href='http://www.project-open.com/en/services/project-open-hosting-saas.html'><img src='/intranet/images/badges/badge_hosting_saas_services.jpg'></a>
+	</nobr>
+		<br>&nbsp;<br>
+		$po offers a wide range of professional services in order to 
+		help customers with installation, configuration and operations of $po.
+	</td></tr>
+
+	<tr><td colspan=2>
+		<select name=action1><option name=mark_as_done>Mark as done</option></select>
+		<input type=submit name=action_submit1 value=Action>
+	</td></tr>
+
+	$html
+	
+	<tr><td colspan=2>
+		<select name=action2><option name=mark_as_done>Mark as done</option></select>
+		<input type=submit name=action_submit2 value=Action>
+	</td></tr>
+
+	</table>
+	</form>
+    "
+    return $html
+}
+
+
+
+
 ad_proc -public im_sysconfig_parse_groups { group_list } {
     Takes a komma separated list of groups and returns a 
     TCL list with group_ids.
