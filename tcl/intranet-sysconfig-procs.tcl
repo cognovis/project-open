@@ -6,10 +6,10 @@
 # http://www.project-open.com/license/ for details.
 
 ad_library {
-    SysConfig Conviguration Wizard
+    SysConfig Configuration Wizard
     @author frank.bergmann@project-open.com
+    @author klaus.hofeditz@project-open.com
 }
-
 
 # ----------------------------------------------------------------------
 # 
@@ -133,6 +133,7 @@ ad_proc -public im_sysconfig_admin_guide {
     # Split the CSV file into lines
     set html ""
     set items [split $content "\n"]
+    set ctr 0
     foreach line $items {
 
     	ns_log Notice "im_sysconfig_admin_guide: line=$line"
@@ -163,18 +164,18 @@ ad_proc -public im_sysconfig_admin_guide {
 	if {$indent > 0} {
 	    # Normal line - Write out link
 	    append html "
-		<tr>
-			<td align=center><input type=checkbox name=item value=$label title='$title'><br>$help_html</td>
-			<td>$link_html:<br>$desc</td>
-		</tr>
+		<ul><li><input type=checkbox name=item value=$label title='$title'>$link_html $help_html:<br>$desc</li></ul>
 	    "
 	} else {
 	    # ident=0: Title row
+	    if { 0 != $ctr  } {	append html "</div>" }
 	    append html "
-		<tr>
-			<td colspan=2><h2>$link_html</h2><br>$desc</td>
-		</tr>
+		<span id=\"q_$ctr\">
+			<h2 style=\"text-decoration:underline; cursor: hand; cursor: pointer;margin-bottom:4px;\">$link_html</h2>$desc
+		</span>
+		<div id=\"a_$ctr\">
 	    "	    
+	    incr ctr;
 	}
     }
 
@@ -193,15 +194,21 @@ ad_proc -public im_sysconfig_admin_guide {
 		<br>&nbsp;<br>
 		$po offers a wide range of professional services in order to 
 		help customers with installation, configuration and operations of $po.
+		<br><br>
 	</td></tr>
 
-	<tr><td colspan=2>
+	<!--<tr><td colspan=2>
 		<select name=action1><option name=mark_as_done>Mark as done</option></select>
-		<input type=submit name=action_submit1 value=Action>
-	</td></tr>
+		<input type=submit name=action_submit1 value=Action> <br>
+	</td></tr>-->
+	</table>
 
-	$html
-	
+     	<div id=\"q_and_a\">
+		$html
+		</div> <!-- --> closing 
+        </div>
+	<br>
+	<table class=taskboard>	
 	<tr><td colspan=2>
 		<select name=action2><option name=mark_as_done>Mark as done</option></select>
 		<input type=submit name=action_submit2 value=Action>
@@ -209,6 +216,18 @@ ad_proc -public im_sysconfig_admin_guide {
 
 	</table>
 	</form>
+
+  	<script>
+    	\$(document).ready(function(){
+		\$(\"#q_and_a\").find('span\[id^=\"q_\"\]').each(function(i, obj) {
+    			\$(obj).click(function() {
+				\$('#a_'+obj.id.substr(2)).slideToggle('slow', function() {
+				});
+    			});
+			\$('\#a_'+obj.id.substr(2)).slideToggle('slow');
+		});
+	});
+	</script>
     "
     return $html
 }
