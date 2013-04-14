@@ -2,7 +2,8 @@
 Ext.application({
     name: 'PO',
     models: ['Note'],
-    stores: ['Notes', 'Contacts'],
+    stores: ['Notes', 'Users', 'Contacts'],
+    views: ['UserList', 'BlogList'],
 
     requires: [
         'Ext.MessageBox',
@@ -25,59 +26,9 @@ Ext.application({
 			"<p>This demo shows how to build Sencha Touch applications using ]po[."
 		    ].join("")
 	     }, {
-		    xtype: 'nestedlist',
-		    title: 'Blog',
-		    iconCls: 'star',
-		    displayField: 'title',
-
-		    detailCard: {
-			xtype: 'panel',
-			scrollable: true,
-			styleHtmlContent: true
-		    },
-
-		    listeners: {
-		    	itemtap: function(nestedList, list, index, element, post) {
-				 this.getDetailCard().setHtml(post.get('content'));
-		    	}
-		    },
-
-		    store: {
-			type: 'tree',
-
-			fields: [
-			    'title', 'link', 'author', 'contentSnippet', 'content',
-			    {name: 'leaf', defaultValue: true}
-			],
-
-			root: {
-			    leaf: false
-			},
-
-			proxy: {
-			    type: 'jsonp',
-			    url: 'https://ajax.googleapis.com/ajax/services/feed/load?v=1.0&q=http://feeds.feedburner.com/SenchaBlog',
-			    reader: {
-				type: 'json',
-				rootProperty: 'responseData.feed.entries'
-			    }
-			}
-		    }
+		    xtype: 'blogList',
 	     }, {
-		    xtype: 'list',
-		    title: 'List',
-		    iconCls: 'star',
-		    itemTpl: '<div class="contact2"><strong>{first_names}</strong> {last_name}</div>',
-		    disclosure: true,
-		    grouped: true,
-		    indexBar: true,
-
-		    onItemDisclosure: function(record, item, index, e) {
-			    this.getDetailCard().setHtml(post.get('content'));
-            	    },
-
-		    store: 'Contacts'
-
+		    xtype: 'userList',
 		}, {
                     title: 'Contact',
                     iconCls: 'user',
