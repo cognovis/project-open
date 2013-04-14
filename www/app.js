@@ -1,6 +1,15 @@
 
 Ext.application({
     name: 'PO',
+    models: ['Note'],
+    stores: ['Notes'],
+
+    requires: [
+        'Ext.MessageBox',
+        'Ext.data.Store',
+        'Ext.List',
+        'Ext.plugin.PullRefresh'
+    ],
 
     launch: function() {
 	Ext.create("Ext.tab.Panel", {
@@ -54,8 +63,36 @@ Ext.application({
 			    }
 			}
 		    }
-		},
-                {
+	     }, {
+		    xtype: 'list',
+		    title: 'List',
+		    iconCls: 'star',
+		    itemTpl: '<div class="contact2"><strong>{firstName}</strong> {lastName}</div>',
+		    disclosure: true,
+		    grouped: true,
+		    indexBar: true,
+		    onItemDisclosure: function(record, item, index, e) {
+                    	//show a messagebox alert which shows the persons firstName
+                	e.stopEvent();
+                	Ext.Msg.alert('Disclose', 'Disclose more info for ' + record.get('firstName'));
+            	    },
+
+		    store: Ext.create('Ext.data.Store', {
+	            	    fields: ['firstName', 'lastName'],
+	            	    sorters: 'firstName',
+	            	    autoLoad: true,
+	            	    grouper: {
+	            	        groupFn: function(record) {
+	                    		 return record.get('firstName')[0];
+	           	         }
+	            	    },
+	            	    proxy: {
+	                    	   type: 'ajax',
+	                	   url: 'contacts.json'
+	                    }
+		    })
+
+		}, {
                     title: 'Contact',
                     iconCls: 'user',
                     xtype: 'formpanel',
