@@ -18,6 +18,7 @@
         <maturity>0</maturity>
 
         <provides url="senchatouch-notes" version="0.1d"/>
+        <requires url="senchatouch-v211" version="0.1d"/>
 
         <callbacks>
         </callbacks>
