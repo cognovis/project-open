@@ -2,7 +2,7 @@
 Ext.application({
     name: 'PO',
     models: ['Note'],
-    stores: ['Notes'],
+    stores: ['Notes', 'Contacts'],
 
     requires: [
         'Ext.MessageBox',
@@ -77,20 +77,7 @@ Ext.application({
                 	Ext.Msg.alert('Disclose', 'Disclose more info for ' + record.get('firstName'));
             	    },
 
-		    store: Ext.create('Ext.data.Store', {
-	            	    fields: ['firstName', 'lastName'],
-	            	    sorters: 'firstName',
-	            	    autoLoad: true,
-	            	    grouper: {
-	            	        groupFn: function(record) {
-	                    		 return record.get('firstName')[0];
-	           	         }
-	            	    },
-	            	    proxy: {
-	                    	   type: 'ajax',
-	                	   url: 'contacts.json'
-	                    }
-		    })
+		    store: 'Contacts'
 
 		}, {
                     title: 'Contact',
