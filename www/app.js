@@ -67,14 +67,13 @@ Ext.application({
 		    xtype: 'list',
 		    title: 'List',
 		    iconCls: 'star',
-		    itemTpl: '<div class="contact2"><strong>{firstName}</strong> {lastName}</div>',
+		    itemTpl: '<div class="contact2"><strong>{first_names}</strong> {last_name}</div>',
 		    disclosure: true,
 		    grouped: true,
 		    indexBar: true,
+
 		    onItemDisclosure: function(record, item, index, e) {
-                    	//show a messagebox alert which shows the persons firstName
-                	e.stopEvent();
-                	Ext.Msg.alert('Disclose', 'Disclose more info for ' + record.get('firstName'));
+			    this.getDetailCard().setHtml(post.get('content'));
             	    },
 
 		    store: 'Contacts'
