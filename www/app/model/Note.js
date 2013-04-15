@@ -28,5 +28,6 @@ Ext.define('PO.model.Note', {
 		}
 	    }
     }
+
 });
 

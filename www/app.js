@@ -1,76 +1,50 @@
-
 Ext.application({
     name: 'PO',
-    models: ['Note','User'],
-    stores: ['NoteStore', 'UserStore', 'ContactStore'],
-    views: ['UserList', 'UserDetail', 'BlogList', 'NoteList', 'UserNavigationView'],
-    controllers: ['UserNavigationController', 'NoteListController'],
-
     requires: [
-        'Ext.MessageBox',
-        'Ext.data.Store',
-        'Ext.List',
-        'Ext.plugin.PullRefresh'
+	'Ext.MessageBox',
+	'Ext.data.Store',
+	'Ext.List',
+	'Ext.plugin.PullRefresh'
     ],
 
+    models: [
+	'Note',
+	'User'
+    ],
+    stores: [
+	'NoteStore', 
+	'UserStore', 
+	'ContactStore'
+    ],
+    views: [
+	'SplashPage', 
+	'UserList', 
+	'UserDetail', 
+	'BlogList', 
+	'NoteList', 
+	'UserNavigationView', 
+	'NoteNavigationView',
+	'ContactPage',
+    ],
+    controllers: [
+	'UserNavigationController', 
+	'NoteNavigationController', 
+	'NoteListController'
+    ],
+
+    // Main function: Load the various panels
     launch: function() {
 	Ext.create("Ext.tab.Panel", {
-	    fullscreen: true,
-	    tabBarPosition: 'bottom',
-
-	    items: [{
-		    title: 'Home',
-		    iconCls: 'home',
-		    html: [
-			'<center><img src="/senchatouch-notes/resources/startup/320x460.png"/></center>',
-			'<h1>]project-open[ Sencha Touch Notes</h1>',
-			"<p>This demo shows how to build Sencha Touch applications using ]po[."
-		    ].join("")
-	     }, {
-		    xtype: 'blogList',
-	     }, {
-		    xtype: 'noteList',
-	     }, {
-		    xtype: 'userNavigationView',
-		}, {
-                    title: 'Contact',
-                    iconCls: 'user',
-                    xtype: 'formpanel',
-                    url: 'contact.php',
-                    layout: 'vbox',
-
-                    items: [{
-                            xtype: 'fieldset',
-                            title: 'Contact Us',
-                            instructions: '(email address is optional)',
-                            items: [
-                                {
-                                    xtype: 'textfield',
-                                    label: 'Name'
-                                },
-                                {
-                                    xtype: 'emailfield',
-                                    label: 'Email'
-                                },
-                                {
-                                    xtype: 'textareafield',
-                                    label: 'Message'
-                                }
-                            ]
-                        },
-                        {
-                            xtype: 'button',
-                            text: 'Send',
-                            ui: 'confirm',
-                            handler: function() {
-                                this.up('formpanel').submit();
-                            }
-                        }
-                    ]
-                }
-
-
-	    ]
+		fullscreen: true,
+		tabBarPosition: 'bottom',
+		items: [
+			{xtype: 'splashPage'}, 
+//			{xtype: 'blogList'}, 
+			{xtype: 'noteNavigationView'}, 
+			{xtype: 'userNavigationView'}, 
+			{xtype: 'contactPage'}
+		]
 	});
     }
 });
+
