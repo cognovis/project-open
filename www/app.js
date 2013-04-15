@@ -3,7 +3,8 @@ Ext.application({
     name: 'PO',
     models: ['Note'],
     stores: ['Notes', 'Users', 'Contacts'],
-    views: ['UserList', 'BlogList'],
+    views: ['UserList', 'UserDetail', 'BlogList', 'UserNavigationView'],
+    controllers: ['UserNavigationController'],
 
     requires: [
         'Ext.MessageBox',
@@ -29,6 +30,8 @@ Ext.application({
 		    xtype: 'blogList',
 	     }, {
 		    xtype: 'userList',
+	     }, {
+		    xtype: 'userNavigationView',
 		}, {
                     title: 'Contact',
                     iconCls: 'user',

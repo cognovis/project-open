@@ -5,7 +5,7 @@ Ext.define('PO.view.UserList', {
 
 	config: {
 	    
-		title: 'Users',
+		title: 'UserList',
 		iconCls: 'star',
 		itemTpl: '<div class="contact2"><strong>{first_names}</strong> {last_name}</div>',
 		disclosure: true,
