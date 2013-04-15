@@ -1,7 +1,7 @@
 Ext.define('PO.view.UserList', {
 	extend: 'Ext.List',
 	xtype: 'userList',
-	requires: ['PO.store.Users'],
+	requires: ['PO.store.UserStore'],
 
 	config: {
 	    
@@ -11,7 +11,7 @@ Ext.define('PO.view.UserList', {
 		disclosure: true,
 		grouped: true,
 		indexBar: true,
-		store: 'Users',
+		store: 'UserStore',
 		onItemDisclosure: true
 
 	}

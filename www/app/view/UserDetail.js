@@ -6,7 +6,7 @@ Ext.define('PO.view.UserDetail', {
 	    styleHtmlContent: true,
 	    scrollable: 'vertical',
 	    title: 'User Details',
-	    html: 'Hello World'
+	    tpl: 'Hello, {first_names}'
 
 	}
 });

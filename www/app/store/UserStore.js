@@ -1,13 +1,14 @@
-Ext.define('PO.store.Contacts', {
+Ext.define('PO.store.UserStore', {
         extend: 'Ext.data.Store',
+	requires: ['PO.model.User'],
 	config: {
-	        fields: ['first_names', 'last_name'],
+	        model: 'PO.model.User',
 		autoLoad: true,
-		sorters: 'first_names',
+		sorters: 'last_name',
 
 		grouper: {
 		    groupFn: function(record) { 
-		    	     var fn = record.get('first_names');
+		    	     var fn = record.get('last_name');
 			     if (fn == null) { return 'a'; }
 		    	     return fn[0]; 
 		    }

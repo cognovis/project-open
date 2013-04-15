@@ -1,4 +1,4 @@
-Ext.define('PO.store.Notes', {
+Ext.define('PO.store.NoteStore', {
         extend: 'Ext.data.Store',
 	requires: 'Ext.DateExtras',
 	config: {

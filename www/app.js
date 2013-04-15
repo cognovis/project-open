@@ -1,8 +1,8 @@
 
 Ext.application({
     name: 'PO',
-    models: ['Note'],
-    stores: ['Notes', 'Users', 'Contacts'],
+    models: ['Note','User'],
+    stores: ['NoteStore', 'UserStore', 'ContactStore'],
     views: ['UserList', 'UserDetail', 'BlogList', 'UserNavigationView'],
     controllers: ['UserNavigationController'],
 

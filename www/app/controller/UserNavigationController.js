@@ -12,11 +12,12 @@ Ext.define('PO.controller.UserNavigationController', {
 	    }
 	},
 
-	showDetail: function() { 
+	showDetail: function(list, record) { 
 	    console.log('disclose details'); 
 	    var view = this.getUserNavigationView();
 	    view.push({
-		xtype: 'userDetail'
+		xtype: 'userDetail',
+		data: record.data
 	    });
 	}
 
