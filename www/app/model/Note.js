@@ -3,7 +3,8 @@ Ext.define('PO.model.Note', {
     config: {
 	fields: [
 		'id',
-		'object_name',
+		'note',
+		'object_id',
 		'note_type_id'
 	],
 	proxy: {
@@ -15,17 +16,17 @@ Ext.define('PO.model.Note', {
 		extraParams: {
 			format:		'json',		// Tell the ]po[ REST to return JSON data.
 			deref_p:	'1',
-			columns:	'note_type_id'
+			columns:	'note,note_type_id'
 		},
 		reader: {
 			type:	'json',			// Tell the Proxy Reader to parse JSON
 			root:	'data',			// Where do the data start in the JSON file?
 			totalProperty:  'total'		// Total number of tickets for pagination
 		},
-			writer: {
+		writer: {
 			type:	'json'			// Allow Sencha to write ticket changes
 		}
-	}
+	    }
     }
 });
 

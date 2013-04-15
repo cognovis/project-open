@@ -6,7 +6,7 @@ Ext.define('PO.view.UserNavigationView', {
 		   'PO.view.UserDetail'
 	],
 	config: {
-	    title: 'UserNavView',
+	    title: 'Users',
 	    iconCls: 'star',
 	    items: [{
 		    xtype: 'userList'
