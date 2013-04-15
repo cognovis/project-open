@@ -9,8 +9,8 @@ Ext.define('PO.store.NoteStore', {
 	    grouper: {
 		groupFn: function(record) { 
 		    var fn = record.get('note');
-		    if (fn == null) { return 'a'; }
-		    return fn[0]; 
+		    if (fn == null) { fn = 'a'; }
+		    return fn.toLowerCase()[0]; 
 		}
 	    },
 

@@ -7,7 +7,7 @@ Ext.define('PO.controller.NoteNavigationController', {
 	    },
 	    control: {
 		'noteNavigationView': {
-		    activate: 'onActivateNavigationView'
+		    initialize: 'onInitializeNavigationView'
 		},
 		'noteList': {
 		    disclose: 'showDetail'
@@ -17,7 +17,7 @@ Ext.define('PO.controller.NoteNavigationController', {
 
 	// Initialization of the Container - add a button
 	// The NavigationView itself doesn't seem to allow for this type of customization
-	onActivateNavigationView: function(navView) {
+	onInitializeNavigationView: function(navView) {
 	    var navBar = Ext.ComponentQuery.query('noteNavigationView')[0].getNavigationBar();
 	    navBar.add({
 		        xtype: 'button',

@@ -31,8 +31,13 @@ Ext.define('PO.view.NoteDetail', {
 				    name: 'id'
                                 }, {
                                     xtype: 'hiddenfield',
+				    name: 'note_status_id',
+				    value: 11400
+                                }, {
+                                    xtype: 'hiddenfield',
 				    name: 'object_id',
-                                    label: 'Object ID'
+				    label: 'Object ID',
+				    value: 0		// Magic value: 0 is the ID of the "guest" object
                                 }
                             ]
                         }, {
@@ -53,8 +58,13 @@ Ext.define('PO.view.NoteDetail', {
 				    rec = Ext.ModelManager.create(values, 'PO.model.Note');
 				}
 
+				// Save the model - generates PUT or POST to REST backend
 				rec.set(values);
 				rec.save();
+				
+				// reload the store
+				var noteStore = Ext.data.StoreManager.lookup('NoteStore');
+				noteStore.load();
 
 				// Return to the list of notes page
 				var navView = this.up('noteNavigationView');

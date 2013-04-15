@@ -5,6 +5,7 @@ Ext.define('PO.model.Note', {
 		'id',
 		'note',
 		'object_id',
+		'note_status_id',
 		'note_type_id'
 	],
 	proxy: {

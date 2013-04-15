@@ -1,35 +1,19 @@
 Ext.application({
     name: 'PO',
-    requires: [
-	'Ext.MessageBox',
-	'Ext.data.Store',
-	'Ext.List',
-	'Ext.plugin.PullRefresh'
-    ],
 
     models: [
-	'Category',
-	'Note',
-	'User'
+	'Note'
     ],
     stores: [
-	'NoteStore', 
-	'UserStore', 
-	'ContactStore',
-	'CategoryNoteTypeStore'
+	'NoteStore'
     ],
     views: [
 	'SplashPage', 
-	'UserList', 
-	'UserDetail', 
-	'BlogList', 
-	'NoteList', 
-	'UserNavigationView', 
-	'NoteNavigationView',
-	'ContactPage',
+	'NoteDetail',
+	'NoteList',
+	'NoteNavigationView'
     ],
     controllers: [
-	'UserNavigationController', 
 	'NoteNavigationController'
     ],
 
@@ -39,11 +23,9 @@ Ext.application({
 		fullscreen: true,
 		tabBarPosition: 'bottom',
 		items: [
+			// The application consists of two pages only:
 			{xtype: 'splashPage'}, 
-//			{xtype: 'blogList'}, 
-			{xtype: 'noteNavigationView'}, 
-			{xtype: 'userNavigationView'}, 
-			{xtype: 'contactPage'}
+			{xtype: 'noteNavigationView'}
 		]
 	});
     }
