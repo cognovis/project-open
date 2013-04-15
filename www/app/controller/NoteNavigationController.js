@@ -26,7 +26,8 @@ Ext.define('PO.controller.NoteNavigationController', {
 			handler: function() {
 			    console.log('NoteListController: New Note button pressed');
 			    navView.push({
-				    xtype: 'noteDetail'
+				    xtype: 'noteDetail',
+				    title: 'New Note'
 			    });
 		    }
 	    });
