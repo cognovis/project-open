@@ -6,8 +6,7 @@ Ext.define('PO.view.NoteDetail', {
                     layout: 'vbox',
                     items: [{
                             xtype: 'fieldset',
-                            title: 'Note Fields',
-                            instructions: '(email address is optional)',
+                            title: 'Edit Note',
                             items: [{
                                     xtype: 'selectfield',
 				    name: 'note_type_id',

@@ -8,9 +8,14 @@ Ext.define('PO.view.SplashPage', {
 		scrollable: 'vertical',
 		//	    styleHtmlContent: true,
 		html: [
-			'<center><img src="/senchatouch-notes/resources/startup/320x460.png"/></center>',
-			'<h1>]project-open[ Sencha Touch Notes</h1>',
-			"<p>This demo shows how to build Sencha Touch applications using ]po[."
+			'<br>&nbsp;<br>&nbsp;<br>',
+			'<center>',
+			'<img src="/senchatouch-notes/resources/startup/project_open.250x91.gif"/>',
+			'<br>&nbsp;<br>',
+			'<h1>]po[ Sencha Touch Notes</h1>',
+			'<br>&nbsp;<br>',
+			'<p>This demo shows how to list, update and create notes objects using a ]po[ backend.',
+			'</center>',
 		].join("")
 
 	}

@@ -17,6 +17,10 @@ Ext.application({
 	'NoteNavigationController'
     ],
 
+    viewport: {
+	autoMaximize: true
+    },
+
     // Main function: Load the various panels
     launch: function() {
 	Ext.create("Ext.tab.Panel", {

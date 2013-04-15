@@ -39,7 +39,6 @@ Ext.define('PO.controller.NoteNavigationController', {
 	    var view = this.getNoteNavigationView();
 	    view.push({
 		xtype: 'noteDetail',
-		title: record.data.note,
 		record: record
 	    });
 	}
