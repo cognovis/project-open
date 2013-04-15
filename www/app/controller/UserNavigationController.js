@@ -17,6 +17,7 @@ Ext.define('PO.controller.UserNavigationController', {
 	    var view = this.getUserNavigationView();
 	    view.push({
 		xtype: 'userDetail',
+		title: record.fullName(),
 		data: record.data
 	    });
 	}

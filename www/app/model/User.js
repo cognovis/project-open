@@ -26,6 +26,12 @@ Ext.define('PO.model.User', {
 			type:	'json'			// Allow Sencha to write ticket changes
 		}
 	}
+    },
+
+    fullName: function() {
+	    var d = this.data;
+	    return d.first_names + ' ' + d.last_name;
     }
+
 });
 
