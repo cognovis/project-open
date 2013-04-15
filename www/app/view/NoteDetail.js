@@ -9,17 +9,30 @@ Ext.define('PO.view.NoteDetail', {
                             title: 'Note Fields',
                             instructions: '(email address is optional)',
                             items: [{
-                                    xtype: 'textfield',
-				    name: 'first_names',
-                                    label: 'Name'
-                                }, {
-                                    xtype: 'emailfield',
-				    name: 'email',
-                                    label: 'Email'
+                                    xtype: 'selectfield',
+				    name: 'note_type_id',
+				    label: 'Type',
+				    options: [
+					      {text: 'Address', value: '11500'},
+					      {text: 'Email', value: '11502'},
+					      {text: 'Http', value: '11504'},
+					      {text: 'Ftp', value: '11506'},
+					      {text: 'Phone', value: '11508'},
+					      {text: 'Fax', value: '11510'},
+					      {text: 'Mobile', value: '11512'},
+					      {text: 'Other', value: '11514'}
+				    ]
                                 }, {
                                     xtype: 'textareafield',
-				    name: 'message',
-                                    label: 'Message'
+				    name: 'note',
+                                    label: 'Note'
+                                }, {
+                                    xtype: 'hiddenfield',
+				    name: 'id'
+                                }, {
+                                    xtype: 'hiddenfield',
+				    name: 'object_id',
+                                    label: 'Object ID'
                                 }
                             ]
                         }, {
@@ -27,21 +40,18 @@ Ext.define('PO.view.NoteDetail', {
                             text: 'Save',
                             ui: 'confirm',
                             handler: function() {
-			         // var form = Ext.getCmp('contactFormPanel').getValues();
-			         var form = this.up('formpanel');
-				 form.submit({
-					 method: 'GET',
-					 url: 'http://www.project-open.net/intranet-crm-tracking/contact',
-					 success: function() {
-					     alert('form submitted successfully!');
-					 },
-					 failure: function() {
-					     alert('form submission failed');
-					 }
-				     });
+			    	// Save the form values to the record.
+				// The record was set by the NoteNavigationController
+			        var form = this.up('formpanel');
+				var rec = form.getRecord();
+				rec.set(form.getValues());
+				rec.save();
+
+				// Return to the list of notes page
+				var navView = this.up('noteNavigationView');
+				navView.pop();
                             }
                         }
                     ]
-	}
+		}
 });
-

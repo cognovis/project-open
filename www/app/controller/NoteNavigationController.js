@@ -13,12 +13,11 @@ Ext.define('PO.controller.NoteNavigationController', {
 	},
 
 	showDetail: function(list, record) { 
-	    console.log('disclose details'); 
 	    var view = this.getNoteNavigationView();
 	    view.push({
 		xtype: 'noteDetail',
 		title: record.data.note,
-		data: record.data
+		record: record
 	    });
 	}
 });

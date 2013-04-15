@@ -8,13 +8,15 @@ Ext.application({
     ],
 
     models: [
+	'Category',
 	'Note',
 	'User'
     ],
     stores: [
 	'NoteStore', 
 	'UserStore', 
-	'ContactStore'
+	'ContactStore',
+	'CategoryNoteTypeStore'
     ],
     views: [
 	'SplashPage', 
@@ -30,6 +32,7 @@ Ext.application({
 	'UserNavigationController', 
 	'NoteNavigationController', 
 	'NoteListController'
+	//	'NoteDetailController'
     ],
 
     // Main function: Load the various panels
