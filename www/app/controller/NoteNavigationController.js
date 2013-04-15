@@ -6,12 +6,35 @@ Ext.define('PO.controller.NoteNavigationController', {
 	    	  noteNavigationView: 'noteNavigationView'
 	    },
 	    control: {
+		'noteNavigationView': {
+		    activate: 'onActivateNavigationView'
+		},
 		'noteList': {
 		    disclose: 'showDetail'
 		}
 	    }
 	},
 
+	// Initialization of the Container - add a button
+	// The NavigationView itself doesn't seem to allow for this type of customization
+	onActivateNavigationView: function(navView) {
+	    var navBar = Ext.ComponentQuery.query('noteNavigationView')[0].getNavigationBar();
+	    navBar.add({
+		        xtype: 'button',
+			text: 'New Note',
+			align: 'right',
+			handler: function() {
+			    console.log('NoteListController: New Note button pressed');
+			    navView.push({
+				    xtype: 'noteDetail'
+			    });
+		    }
+	    });
+	},
+
+	// "Disclose" Event - somebody pressed on the -> button at the list
+	// Create a new instance of the noteDetail page and push on the top
+	// of the stack
 	showDetail: function(list, record) { 
 	    var view = this.getNoteNavigationView();
 	    view.push({
@@ -20,5 +43,6 @@ Ext.define('PO.controller.NoteNavigationController', {
 		record: record
 	    });
 	}
+
 });
 

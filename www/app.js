@@ -30,9 +30,7 @@ Ext.application({
     ],
     controllers: [
 	'UserNavigationController', 
-	'NoteNavigationController', 
-	'NoteListController'
-	//	'NoteDetailController'
+	'NoteNavigationController'
     ],
 
     // Main function: Load the various panels

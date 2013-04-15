@@ -3,7 +3,7 @@ Ext.define('PO.store.NoteStore', {
 	storeId: 'noteStore',
 	config: {
 	    model: 'PO.model.Note',
-	    autoLoad: false,
+	    autoLoad: true,
 	    sorters: 'last_name',
 
 	    grouper: {

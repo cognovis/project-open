@@ -40,11 +40,20 @@ Ext.define('PO.view.NoteDetail', {
                             text: 'Save',
                             ui: 'confirm',
                             handler: function() {
+			        console.log('NoteDetail: Button "Save" pressed:');
+
 			    	// Save the form values to the record.
 				// The record was set by the NoteNavigationController
 			        var form = this.up('formpanel');
+				var values = form.getValues();
 				var rec = form.getRecord();
-				rec.set(form.getValues());
+
+				// Did we create a completely new note?
+				if (typeof rec === "undefined" || rec == null) {
+				    rec = Ext.ModelManager.create(values, 'PO.model.Note');
+				}
+
+				rec.set(values);
 				rec.save();
 
 				// Return to the list of notes page

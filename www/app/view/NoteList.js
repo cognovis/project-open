@@ -4,7 +4,6 @@ Ext.define('PO.view.NoteList', {
 	requires: ['PO.store.NoteStore'],
 
 	config: {
-	    
 		title: 'NoteList',
 		iconCls: 'star',
 		itemTpl: '<div class="contact2">{note}</div>',
@@ -13,8 +12,6 @@ Ext.define('PO.view.NoteList', {
 		indexBar: true,
 		store: 'NoteStore',
 		onItemDisclosure: true
-
 	}
-
-    });
+});
 
