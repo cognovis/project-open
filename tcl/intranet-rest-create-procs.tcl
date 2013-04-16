@@ -1287,6 +1287,88 @@ ad_proc -private im_rest_post_object_im_hour {
 }
 
 
+
+# --------------------------------------------------------
+# im_note
+#
+
+ad_proc -private im_rest_post_object_type_im_note {
+    { -format "xml" }
+    { -user_id 0 }
+    { -rest_otype "" }
+    { -rest_oid "" }
+    { -content "" }
+    { -debug 0 }
+} {
+    Handler for POST calls on particular im_note objects.
+    im_note is not a real object type and performs a "delete" 
+    operation specifying hours=0 or hours="".
+} {
+    ns_log Notice "im_rest_post_object_im_note: rest_oid=$rest_oid"
+
+    set creation_user $user_id
+    set creation_ip [ad_conn peeraddr]
+
+
+    # Extract a key-value list of variables from XML or JSON POST request
+    array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
+    ns_log Notice "im_rest_post_object_type_$rest_otype: hash_array=[array get hash_array]"
+
+    # write hash values as local variables
+    foreach key [array names hash_array] {
+	set value $hash_array($key)
+	ns_log Notice "im_rest_post_object_type_$rest_otype: key=$key, value=$value"
+	set $key $value
+    }
+
+    # Check that all required variables are there
+    set required_vars {note note_status_id note_type_id object_id}
+    foreach var $required_vars {
+	if {![info exists $var]} { 
+	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
+	}
+    }
+
+    # Check for duplicate
+    set dup_sql "
+	select	count(*)
+	from	im_notes
+	where	note = :note and
+		object_id = :object_id
+    "
+    if {[db_string duplicates $dup_sql]} {
+	return [im_rest_error -format $format -http_status 406 -message "Duplicate $rest_otype_pretty: The note already exists for the specified object."]
+    }
+
+    if {[catch {
+	set rest_oid [db_string new_im_note "
+		select im_note__new (
+			null,			-- note_id
+			:rest_otype,		-- object_type
+			now(),			-- creation_date
+			:creation_user,
+			:creation_ip,
+			null,			-- context_id
+
+			:note,
+			:object_id,
+			:note_type_id,
+			:note_status_id
+		)
+	"]
+    } err_msg]} {
+	return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+    }
+   
+    im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -status_id $note_status_id -type_id $note_type_id -action after_create
+
+    set hash_array(rest_oid) $rest_oid
+    set hash_array(rel_id) $rest_oid
+    return [array get hash_array]
+}
+
+
+
 # --------------------------------------------------------
 # Membership Relationshiop
 # --------------------------------------------------------
