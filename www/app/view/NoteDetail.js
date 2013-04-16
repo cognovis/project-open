@@ -63,7 +63,7 @@ Ext.define('PO.view.NoteDetail', {
 				
 				// reload the store
 				var noteStore = Ext.data.StoreManager.lookup('NoteStore');
-				noteStore.load();
+				noteStore.add(rec);
 
 				// Return to the list of notes page
 				var navView = this.up('noteNavigationView');
