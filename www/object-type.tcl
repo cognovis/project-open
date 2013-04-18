@@ -192,4 +192,18 @@ db_multirow extension_tables extension_tables_query $extension_tables_query
 
 
 
-ad_return_template
+
+
+# ------------------------------------------------------------------
+# Left Navigation Bar
+# ------------------------------------------------------------------
+
+set left_navbar_html "
+            <div class=\"filter-block\">
+                <div class=\"filter-title\">
+                    [lang::message::lookup "" intranet-dynfield.DynField_Admin "DynField Admin"]
+                </div>
+		[im_dynfield::left_navbar]
+            </div>
+            <hr/>
+"
