@@ -3,10 +3,11 @@
   # $Workfile: layout-position.adp $ $Revision$ $Date$
 %>
 <master src="master">
-
-<h1>@page_url@ Layout for @object_type@</h1>
 <property name="title">@title@</property>
 <property name="context">@context;noquote@</property>
+<property name="left_navbar">@left_navbar_html;noquote@</property>
+
+<h1>@page_url@ Layout for @object_type@</h1>
 
 <p>
 <listtemplate name="attrib_list"></listtemplate>

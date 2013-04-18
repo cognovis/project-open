@@ -2,6 +2,7 @@
 <property name="title">@page_title@</property>
 <property name="context">#intranet-core.context#</property>
 <property name="main_navbar_label">admin</property>
+<property name="left_navbar">@left_navbar_html;noquote@</property>
 
 <if @missing_dynfield_object_types@ ne "">
 <p><font color=red>

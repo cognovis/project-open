@@ -130,3 +130,20 @@ ad_form -extend -name widget -on_request {
 	ad_script_abort
 }
 
+
+
+
+
+# ------------------------------------------------------------------
+# Left Navigation Bar
+# ------------------------------------------------------------------
+
+set left_navbar_html "
+            <div class=\"filter-block\">
+                <div class=\"filter-title\">
+                    [lang::message::lookup "" intranet-dynfield.DynField_Admin "DynField Admin"]
+                </div>
+		[im_dynfield::left_navbar]
+            </div>
+            <hr/>
+"

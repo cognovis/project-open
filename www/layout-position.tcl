@@ -191,3 +191,19 @@ db_multirow -extend { edit_url delete_url } attrib_layout get_attributes "
 	set delete_url [export_vars -base "layout-position-del" { object_type page_url attribute_id return_url }]
 }
 
+
+
+
+# ------------------------------------------------------------------
+# Left Navigation Bar
+# ------------------------------------------------------------------
+
+set left_navbar_html "
+            <div class=\"filter-block\">
+                <div class=\"filter-title\">
+                    [lang::message::lookup "" intranet-dynfield.DynField_Admin "DynField Admin"]
+                </div>
+		[im_dynfield::left_navbar]
+            </div>
+            <hr/>
+"
