@@ -1,60 +1,52 @@
 simplify_gui;0;Simplify Your System;;;Simplify your system and eliminate all the functionality that you don't need.
-guide_help;1;About this Administration Guide;;;"Every entry in this administration guide consists of four section: 1) a checkbox for marking an item as done, 2) a help (?) icon that links to a help page, 3) a title that links to the configuration page and 4) a short description. In order to remove this line please click on the checkbox at the left and click on 'Action' besie the 'Mark as done' select."
+guide_help;1;About this Administration Guide;;;Every entry in this administration guide consists of four section: 1) a checkbox for marking an item as done, 2) a help (?) icon that links to a help page, 3) a title that links to the configuration page and 4) a short description. In order to remove this line please click on the checkbox at the left and click on 'Action' beside the 'Mark as done' select.
 main_menu;1;Simplify Main Menu;/intranet/admin/menus/index?top_menu_depth=1&top_menu_id=$main_menu_id;menu_configuration;You can simplify the main menu bar by setting permissions for specific user groups or completely disabling tabs.
-home_page_portlets;1;Simplify Home Page;/intranet/admin/components/index?component_page=/intranet/index;configuration_portlets;"You can simplify the 'Home' page by disabling portlets that you don't need. Keep the Home page in one browser windows, while enabling/disabling portlets in a second browser page. Press the browser 'Reload' button or F5 in order"
-project_page_portlets;1;Simplify Project Page;/intranet/admin/components/index?component_page=/intranet/projects/view;configuration_portlets;"You can simplify the 'Project' page by disabling portlets that you don't need."
-company_page_portlets;1;Simplify Company Page;/intranet/admin/components/index?component_page=/intranet/companies/view;configuration_portlets;"You can simplify the 'Company' page by disabling portlets that you don't need."
-user_page_portlets;1;Simplify User Page;/intranet/admin/components/index?component_page=/intranet/users/view;configuration_portlets;"You can simplify the 'User' page by disabling portlets that you don't need."
-simplify_gui_backup;1;Perform a Backup;/intranet/admin/backup/index;;Please perform a backup after going through the simplification setps.
+home_page_portlets;1;Simplify Home Page;/intranet/admin/components/index?component_page=/intranet/index;configuration_gui;"You can simplify the ""Home"" page by disabling portlets that you don't need. Keep the Home page in one browser windows, while enabling/disabling portlets in a second browser page. Press the browser ""Reload"" button or F5 in order"
+project_page_portlets;1;Simplify Project Page;/intranet/admin/components/index?component_page=/intranet/projects/view;configuration_gui;"You can simplify the ""Project"" page by disabling portlets that you don't need."
+company_page_portlets;1;Simplify Company Page;/intranet/admin/components/index?component_page=/intranet/companies/view;configuration_gui;"You can simplify the ""Company"" page by disabling portlets that you don't need."
+user_page_portlets;1;Simplify User Page;/intranet/admin/components/index?component_page=/intranet/users/view;configuration_gui;"You can simplify the ""User"" page by disabling portlets that you don't need."
+simplify_gui_backup;1;Perform a Backup;/intranet/admin/backup/index;page_intranet_admin_backup_index;Please perform a backup after going through the simplification setps.
 
 
 basic_configuration;0;Basic Configuration;;;The following basic steps are required on nearly all systems.
-system_logo_url;1;Logo & System Name;/shared/parameters?package_id=$package_intranet_core;configuration_logo_url;"Please modify the SystemLogo and SystemLogoLink parameters in order to adap the system to your company. The default is SystemLogo=/logo.gif, which will show the 'logo.gif' file located in /web/projop/www/ (Linux) or C:\project-open\servers\projop\www\ (Windows)."
-system_emails;1;System Emails;/intranet/admin/parameters/index;;The default system comes with a number of emails set to a xxx@tigerpond.com default. Please replace these values with your correct emails.
-exchange_rates;1;Update Exchange Rates;/intranet-exchange-rate/index;configuration_exchange_rates;$po needs exchange rates in order to calculate consolidated profit & loss figures per project and in financial reports. You can load exchange rates from a $po server or define rates yourself.
-rename_ccodificador;1;"Rename User 'Carlos Codificador'";/intranet/users/view?user_id=8892;;"This user is one of the two predefined system administrators in the system. Please edit name and email to an administration user in your organization. As an alternative you can delete the user if you remove him from the ']po[ Admins' group."
-rename_sysadmin;1;"Rename User 'System Administrator'";/intranet/users/view?user_id=624;;"The 'System Administrator' is the user that owns all important system objects. You can't delete this user, but you can edit its name and email. Just don't lock yourself out of the system…"
-delete_demodata;1;Delete Demo Data;/intranet/admin/cleanup-demo/index;configuration_cleanup_demo_data;"Delete the 'Tigerpond' sample company including it's sample projects, users and companies."
-cost_centers;1;Configure Departments and Cost Centers;/intranet-cost/cost-centers/index;configuration_cost_centers;"Define your department and cost center hierarchy. Please read about the 'Cost Center Code' in the help section."
-login_page_customization;1;Login Page Customization;/;configuration_first_page;You can modify the $po login page by manually editing the file /web/projop/www/index.adp or C:\project-open\servers\projop\www\index.adp. This ADP page is plain HTML, so it should be easy to modify.
+system_logo_url;1;Logo & System Name;/shared/parameters?package_id=$package_intranet_core;configuration_gui;Please modify the SystemLogo and SystemLogoLink parameters in Admin -> Parameters -> intranet-core in order to modify the system logo.
+system_emails;1;Notification Emails;/intranet/admin/parameters/index;;The default system comes with a number of emails set to a xxx@tigerpond.com in Admin -> Parameters. Please replace these values with your correct emails.
+exchange_rates;1;Update Exchange Rates;/intranet-exchange-rate/index;page_intranet_exchange_rate_index;$po needs exchange rates in order to calculate consolidated profit & loss figures per project and in financial reports. You can load exchange rates from a $po server or define rates yourself.
+delete_demodata;1;Delete Demo Data;/intranet/admin/cleanup-demo/index;;"Delete the ""Tigerpond"" sample company including it's sample projects, users and companies."
+internal_company;1;Rename 'Internal' Company;/intranet/companies/view?company_id=$internal_company_id;configuration_internal_company;The 'internal' company represents your own organization in financial transactions. Please adapt the name and data of the 'internal' company to your organization, but DON'T modify the 'internal' Company Path. Otherwise you will get errors in all of your financial system.
+rename_sysadmin;1;Rename User 'System Administrator';/intranet/users/view?user_id=624;;"The ""System Administrator"" account owns all important system objects and can not be deleted. However, you can edit the name and email of this account to reflect a user in your organization or yourself. Just don't lock yourself out of the system…"
+rename_ccodificador;1;Rename User 'Carlos Codificador';/intranet/users/view?user_id=8892;;"This user is one of the two predefined system administrators in the system. Please edit name and email to an administration user in your organization. As an alternative you can delete the user if you remove him from the ""]po[ Admins"" group."
+login_page_customization;1;Login Page Customization;;faq_installation#edit_login_screen;You can modify the $po login page by manually editing the file /web/projop/www/index.adp or C:\project-open\servers\projop\www\index.adp. This ADP page is plain HTML, so it should be easy to modify.
 
 
-import_master_data;0;Import Master Data;;;The following basic steps are required on nearly all systems.
-import_projects;1;Import Projects;/intranet-csv-import/index?object_type=im_project;configuration_csv_import;Import a list of projects into $po. You can use the Projects -> Export Projects CSV function in order to create sample input.
-import_companies;1;Import Companies;/intranet-csv-import/index?object_type=im_company;configuration_csv_import;Import a list of companies into $po. You can use the Companies -> Export Commpanies CSV function in order to create sample input.
-import_users;1;Import Users;/intranet-csv-import/index?object_type=person;configuration_csv_import;Import a list of users into $po. You can use Users -> Export Users CSV in order to create sample input. Please note that the LDAP Import below is an alternative for importing users.
-ldap;1;Active Directory LDAP Integration;/intranet-sysconfig/ldap/index;configuration_ldap;Set up an integration with an Active Directory server in order to import users and user permissions.
-
-
-
-configure_categories;0;Configure Categories;;configuration_categories;'"Categories' define the types and states of all important $po objects. In order to disable categories please click the t=true or f=false letter in the 'En'=enabled column."
+configure_categories;0;Configure Categories;;configuration_categories;"""Categories"" define the types and states of all important $po objects. In order to disable categories please click the t=true or f=false letter in the ""En""=enabled column."
 project_status;1;Define Project Lifecycle States;/intranet/admin/categories/index?select_category_type=Intranet+Project+Status;category_intranet_project_status;Determine the life cycle of projects from creation to retirement.
 project_type;1;Define Project Types;/intranet/admin/categories/index?select_category_type=Intranet+Project+Type;category_intranet_project_type;Define which types of projects are useful for your organization. Please see the help section for a detailed description of the various project types and their add-on functionality.
 company_status;1;Define Company Lifecycle States;/intranet/admin/categories/index?select_category_type=Intranet+Company+Status;category_intranet_company_status;Determine the life cycle of companies from creation to retirement.
 company_type;1;Define Company Types;/intranet/admin/categories/index?select_category_type=Intranet+Company+Type;category_intranet_company_type;Define which types of companies are useful for your organization. Please see the help section for a detailed description of the various company types and their role in the system.
-other_categories;1;Review Other Categories;/intranet/admin/categories/index;configuration_categories;"Review other categories - there are many more category types that influence the behaviour of $po. Company Types have a 'Context Help' function associated."
+other_categories;1;Review Other Categories;/intranet/admin/categories/index;list_categories;"Review other categories - there are many more category types that influence the behaviour of $po. Please take a few minutes and have a look yourself. Many (but not all) category types have a ""Context Help"" function associated with them."
 
 
 
-dynfield_configuration;0;Dynfield Configuration;;;Dynfields allow you to extend $po objects with customer specific fields. You might want to contract training or consulting services for advanced configurations.
-dynfield_widget_gallery;1;Explore DynField Widgets;/intranet-dynfield/widget-examples;configuration_dynfield;"Please explore the collection of predefined examples of dynfield 'widgets' (entry fields and value range)."
-project_dynfields;1;Project Dynamic Fields;/intranet-dynfield/object-type?object_type=im_project;configuration_dynfield;Allows you to define additional attributes for projects.
-company_dynfields;1;Company Dynamic Fields;/intranet-dynfield/object-type?object_type=im_company;configuration_dynfield;Allows you to define additional attributes for companies (customers and providers)
-user_dynfields;1;User Dynamic Fields;/intranet-dynfield/object-type?object_type=person;configuration_dynfield;Allows you to define additional attributes for users.
-dynfield_widgets;1;Define Custom Widgets;/intranet-dynfield/widgets;configuration_dynfield;You can define new widgets yourself, if you are IT savvy. Please start off defining new widgets by using an existing widget as a template.
+dynfield_configuration;0;Dynfield Configuration;;how_to_create_dynfields;Dynfields allow you to extend $po with customer specific fields. You might want to contract training or consulting services for advanced configurations.
+dynfield_widget_gallery;1;Explore DynField Widgets;/intranet-dynfield/widget-examples;how_to_create_dynfields;"Please explore the collection of predefined examples of dynfield ""widgets"" (entry fields and value range)."
+project_dynfields;1;Project Dynamic Fields;/intranet-dynfield/object-type?object_type=im_project;how_to_create_dynfields;Allows you to define additional attributes for projects.
+company_dynfields;1;Company Dynamic Fields;/intranet-dynfield/object-type?object_type=im_company;how_to_create_dynfields;Allows you to define additional attributes for companies (customers and providers)
+user_dynfields;1;User Dynamic Fields;/intranet-dynfield/object-type?object_type=person;how_to_create_dynfields;Allows you to define additional attributes for users.
+dynfield_widgets;1;Define Custom Widgets;/intranet-dynfield/widgets;how_to_create_widgets;You can define new widgets yourself, if you are IT savvy. Please start off defining new widgets by using an existing widget as a template.
 
 
 
 financial_configuration;0;Financial Configuration;;;You only need this section if you are going to use $po for invoicing and other financial operations.
-default_currency;1;System Default Currency;/shared/parameters?package_id=$package_intranet_cost;configuration_default_currency;"Please modify the parameter 'DefaultCurrency' in order to set the system's default (EUR, USD, …) that is used across the financial system."
-materials;1;Review Materials (Service Types);/intranet-material/index;configuration_materials;Materials are the key to determine the price of services billed to a customer. Here you can define your organization's services.
-invoice_templates;1;Invoice Templates;/intranet/admin/templates/index;configuration_templates;Allows you to update and modify templates used to format invoices and other financial documents for your organization. This is important if you want to send out invoices to your customers directly from $po
+default_currency;1;System Default Currency;/shared/parameters?package_id=$package_intranet_cost;configuration_language_date_currency#set_currency;"Please modify the parameter ""DefaultCurrency"" in order to set the system's default (EUR, USD, …) that is used across the financial system."
+materials;1;Review Materials (Service Types);/intranet-material/index;page_intranet_material_index;Materials are the key to determine the price of services billed to a customer. Here you can define your organization's services.
+invoice_templates;1;Invoice Templates;/intranet/admin/templates/index;configuration_financial_documents;Allows you to update and modify templates used to format invoices and other financial documents for your organization. This is important if you want to send out invoices to your customers directly from $po
 
 
 
 advanced_permissions;0;Advanced Permissions;;;$po includes a very detailed permission system that is suitable for many organizations without the need for customization. You might want to contract training or consulting services for advanced configurations.
-other_profiles;1;"Review 'Privilege' Permissions";/intranet/admin/profiles/index;configuration_profiles;"Please review the 'privileges' (i.e. transaction permissions). These permissions allow you to fine-tune permissions of different user groups."
-user_matrix;1;"Review 'User Matrix' Permissions";/intranet/admin/user_matrix/index;configuration_user_matrix;Delegate user administration or define visibility between different user groups: This matix defines who (on the top horizontal bar) is allowed to V=view, R=read, W=write or A=admin) other users. 
+other_profiles;1;"Review ""Privilege"" Permissions";/intranet/admin/profiles/index;configuration_profiles;"Please review the ""privileges"" (i.e. transaction permissions). These permissions allow you to fine-tune permissions of different user groups."
+user_matrix;1;"Review ""User Matrix"" Permissions";/intranet/admin/user_matrix/index;configuration_user_matrix;Delegate user administration or define visibility between different user groups: This matix defines who (on the top horizontal bar) is allowed to V=view, R=read, W=write or A=admin) other users. 
 other_parameters;1;Review Other Parameters;/intranet/admin/parameters/index;configuration_parameters;Review other parameters - these parameters define the specific variants of processes in $po. There is an explanation for every parameter.
 other_portlets;1;Portlet Manager;/intranet/admin/components/index;configuration_portlets;Review all remaining portlets in the system in order to simplify the system or to set permissions on portlets.
 
@@ -63,7 +55,7 @@ other_portlets;1;Portlet Manager;/intranet/admin/components/index;configuration_
 
 
 
-package_manager;1;Package Manager;/acs-admin/apm/index;configuration_package_manager;"Install and update packages: This function is also available via the 'APM' menu on the Developer Support bar at the very top."
+package_manager;1;Package Manager;/acs-admin/apm/index;configuration_package_manager;"Install and update packages: This function is also available via the ""APM"" menu on the Developer Support bar at the very top."
 rest_api;1;REST API;/intranet-rest/index;configuration_rest;Review the permissions for the REST Web-services API in order to grant external systems access to $po objects.
 localization;1;Review GUI Translation;/acs-lang/admin/index;configuration_l10n;You can modify the translation of GUI strings to your preferences.
 
@@ -72,10 +64,28 @@ localization;1;Review GUI Translation;/acs-lang/admin/index;configuration_l10n;Y
 
 
 
-project_list_dynview;1;Project List Columns;/intranet/admin/views/new?view_id=20;configuration_dynview;"Review the columns in the 'Projects' page. You can add or modify columns, if you have basic programming knowledge."
-company_list_dynview;1;Company List Columns;/intranet/admin/views/new?view_id=1;configuration_dynview;"Review the columns in the 'Companies' page. You can add or modify columns, if you have basic programming knowledge."
-user_list_dynview;1;User List Columns;/intranet/admin/views/new?view_id=10;configuration_dynview;"Review the columns in the 'Users' page. You can add or modify columns, if you have basic programming knowledge."
+project_list_dynview;1;Project List Columns;/intranet/admin/views/new?view_id=20;configuration_dynview;"Review the columns in the ""Projects"" page. You can add or modify columns, if you have basic programming knowledge."
+company_list_dynview;1;Company List Columns;/intranet/admin/views/new?view_id=1;configuration_dynview;"Review the columns in the ""Companies"" page. You can add or modify columns, if you have basic programming knowledge."
+user_list_dynview;1;User List Columns;/intranet/admin/views/new?view_id=10;configuration_dynview;"Review the columns in the ""Users"" page. You can add or modify columns, if you have basic programming knowledge."
 
 user_exits;1;User Exits;/intranet/admin/user_exits/index;configuration_user_exits;Allows you to define customized action that are executed every time that you create or modify an object in $po. For example, you could create file storage folders for new projects, or set up new LDAP accounts for newly created users.
 
 workflows;1;Dynamic Workflows;/acs-workflow/admin/index;configuration_workflow;Allows you to define complex workflows that are executed every time you create a new object.
+
+
+
+
+cost_centers;1;Configure Departments and Cost Centers;/intranet-cost/cost-centers/index;configuration_cost_centers;"Define your department and cost center hierarchy. Please read about the ""Cost Center Code"" in the help section."
+
+
+
+
+
+
+
+
+import_master_data;0;Import Master Data;;;You will need to load master data (users, companies, …) into your system before users can actually start to use the system.
+import_projects;1;Import Projects;/intranet-csv-import/index?object_type=im_project;configuration_csv_import;Import a list of projects into $po. You can use the Projects -> Export Projects CSV function in order to create sample input.
+import_companies;1;Import Companies;/intranet-csv-import/index?object_type=im_company;configuration_csv_import;Import a list of companies into $po. You can use the Companies -> Export Commpanies CSV function in order to create sample input.
+import_users;1;Import Users;/intranet-csv-import/index?object_type=person;configuration_csv_import;Import a list of users into $po. You can use Users -> Export Users CSV in order to create sample input. Please note that the LDAP Import below is an alternative for importing users.
+ldap;1;Active Directory LDAP Integration;/intranet-sysconfig/ldap/index;configuration_ldap;Set up an integration with an Active Directory server in order to import users and user permissions.

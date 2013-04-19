@@ -40,19 +40,30 @@ if {"" != $action_submit2} { set action $action2 }
 # 
 # ---------------------------------------------------------------
 
-# Get the old list of values
-set items_done [parameter::get_from_package_key -package_key "intranet-sysconfig" -parameter "AdminGuideItemsDone" -default ""]
+switch $action {
+    reset {
+	# Reset the parameter to an empty value
+	parameter::set_from_package_key -package_key "intranet-sysconfig" -parameter "AdminGuideItemsDone" -value ""
+    }
+    mark_as_done {
+	# Get the old list of values
+	set items_done [parameter::get_from_package_key -package_key "intranet-sysconfig" -parameter "AdminGuideItemsDone" -default ""]
+	
+	# append and remove duplicates
+	foreach i $item {
+	    lappend items_done $i
+	}
+	
+	set items_done [lsort -unique $items_done]
+	
+	# Save the updated list of values
+	parameter::set_from_package_key -package_key "intranet-sysconfig" -parameter "AdminGuideItemsDone" -value $items_done
+    }
 
-# append and remove duplicates
-foreach i $item {
-    lappend items_done $i
+    default {
+	ad_return_complaint 1 "Unknown action '$action'"
+    }
 }
-
-set items_done [lsort -unique $items_done]
-
-# Save the updated list of values
-parameter::set_from_package_key -package_key "intranet-sysconfig" -parameter "AdminGuideItemsDone" -value $items_done
-
 
 ad_returnredirect $return_url
 

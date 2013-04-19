@@ -114,6 +114,7 @@ ad_proc -public im_sysconfig_admin_guide {
     set serverroot [join [lrange [split $pageroot "/"] 0 end-1] "/"]
     set package_intranet_core [db_string cost "select min(package_id) from apm_packages where package_key = 'intranet-core'" -default ""]
     set package_intranet_cost [db_string cost "select min(package_id) from apm_packages where package_key = 'intranet-cost'" -default ""]
+    set internal_company_id [db_string internal_company "select min(company_id) from im_companies where company_path = 'internal'" -default ""]
 
     # Get a list of the labesl of already processed items
     set items_done [parameter::get_from_package_key -package_key "intranet-sysconfig" -parameter "AdminGuideItemsDone" -default ""]
@@ -150,15 +151,21 @@ ad_proc -public im_sysconfig_admin_guide {
 	set help [lindex $item 4]
 	set desc [lindex $item 5]
 
+	# Replace quoted (double) quotes by simple quotes
+	regsub -all {"""} $desc "\"" desc
+	regsub -all {""} $desc "\"" desc
+	regsub -all {"""} $title "\"" title
+	regsub -all {""} $title "\"" title
+
 	if {[lsearch $items_done $label] >= 0} {
 	    # The label is in the list of already processed items
 	    continue
 	}
 
-	set link_html "<a href='$link' target='_'><b>$title</b></a>"
+	set link_html "<a href='$link' target='_blank'><b>$title</b></a>"
 	if {"" == $link} { set link_html "<b>$title</b>" }
 
-	set help_html "<a href='$help_site/$help' target='_' >[im_gif help $title]</a>"
+	set help_html "<a href='$help_site/$help' target='_blank' >[im_gif help $title]</a>"
 	if {"" == $help} { set help_html "" }
 
 	if {$indent > 0} {
@@ -210,7 +217,10 @@ ad_proc -public im_sysconfig_admin_guide {
 	<br>
 	<table class=taskboard>	
 	<tr><td colspan=2>
-		<select name=action2><option name=mark_as_done>Mark as done</option></select>
+		<select name=action2>
+			<option value=mark_as_done>Mark as done</option>
+			<option value=reset>Reset to Initial State</option><
+		</select>
 		<input type=submit name=action_submit2 value=Action>
 	</td></tr>
 
