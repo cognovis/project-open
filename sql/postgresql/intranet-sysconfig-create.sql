@@ -156,21 +156,21 @@ SELECT im_component_plugin__new (
 -- Admin step-by-step guide in home page
 --
 
-SELECT im_component_plugin__new (
-        null,                           -- plugin_id
-        'im_component_plugin',		-- object_type
-        now(),                          -- creation_date
-        null,                           -- creation_user
-        null,                           -- creation_ip
-        null,                           -- context_id
-        'Interactive Administration Guide',  	-- plugin_name
-        'intranet-sysconfig',           -- package_name
-        'left',                        -- location
-        '/intranet/index',              -- page_url
-        null,                           -- view_name
-        0,                             -- sort_order
-        'im_sysconfig_admin_guide',
-        'lang::message::lookup "" intranet-sysconfig.Admin_Guide "Administration Guide"'
-);
-
+-- SELECT im_component_plugin__new (
+--         null,                           -- plugin_id
+--         'im_component_plugin',		-- object_type
+--         now(),                          -- creation_date
+--         null,                           -- creation_user
+--         null,                           -- creation_ip
+--         null,                           -- context_id
+--         'Interactive Administration Guide',  	-- plugin_name
+--         'intranet-sysconfig',           -- package_name
+--         'left',                        -- location
+--         '/intranet/index',              -- page_url
+--         null,                           -- view_name
+--         0,                             -- sort_order
+--         'im_sysconfig_admin_guide',
+--         'lang::message::lookup "" intranet-sysconfig.Admin_Guide "Administration Guide"'
+-- );
+-- 
 
