@@ -195,15 +195,14 @@ ad_proc -public im_sysconfig_admin_guide {
 	<tr><td colspan=2>
 		<h2>$po Services</h2>
 	<nobr>
-	<a href='http://www.project-open.com/en/shop/remote-training.html'><img src='/intranet/images/badges/badge_training_services.jpg'></a>
-	<a href='http://www.project-open.com/en/services/project-open-support.html'><img src='/intranet/images/badges/badge_support_services.jpg'></a>
-	<a href='http://www.project-open.com/en/services/project-open-hosting-saas.html'><img src='/intranet/images/badges/badge_hosting_saas_services.jpg'></a>
+	<a href='http://www.project-open.com/en/shop/remote-training.html'><img src='/intranet/images/badges/badge_training_services.jpg' title='\]po\[ Professional Training Services'></a>
+	<a href='http://www.project-open.com/en/services/project-open-support.html'><img src='/intranet/images/badges/badge_support_services.jpg' title='\]po\[ Professional Support Services'></a>
+	<a href='http://www.project-open.com/en/services/project-open-hosting-saas.html'><img src='/intranet/images/badges/badge_hosting_saas_services.jpg' title='\]po\[ Hosting / SaaS'></a>
 	</nobr>
 		<br>&nbsp;<br>
 		$po offers a wide range of professional services in order to 
-		help customers with installation, configuration and operations of $po.<br>
-		For free support please see our <a href='$forum_url'>Open Discussions Forum</a>. Please 
-		search for answers before asking your question.
+		help you with the installation, configuration and operations of $po.
+		For free support please see our <a href='$forum_url' target='_blank'>Open Discussions Forum</a>. 
 		<br><br>
 	</td></tr>
 
