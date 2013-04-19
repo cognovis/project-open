@@ -127,7 +127,7 @@ DECLARE
 	p_risk_id		alias for $1;
 	v_name			varchar;
 BEGIN
-	select	substring(risk_name)
+	select	risk_name
 	into	v_name from im_risks
 	where	risk_id = p_risk_id;
 
