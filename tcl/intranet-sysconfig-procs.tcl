@@ -115,6 +115,7 @@ ad_proc -public im_sysconfig_admin_guide {
     set package_intranet_core [db_string cost "select min(package_id) from apm_packages where package_key = 'intranet-core'" -default ""]
     set package_intranet_cost [db_string cost "select min(package_id) from apm_packages where package_key = 'intranet-cost'" -default ""]
     set internal_company_id [db_string internal_company "select min(company_id) from im_companies where company_path = 'internal'" -default ""]
+    set forum_url "http://sourceforge.net/p/project-open/discussion/295937/"
 
     # Get a list of the labesl of already processed items
     set items_done [parameter::get_from_package_key -package_key "intranet-sysconfig" -parameter "AdminGuideItemsDone" -default ""]
@@ -200,7 +201,9 @@ ad_proc -public im_sysconfig_admin_guide {
 	</nobr>
 		<br>&nbsp;<br>
 		$po offers a wide range of professional services in order to 
-		help customers with installation, configuration and operations of $po.
+		help customers with installation, configuration and operations of $po.<br>
+		For free support please see our <a href='$forum_url'>Open Discussions Forum</a>. Please 
+		search for answers before asking your question.
 		<br><br>
 	</td></tr>
 

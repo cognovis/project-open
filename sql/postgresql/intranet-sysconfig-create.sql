@@ -163,7 +163,7 @@ SELECT im_component_plugin__new (
         null,                           -- creation_user
         null,                           -- creation_ip
         null,                           -- context_id
-        'Administration Guide',  	-- plugin_name
+        'Interactive Administration Guide',  	-- plugin_name
         'intranet-sysconfig',           -- package_name
         'left',                        -- location
         '/intranet/index',              -- page_url
