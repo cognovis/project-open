@@ -96,17 +96,18 @@ db_multirow widgets get_widgets {
 ad_form -name widgets_form -form {} -on_submit {}
 
 
-
 set cnt 0
 template::multirow foreach widgets {
-
-    ns_log Notice "widget-examples: widget_name=$widget_name"
 
 #    if { [string equal $storage_type_id [im_dynfield_storage_type_id_multimap]] } {
 #        append form_element { {options { {"Demo Example One" 1} {"Demo Example Two" 2} {"Demo Example Three" 3} {"Demo Example Four" 4} {"Demo Example Five" 5} {"Demo Example Six" 6} }}}
 #    }
 #    lappend form_element [list "label" "<p><strong>$widget_name</strong></p><p>$pretty_plural</p><p><small>widget: $widget<br>datatype: $acs_datatype<br>parameters: $parameters</small></p>"]
 
+    # There is a bug with the widget:
+    if {"project_parent_options" == $widget_name} { continue }
+
+    ns_log Notice "widget-examples: widget_name=$widget_name"
     im_dynfield::append_attribute_to_form \
 	-widget $widget \
 	-form_id widgets_form \
