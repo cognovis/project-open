@@ -9,7 +9,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-dynfield</auto-mount>
 
-    <version name="4.0.3.5.0" url="http://www.project-open.org/download/apm/intranet-dynfield-4.0.3.5.0.apm">
+    <version name="4.0.3.5.1" url="http://www.project-open.org/download/apm/intranet-dynfield-4.0.3.5.1.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>Allows to add new fields to business objects during system runtime.</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
