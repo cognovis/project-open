@@ -580,7 +580,6 @@ ad_form -extend -name helpdesk_ticket -on_request {
 		where	p.project_id = t.ticket_id and
 			p.project_id = :escalate_from_ticket_id
 	"
-	
 	append ticket_name " (escalated from $copy_from_ticket_name)"
 
 	# Get the fields in the form
@@ -609,6 +608,9 @@ ad_form -extend -name helpdesk_ticket -on_request {
 	    }
 	}
 	db_release_unused_handles
+    } else {
+	# ad_return_complaint 1 [lang::message::lookup "" intranet-helpdesk.TicketNotFound "Ticket not found."]
+	# return 
     }
 
 } -select_query {
@@ -716,12 +718,12 @@ ad_form -extend -name helpdesk_ticket -on_request {
     # Write Audit Trail
     im_project_audit -project_id $ticket_id -action after_update
 
-    notification::new \
-        -type_id [notification::type::get_type_id -short_name ticket_notif] \
-        -object_id $ticket_id \
-        -response_id "" \
-        -notif_subject "Edit: Subject" \
-        -notif_text "Text"
+    # notification::new \
+    #    -type_id [notification::type::get_type_id -short_name ticket_notif] \
+    #    -object_id $ticket_id \
+    #    -response_id "" \
+    #    -notif_subject "Edit: Subject" \
+    #    -notif_text "Text"
 
 } -on_submit {
 
