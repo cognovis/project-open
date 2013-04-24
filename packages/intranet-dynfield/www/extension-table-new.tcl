@@ -54,4 +54,19 @@ ad_form -extend -name extension_table_form  -select_query {
 }
 
     
-ad_return_template
+
+
+# ------------------------------------------------------------------
+# Left Navigation Bar
+# ------------------------------------------------------------------
+
+set left_navbar_html "
+            <div class=\"filter-block\">
+                <div class=\"filter-title\">
+                    [lang::message::lookup "" intranet-dynfield.DynField_Admin "DynField Admin"]
+                </div>
+		[im_dynfield::left_navbar]
+            </div>
+            <hr/>
+"
+

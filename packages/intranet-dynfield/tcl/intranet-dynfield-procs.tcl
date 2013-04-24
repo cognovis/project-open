@@ -12,8 +12,29 @@ ad_library {
 }
 
 
+
 namespace eval im_dynfield:: {}
 namespace eval im_dynfield::util {}
+
+
+
+ad_proc -public im_dynfield::left_navbar {
+} {
+    Return a HTML component with the list of DynField pages.
+} {
+    set user_id [ad_get_user_id]
+    set locale [lang::user::locale -user_id $user_id]
+    set result [im_navbar_write_tree \
+                        -user_id $user_id \
+                        -locale $locale \
+                        -label "dynfield_admin" \
+                        -maxlevel 3 \
+                        -ignore_disabled_p 1 \
+		    ]
+    return "<ul>\n$result\n</ul>\n"
+}
+
+
 
 ad_proc im_dynfield::type_categories_for_object_type {
     -object_type:required
