@@ -161,11 +161,8 @@ switch [string tolower $user_group_name] {
     "freelancers" {
         set user_group_id [im_profile_freelancers]
         set menu_select_label "users_freelancers"
-        if {$freelancers_exist_p} {
-            lappend extra_left_joins "LEFT JOIN im_freelancers fl ON (fl.user_id = u.user_id)"
-        } else {
-            lappend extra_wheres "u.user_id in (select object_id_two from acs_rels where rel_type = 'membership_rel' and  object_id_one = $user_group_id)"
-        }
+	lappend extra_wheres "u.user_id in (select object_id_two from acs_rels where rel_type = 'membership_rel' and  object_id_one = $user_group_id)"
+
     }
     "none" {
 	set menu_select_label "users_all"
@@ -530,6 +527,7 @@ set sql "
 select
 	p.*,
 	u.*,
+	fl.*,
 	c.home_phone, c.work_phone, c.cell_phone, c.pager,
 	c.fax, c.aim_screen_name, c.msn_screen_name,
 	c.icq_number, c.m_address,
@@ -543,8 +541,9 @@ select
 from 
 	persons p,
 	cc_users u
-	LEFT JOIN im_employees e ON (u.user_id = e.employee_id)
-	LEFT JOIN users_contact c ON (u.user_id = c.user_id)
+	LEFT OUTER JOIN im_employees e ON (u.user_id = e.employee_id)
+	LEFT OUTER JOIN users_contact c ON (u.user_id = c.user_id)
+	LEFT OUTER JOIN im_freelancers fl ON (fl.user_id = u.user_id)
 	$extra_left_join
 	$extra_from
 where
@@ -626,7 +625,7 @@ if {$view_type ne ""} {
     ad_script_abort
 }
 
-db_foreach projects_info_query $query -bind $form_vars {
+db_foreach users $query -bind $form_vars {
 
     ns_log Notice "users/index: user_id=$user_id"
 
@@ -635,7 +634,11 @@ db_foreach projects_info_query $query -bind $form_vars {
     foreach column_var $column_vars {
 	append table_body_html "\t<td valign=top>"
 	set cmd "append table_body_html $column_var"
-	eval "$cmd"
+        if [catch {
+            eval "$cmd"
+        } errmsg] {
+            ns_log Error "/intranet/users/index - Dynfield: $column_var not found"
+        }
 	append table_body_html "</td>\n"
     }
     append table_body_html "</tr>\n"

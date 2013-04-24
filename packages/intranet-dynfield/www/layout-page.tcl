@@ -111,3 +111,20 @@ if { [form is_valid page_layout] } {
     
     ad_returnredirect "layout-position?[export_vars {object_type page_url}]"
 }
+
+
+
+
+# ------------------------------------------------------------------
+# Left Navigation Bar
+# ------------------------------------------------------------------
+
+set left_navbar_html "
+            <div class=\"filter-block\">
+                <div class=\"filter-title\">
+                    [lang::message::lookup "" intranet-dynfield.DynField_Admin "DynField Admin"]
+                </div>
+		[im_dynfield::left_navbar]
+            </div>
+            <hr/>
+"
