@@ -109,6 +109,17 @@
                 <%= [lang::message::lookup "" intranet-invoices.Preview_grouped_invoice_items "Preview: Grouped invoice items (HTML only) "] %>
           </A>
         </li>
+
+<if @show_link_group_by_quote_p@>
+        <li>
+          <% set render_template_id $template_id %>
+          <% set preview_vars [export_url_vars invoice_id render_template_id return_url] %>
+          <A HREF="/intranet-invoices/view?@preview_vars@&item_list_type=120">
+                <%= [lang::message::lookup "" intranet-invoices.ShowLinkGroupByQuoteTxt "Preview: Grouped invoice items by Quote (HTML only) "] %>
+          </A>
+        </li>
+</if>
+
 	<li>
 	  <% set render_template_id $template_id %>
 	  <% set preview_vars [export_url_vars invoice_id render_template_id return_url] %>
@@ -278,12 +289,13 @@
           <td  class=roweven>#intranet-invoices.cost_type_date#:</td>
           <td  class=roweven>@invoice_date_pretty@</td>
         </tr>
-<if @show_cost_center_p@ eq 1>
+
+    <if @show_cost_center_p@ eq 1>
         <tr> 
           <td  class=roweven><%= [lang::message::lookup "" intranet-cost.Cost_Center "Cost Center"] %>:</td>
           <td  class=roweven>@cost_center_name@</td>
         </tr>
-</if>
+    </if>
         <tr> 
           <td  class=rowodd>#intranet-invoices.delivery_date#</td>
           <td  class=rowodd>@delivery_date_pretty2@</td>

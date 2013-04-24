@@ -4,7 +4,7 @@ ad_library {
 
     @author Eric Lorenzo (eric@openforce.net)
     @creation-date 22 March, 2002
-    @cvs-id $Id: acs-mail-lite-init.tcl,v 1.13 2010/03/16 12:10:27 emmar Exp $
+    @cvs-id $Id$
 
 }
 

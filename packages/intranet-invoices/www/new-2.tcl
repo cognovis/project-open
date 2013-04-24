@@ -93,7 +93,7 @@ set rounding_precision 2
 set rf [expr exp(log(10) * $rounding_precision)]
 
 
-set payment_days [db_string payment_days "select aux_int1 from im_categories where category_id = :payment_term_id"]
+set payment_days [db_string payment_days "select aux_int1 from im_categories where category_id = :payment_term_id" -default ""]
 if {"" == $payment_days} {
     set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 30]
 }

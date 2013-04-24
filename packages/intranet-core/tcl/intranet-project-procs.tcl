@@ -936,15 +936,16 @@ ad_proc -public im_project_options {
     "
 
     if {$no_conn_p} {
-	db_multirow -local multirow hours_timesheet $sql
+	db_multirow -local -upvar_level 2 multirow project_options $sql
     } else {
-	db_multirow multirow hours_timesheet $sql
+	db_multirow multirow project_options $sql
     }
 
     multirow_sort_tree -nosort multirow project_id parent_id sort_order
     set options [list]
 
     template::multirow foreach multirow {
+	ds_comment "malte $project_id"
 	set indent ""
 	for {set i 0} {$i < $tree_level} { incr i} { append indent "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" }
 	lappend options [list "$indent$project_name_shortened" $project_id]
@@ -3242,3 +3243,149 @@ ad_proc -public im_personal_todo_component {
     "
 }
 
+
+
+
+
+# ---------------------------------------------------------------
+# Action select for project lists
+# ---------------------------------------------------------------
+
+ad_proc -public im_project_action_select {
+} {
+    Returns a HTML "select" element with possible actions for
+    projects that can be executedb by 
+    /intranet-core/www/projects/project-action.tcl
+} {
+    set current_user_id [ad_get_user_id]
+
+    return "  <select name=action>
+  <option name=empty></option>
+  <option value=set_invoiced>[lang::message::lookup "" intranet-core.Set_status_to_inviced "Set status to invoiced"]</option>
+  <option value=set_open>[lang::message::lookup "" intranet-core.Set_status_to_open "Set status to open"]</option>
+  <option value=shift_project>[lang::message::lookup "" intranet-core.Shift_project_forward_or_backward "Shift project forward or backward"]</option>
+  </select>
+  <input type=submit value=[_ intranet-core.Apply]>
+  </td>
+  </tr>
+    "
+}
+
+
+# ---------------------------------------------------------------
+# Gantt Bar for Projects
+# ---------------------------------------------------------------
+
+ad_proc -public im_project_gantt_main_project {
+    -timeline_start_date:required
+    -timeline_end_date:required
+    -timeline_width:required
+    -project_id:required
+    -start_date:required
+    -end_date:required
+    -percent_completed:required
+} {
+    Returns a Gantt bar for the project
+} {
+    set base "/intranet/images/"
+    set w $timeline_width
+
+    set ts [im_date_ansi_to_epoch $timeline_start_date]
+    set te [im_date_ansi_to_epoch $timeline_end_date]
+
+    set ps [im_date_ansi_to_epoch $start_date]
+    set pe [im_date_ansi_to_epoch $end_date]
+
+    # Check invariants
+    if {$ps < $ts} { return "" }
+    if {$pe > $te} { return "" }
+    if {$pe <= $ps} { return "" }
+    if {$te <= $ts} { return "" }
+    if {$pe - $ps <= 0} { return "" }
+    if {$te - $ts <= 0} { return "" }
+
+    set left_space_width [expr int($w * ($ps - $ts) / ($te - $ts))]
+    set bar_width [expr int($w * ($pe - $ps) / ($te - $ts))]
+    set bar_width_m2 [expr $bar_width - 2]
+    set right_space_width [expr $w - $left_space_width - 1 - $bar_width - 1]
+
+    # Format the result
+    set ls "<img src=$base/gantt_empty_1.gif height=13 width=$left_space_width>"
+    set lb "<img src=$base/gantt_left_nobar_1.gif height=13 width=1>"
+    set mm "<img src=$base/gantt_middle_nobar_1.gif height=13 width=$bar_width_m2>"
+    set rb "<img src=$base/gantt_right_nobar_1.gif height=13 width=1>"
+    set rs "<img src=$base/gantt_empty_1.gif height=13 width=$right_space_width>"
+
+    # Short project - don't show the round corners
+    if {$bar_width <= 7} {
+	return "${ls}${lb}${mm}${rb}${rs}"
+    }
+
+    # Longer project - show round corners
+    set bar_width_m8 [expr $bar_width - 8]
+    set lb "<img src=$base/gantt_left_nobar_4.gif height=13 width=4>"
+    set rb "<img src=$base/gantt_right_nobar_4.gif height=13 width=4>"
+    set mm "<img src=$base/gantt_middle_nobar_1.gif height=13 width=$bar_width_m8>"
+    
+    return "${ls}${lb}${mm}${rb}${rs}"
+}
+
+
+ad_proc -public im_project_get_all_members {
+    {-project_status_id ""}
+    {-group_id "-2"}
+} {
+    returns a [list] of all the users who are in projects with an OPEN status (or subcategories of open).
+} {
+    
+    if {"" == $project_status_id} {
+	set project_status_id [im_project_status_open]
+    }
+
+    set project_list [im_project_options -include_empty 0 -project_status_id $project_status_id -exclude_tasks_p 1 -no_conn_p 1]
+    
+    set user_ids [list]
+    ds_comment "das $project_list :: $project_status_id"
+    foreach element $project_list {
+	set project_id [lindex $element 1]
+	
+	set members [db_list_of_lists select_members {
+	    select
+	    im_name_from_user_id(u.user_id) as name,
+	    u.user_id
+	    from
+	    users u,
+	    acs_rels rels
+	    LEFT OUTER JOIN im_biz_object_members bo_rels ON (rels.rel_id = bo_rels.rel_id)
+	    LEFT OUTER JOIN im_categories c ON (c.category_id = bo_rels.object_role_id),
+	    group_member_map m,
+	    membership_rels mr
+	    where
+	    rels.object_id_one = :project_id
+	    and rels.object_id_two = u.user_id
+	    and mr.member_state = 'approved'
+	    and u.user_id = m.member_id
+	    and mr.member_state = 'approved'
+	    and m.group_id = :group_id
+	    and m.rel_id = mr.rel_id
+	    and m.container_id = m.group_id
+	    and m.rel_type = 'membership_rel'	
+	    order by lower(im_name_from_user_id(u.user_id))
+	}]
+	
+	foreach element $members {
+	    set user_id_exists_p 0
+	    foreach id $user_ids {
+		if {$id eq [lindex $element 1]} {
+		    set user_id_exists_p 1
+		}
+	    }
+	    
+	    if {$user_id_exists_p eq 0} {
+		lappend user_ids [lindex $element 1]
+	    }
+	}
+    }
+    
+    return $user_ids
+}

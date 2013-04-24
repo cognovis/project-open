@@ -87,6 +87,8 @@ set surcharge_enabled_p [ad_parameter -package_id [im_package_invoices_id] "Enab
 set material_enabled_p [ad_parameter -package_id [im_package_invoices_id] "ShowInvoiceItemMaterialFieldP" "" 0]
 set project_type_enabled_p [ad_parameter -package_id [im_package_invoices_id] "ShowInvoiceItemProjectTypeFieldP" "" 1]
 
+# Shoudl we chow CC ? 
+set show_cost_center_p [ad_parameter -package_id [im_package_invoices_id] "ShowCostCenterP" "" 0]
 
 # ---------------------------------------------------------------
 # Get everything about the original document
@@ -192,7 +194,7 @@ if {"" == $payment_method_id} { set payment_method_id $default_payment_method_id
 set template_id [im_invoices_default_company_template $target_cost_type_id $company_id]
 
 
-set invoice_mode "[_ intranet-invoices.clone]"
+set invoice_mode "[_ intranet-invoices.Clone]"
 set page_title "[_ intranet-invoices.Clone] $target_cost_type"
 set button_text [_ intranet-invoices.Submit]
 set context_bar [im_context_bar [list /intranet/invoices/ "Finance"] $page_title]

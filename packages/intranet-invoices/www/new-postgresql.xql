@@ -23,6 +23,7 @@
 		to_char(ci.delivery_date,'YYYY-MM-DD') as delivery_date,
 		ci.cost_center_id,
 		ci.payment_days,
+		ci.payment_term_id,
 		to_char(ci.vat, :vat_format) as vat,
 		to_char(ci.tax, :tax_format) as tax,
 		ci.note as cost_note,

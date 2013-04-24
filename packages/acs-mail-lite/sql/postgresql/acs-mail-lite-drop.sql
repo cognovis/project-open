@@ -2,7 +2,7 @@
 -- A simple mail queue
 --
 -- @author <a href="mailto:eric@openforce.net">eric@openforce.net</a>
--- @version $Id: acs-mail-lite-drop.sql,v 1.6 2009/03/18 22:41:15 emmar Exp $
+-- @version $Id$
 --
 
 drop table acs_mail_lite_queue;

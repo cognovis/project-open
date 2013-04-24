@@ -75,6 +75,6 @@ if {"" != $submit_del} {
 ad_return_complaint 1 "<li>No action selected:<br>
 This page expects 'submit_del' or 'submit_save' as input parameters.<br>
 Please update your system.<br>
-If this doesn't help please inform <A href='mailto:support@project-open.com'>support@project-open.com</a>."
+If this doesn't help please inform <A href='mailto:[ad_admin_owner]'>[ad_admin_owner]</a>."
 
 
