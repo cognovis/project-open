@@ -13,7 +13,7 @@ declare
 begin
 	select count(*) into v_column_exists_p from user_tab_columns
 	where lower(table_name) = 'im_projects' and lower(column_name) = 'source_language_id';
-	IF v_column_exists_p = 0 THEN
+	IF v_column_exists_p != 0 THEN
 
 		select	attribute_id into dynfield_id
 		from	im_dynfield_attributes
