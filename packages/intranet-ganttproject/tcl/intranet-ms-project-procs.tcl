@@ -150,6 +150,9 @@ ad_proc -public im_ms_project_write_task {
     set task_view_url "$base_url/intranet-timesheet2-tasks/new?task_id="
     set project_view_url "$base_url/intranet/projects/view?project_id="
 
+    # Deal with systems that don't have a im_projects.milestone_p field
+    set milestone_p 0
+
     # ------------ Get everything about the project -------------
     if {![db_0or1row project_info "
 	select  p.*,

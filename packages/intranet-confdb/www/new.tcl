@@ -72,7 +72,7 @@ set cost_center_options [util_memoize "im_cost_center_options -include_empty 0" 
 set action_url "/intranet-confdb/new"
 
 
-set form_id "conf_item"
+set form_id "conf_item_form"
 
 ad_form \
     -name $form_id \

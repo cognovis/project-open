@@ -268,6 +268,7 @@ if {1 == [llength $related_projects]} {
 # Get everything about the "internal" company
 # ---------------------------------------------------------------
 
+set internal_company_id [im_company_internal]
 db_1row internal_company_info "
 	select
 		c.company_name as internal_name,
@@ -299,7 +300,7 @@ db_1row internal_company_info "
 		LEFT OUTER JOIN country_codes cou ON (o.address_country_code = iso)
 		LEFT OUTER JOIN im_categories paymeth ON (c.default_payment_method_id = paymeth.category_id)
 	where
-		c.company_path = 'internal'
+		c.company_id = :internal_company_id
 "
 
 
@@ -1635,6 +1636,10 @@ if {0 != $render_template_id || "" != $send_to_user_as} {
 	set odt_template_content [$root asXML -indent none]
 
 	# Perform replacements
+
+	regsub -all "&lt;%" $odt_template_content "<%" odt_template_content
+	regsub -all "%&gt;" $odt_template_content "%>" odt_template_content
+
         eval [template::adp_compile -string $odt_template_content]
         set content $__adp_output
 	
