@@ -31,7 +31,6 @@ ad_proc -public im_xowiki_view_component {
     if {[exists_and_not_null xowiki_node_id]} {
 	set project_wiki_node_id [db_string wiki_instance "SELECT sn.node_id FROM apm_packages ap, site_nodes sn WHERE ap.package_key= 'xowiki' AND ap.package_id = sn.object_id and sn.name = '$project_id'" -default ""]
 
-	ds_comment "$project_id ::: $project_wiki_node_id"
 	if {$project_wiki_node_id eq ""} {
 	    site_node::instantiate_and_mount -parent_node_id $xowiki_node_id \
 		-node_name $project_id -package_key "xowiki" \
@@ -44,7 +43,6 @@ ad_proc -public im_xowiki_view_component {
 	    #set Package [$PackageClass initialize -url "/xowiki/$project_id"]
 	    #set folder_id [$Package folder_id]
 	    #set package_id [$Package id]
-	    #ds_comment "folder $folder_id"
 	    #::xowiki::Package import_prototype_page -package_key "intranet-xowiki" -name "index" -parent_id $folder_id -package_id $package_id
 
 	    
@@ -97,7 +95,6 @@ ad_proc -public im_xowiki_view_component {
 		set Package [$PackageClass initialize -url "/xowiki/$project_id"]
 		set folder_id [$Package folder_id]
 		set package_id [$Package id]
-		ds_comment "folder $folder_id"
 		::xowiki::Package import_prototype_page -package_key "intranet-xowiki" -name "index" -parent_id $folder_id -package_id $package_id
 	    }
 
