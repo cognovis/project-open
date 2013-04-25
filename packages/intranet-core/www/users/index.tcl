@@ -140,6 +140,11 @@ set column_vars [list]
 
 set freelancers_exist_p [db_table_exists im_freelancers]
 
+if {$freelancers_exist_p} {
+    set extra_left_joins [list "LEFT OUTER JOIN im_freelancers fl ON (fl.user_id = u.user_id)"]
+    set extra_selects [list "fl.*"]
+}
+
 # Get the ID of the group of users to show
 # Default 0 corresponds to the list of all users.
 # Use a normalized group_name in lowercase and with
@@ -527,7 +532,6 @@ set sql "
 select
 	p.*,
 	u.*,
-	fl.*,
 	c.home_phone, c.work_phone, c.cell_phone, c.pager,
 	c.fax, c.aim_screen_name, c.msn_screen_name,
 	c.icq_number, c.m_address,
@@ -543,7 +547,6 @@ from
 	cc_users u
 	LEFT OUTER JOIN im_employees e ON (u.user_id = e.employee_id)
 	LEFT OUTER JOIN users_contact c ON (u.user_id = c.user_id)
-	LEFT OUTER JOIN im_freelancers fl ON (fl.user_id = u.user_id)
 	$extra_left_join
 	$extra_from
 where
