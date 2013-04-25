@@ -140,6 +140,11 @@ set column_vars [list]
 
 set freelancers_exist_p [db_table_exists im_freelancers]
 
+if {$freelancers_exist_p} {
+    set extra_left_joins [list "LEFT OUTER JOIN im_freelancers fl ON (fl.user_id = u.user_id)"]
+    set extra_selects [list "fl.*"]
+}
+
 # Get the ID of the group of users to show
 # Default 0 corresponds to the list of all users.
 # Use a normalized group_name in lowercase and with
