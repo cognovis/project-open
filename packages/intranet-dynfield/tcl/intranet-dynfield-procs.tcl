@@ -336,7 +336,7 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 			}
 		    }
 		}
-		integer - number - float - generic_sql - im_category_tree {
+		integer - number - float - generic_sql - im_category_tree - select - generic_tcl {
 		    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
 		}
 		im_cost_center_tree {
