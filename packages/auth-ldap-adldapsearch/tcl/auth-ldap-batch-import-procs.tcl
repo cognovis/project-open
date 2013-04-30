@@ -786,7 +786,7 @@ ad_proc -private auth::ldap::batch_import::parse_user {
 
 	db_dml update_emp_dept "
 		update im_employees set 
-			department_id = :department_id,
+--			department_id = :department_id,
 			job_title = :job_title
 		where employee_id = :user_id
 	"
