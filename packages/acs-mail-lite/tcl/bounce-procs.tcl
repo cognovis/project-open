@@ -55,7 +55,8 @@ namespace eval acs_mail_lite {
         @option message_id message-id of the mail
         @return bounce address
     } {
-        return "[bounce_prefix]-$user_id-[ns_sha1 $message_id]-$package_id@[address_domain]"
+	return "[ad_system_owner]"
+#        return "[bounce_prefix]-$user_id-[ns_sha1 $message_id]-$package_id@[address_domain]"
     }
     
     #---------------------------------------
