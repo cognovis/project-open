@@ -848,7 +848,7 @@ ad_proc -public auth::ldap::authentication::Sync_disabled {
 	if {0 == $department_id} { set department_id [db_string dept "select cost_center_id from im_cost_centers where lower(cost_center_label) = lower(:department)" -default 0] }
 	if {0 == $department_id} { set department_id [db_string dept "select cost_center_id from im_cost_centers where lower(cost_center_name) = lower(:department)" -default 0] }
 	if {0 != $department_id} { 
-	    db_dml dept "update im_employees set department_id = :department_id where employee_id = :user_id" 
+#	    db_dml dept "update im_employees set department_id = :department_id where employee_id = :user_id" 
 	}
 
 	# Check if we can find the "department" in one of the im_companies
