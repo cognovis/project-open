@@ -20,6 +20,7 @@ ad_page_contract {
     { truncate_note_length 4000}
     { output_format "html" }
     { project_id:integer 0}
+    { approved_only_p:integer 0}
     { task_id:integer 0}
     { company_id:integer 0}
     { user_id:integer 0}
@@ -189,6 +190,13 @@ if {0 != $project_id && "" != $project_id} {
     )"
 }
 
+if {$approved_only_p} {
+    set approved_from ", im_timesheet_conf_objects tco"
+    lappend criteria "tco.conf_id = h.conf_object_id and tco.conf_status_id = 17010"
+} else {
+    set approved_from ""
+}
+
 set where_clause [join $criteria " and\n	    "]
 if { ![empty_string_p $where_clause] } {
     set where_clause " and $where_clause"
@@ -228,7 +236,7 @@ from
 	im_projects main_p,
 	im_companies c,
 	users u, 
-	im_costs co
+	im_costs co $approved_from
 where
 	h.cost_id = co.cost_id 
 	and h.project_id = p.project_id
@@ -424,6 +432,11 @@ ad_form \
         {project_id:text(select),optional {label \#intranet-cost.Project\#} {options $project_options} {value $project_id}}
     }
 
+if {[apm_package_installed_p intranet-timesheet2-workflow]} {
+    ad_form -extend -name $form_id -form {
+	{approved_only_p:text(select),optional {label \#intranet-timesheet2-workflow.Approved\# ?} {options {{[_ intranet-core.Yes] "1"} {[_ intranet-core.No] "0"}}} {value 0}}
+    }
+}
 
 if {$view_hours_all_p} {
     ad_form -extend -name $form_id -form {

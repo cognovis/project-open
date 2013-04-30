@@ -156,6 +156,8 @@ insert into im_views (view_id, view_name, visible_for, view_type_id)
 values (25, 'project_hierarchy', 'view_projects', 1400);
 insert into im_views (view_id, view_name, visible_for, view_type_id)
 values (26, 'personal_todo_list', 'view_projects', 1400);
+insert into im_views (view_id, view_name, visible_for, view_type_id)
+values (27, 'project_timeline', 'view_projects', 1400);
 
 
 
@@ -371,13 +373,50 @@ extra_select, extra_where, sort_order, visible_for) values (2535,25,NULL,'Delive
 
 
 
+--------------------------------------------------------------------------
+-- Project Timeline
+
+--
+delete from im_view_columns where view_id = 27;
+--
+insert into im_view_columns (view_id, column_id, sort_order, column_name, column_render_tcl, visible_for) 
+values (27,2700,0,'<input type=checkbox onclick="acs_ListCheckAll(''select_project_id'',this.checked)">',
+'$select_project_checkbox', 'expr $show_bulk_actions_p');
+
+insert into im_view_columns (view_id, column_id, sort_order, column_name, column_render_tcl) 
+values (27,2710,10,'OK','<center>[im_project_on_track_bb $on_track_status_id]</center>');
+
+insert into im_view_columns (view_id, column_id, sort_order, column_name, column_render_tcl) 
+values (27,2720,20,'Nr','"<A HREF=/intranet/projects/view?project_id=$project_id>$project_nr</A>"');
+
+insert into im_view_columns (view_id, column_id, sort_order, column_name, column_render_tcl) 
+values (27,2730,30,'Name','"<A HREF=/intranet/projects/view?project_id=$project_id>$project_name</A>"');
+
+insert into im_view_columns (view_id, column_id, sort_order, column_name, column_render_tcl) 
+values (27,2740,40,'Status','$project_status');
+
+insert into im_view_columns (view_id, column_id, sort_order, column_name, column_render_tcl) 
+values (27,2750,50,'Start','$start_date_formatted');
+
+insert into im_view_columns (view_id, column_id, sort_order, column_name, column_render_tcl) 
+values (27,2760,60,'End','$end_date_formatted');
+
+insert into im_view_columns (view_id, column_id, sort_order, column_name, column_render_tcl) 
+values (27,2780,80,'Timeline','$timeline_html');
+
+
+
+
+
+
+
 --------------------------------------------------------------
 --
 delete from im_view_columns where column_id > 199 and column_id < 299;
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (200,10,NULL,'Name',
-'"<a href=/intranet/users/view?user_id=$user_id>$name</a>"','','',2,'');
+'"<a href=/intranet/users/view?user_id=$person_id>$name</a>"','','',2,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (201,10,NULL,'Email',

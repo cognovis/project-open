@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+
+<queryset>
+
+<fullquery name="select_top_itens">
+      <querytext>
+          select  top_id,
+                  to_char(timestamp,'DD/MM/YY HH24:MI') as timestamp,
+                  timehour,
+                  load_avg_1,
+                  load_avg_5,
+                  load_avg_15,
+                  memory_real,
+                  memory_free,
+                  memory_swap_free,
+                  memory_swap_in_use,
+                  procs_total,
+                  procs_sleeping,
+                  procs_zombie,
+                  procs_stopped,
+                  procs_on_cpu,
+                  cpu_idle, 
+                  cpu_user,
+                  cpu_kernel,
+                  cpu_iowait,
+                  cpu_swap
+         from     ad_monitoring_top
+         where
+         [template::list::filter_where_clauses -name "top_itens"]
+         [template::list::page_where_clause -name "top_itens" -key "top_id"]
+         [template::list::orderby_clause -orderby -name "top_itens"]
+        
+      </querytext>
+</fullquery> 
+
+
+
+
+<fullquery name="select_top_itens_paginator">
+      <querytext>
+         select  top_id
+         from     ad_monitoring_top
+         [template::list::filter_where_clauses -and -name "top_itens"]
+         [template::list::orderby_clause -orderby -name "top_itens"]
+      </querytext>
+</fullquery>
+
+
+
+
+</queryset>

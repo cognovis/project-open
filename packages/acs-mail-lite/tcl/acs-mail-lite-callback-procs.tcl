@@ -7,7 +7,7 @@ ad_library {
     @author Malte Sussdorff (sussdorff@sussdorff.de)
     @creation-date 2005-06-15
     @arch-tag: d9aec4df-102d-4b0d-8d0e-3dc470dbe783
-    @cvs-id $Id: acs-mail-lite-callback-procs.tcl,v 1.22 2009/03/18 22:41:15 emmar Exp $
+    @cvs-id $Id$
 }
 
 ad_proc -public -callback acs_mail_lite::send {

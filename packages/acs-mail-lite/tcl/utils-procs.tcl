@@ -7,7 +7,7 @@ ad_library {
     @author Emmanuelle Raffenne (eraffenne@gmail.com)
     @creation-date 2007-12-16
     @arch-tag: 820de9a9-533f-4fc3-b11d-2c9fb616a620
-    @cvs-id $Id: utils-procs.tcl,v 1.4 2008/08/23 17:20:55 gustafn Exp $
+    @cvs-id $Id$
 }
 
 namespace eval acs_mail_lite {}

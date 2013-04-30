@@ -11,8 +11,29 @@ ad_library {
 }
 
 
+
 namespace eval im_dynfield:: {}
 namespace eval im_dynfield::util {}
+
+
+
+ad_proc -public im_dynfield::left_navbar {
+} {
+    Return a HTML component with the list of DynField pages.
+} {
+    set user_id [ad_get_user_id]
+    set locale [lang::user::locale -user_id $user_id]
+    set result [im_navbar_write_tree \
+                        -user_id $user_id \
+                        -locale $locale \
+                        -label "dynfield_admin" \
+                        -maxlevel 3 \
+                        -ignore_disabled_p 1 \
+		    ]
+    return "<ul>\n$result\n</ul>\n"
+}
+
+
 
 ad_proc im_dynfield::type_categories_for_object_type {
     -object_type:required
@@ -234,6 +255,7 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 	select
 		a.attribute_id,
 		a.table_name as attribute_table_name,
+                ott.id_column as attribute_id_column,
 		a.attribute_name,
 		at.pretty_name,
 		a.datatype,
@@ -245,12 +267,15 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 		dw.widget
 	from
 		acs_object_type_attributes a,
+                acs_object_type_tables ott,
 		im_dynfield_attributes aa,
 		im_dynfield_widgets dw,
 		acs_attributes at,
 		acs_object_types t
 	where
 		a.object_type = :object_type
+                and a.object_type = ott.object_type
+                and a.table_name = ott.table_name
 		and t.object_type = a.ancestor_type
 		and a.attribute_id = aa.acs_attribute_id
 		and a.attribute_id = at.attribute_id
@@ -263,7 +288,7 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
     set ext_table_sql "
 	select distinct
 		attribute_table_name as ext_table_name,
-		object_type_id_column as ext_id_column
+		attribute_id_column as ext_id_column
 	from
 		($attributes_sql) s
     "
@@ -272,8 +297,7 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
     db_foreach ext_tables $ext_table_sql {
         if {$ext_table_name == ""} { continue }
         if {$ext_table_name == $main_table_name} { continue }
-        
-        if {![lsearch ext_tables $ext_table_name]} { 
+        if {[lsearch $ext_tables $ext_table_name]<0} { 
             lappend ext_tables $ext_table_name
             append ext_table_join_where "\tand $main_table_name.$main_id_column = $ext_table_name.$ext_id_column\n"
         }
@@ -312,8 +336,20 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 			}
 		    }
 		}
-		integer - number - float {
+		integer - number - float - generic_sql {
 		    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
+		}
+		im_cost_center_tree {
+		    lappend criteria "$attribute_table_name.$attribute_name in (WITH RECURSIVE search_graph AS ( 
+   SELECT cost_center_id, parent_id, cost_center_name, cost_center_name::text as path, 0 AS depth 
+     FROM im_cost_centers cc 
+     WHERE cc.parent_id = :$attribute_name
+   UNION ALL 
+   SELECT r.cost_center_id, r.parent_id, r.cost_center_name, sg.path||'/'||r.cost_center_name as path, sg.depth +1 AS depth
+     FROM im_cost_centers r, search_graph sg 
+     WHERE r.parent_id = sg.cost_center_id 
+) 
+SELECT cost_center_id FROM search_graph union select :$attribute_name from dual)"
 		}
 		checkbox {
 		    # Frank: Here we would need a three-way select for

@@ -27,6 +27,7 @@ ad_register_proc GET /intranet/download/project_sales/* intranet_project_sales_d
 ad_register_proc GET /intranet/download/company/* intranet_company_download
 ad_register_proc GET /intranet/download/user/* intranet_user_download
 ad_register_proc GET /intranet/download/cost/* intranet_expense_cost_download
+ad_register_proc GET /intranet/download/conf_item/* intranet_conf_item_download
 ad_register_proc GET /intranet/download/home/* intranet_home_download
 ad_register_proc GET /intranet/download/zip/* intranet_zip_download
 
@@ -40,6 +41,7 @@ ad_proc intranet_project_sales_download {} { intranet_download "project_sales" }
 ad_proc intranet_company_download {} { intranet_download "company" }
 ad_proc intranet_user_download {} { intranet_download "user" }
 ad_proc intranet_cost_download {} { intranet_download "cost" }
+ad_proc intranet_conf_item_download {} { intranet_download "conf_item" }
 ad_proc intranet_home_download {} { intranet_download "home" }
 ad_proc intranet_zip_download {} { intranet_download "zip" }
 ad_proc intranet_expense_cost_download {} { intranet_download "cost" }
@@ -177,7 +179,11 @@ where
     db_foreach project_profiles $project_profile_sql {
 	set profile_name_txt [lang::util::suggest_key $profile_name]
 	if {"" == $profile_gif} { set profile_gif "profile" }
-	lappend profiles [list $profile_id $profile_gif [_ intranet-filestorage.$profile_name_txt] ]
+	if {"" == $profile_name_txt} {
+	    lappend profiles [list $profile_id $profile_gif "" ]
+	} else {
+	    lappend profiles [list $profile_id $profile_gif [_ intranet-filestorage.$profile_name_txt] ]
+	}
     }
     return $profiles
 }
@@ -332,6 +338,7 @@ ad_proc -private im_filestorage_base_path_helper {
 	zip {return [im_filestorage_zip_path]}
 	bt_fs {return [im_filestorage_bug_path $object_id]}
 	cost {return [im_filestorage_cost_path $object_id]}
+	conf_item {return [im_filestorage_conf_item_path $object_id]}
     }
     return ""
 }
@@ -441,6 +448,15 @@ ad_proc im_filestorage_cost_component { user_id cost_id cost_name return_url} {
     set cost_path [im_filestorage_cost_path $cost_id]
     set folder_type "cost"
     return [im_filestorage_base_component $user_id $cost_id $cost_name $cost_path $folder_type]
+}
+
+ad_proc im_filestorage_conf_item_component { user_id conf_item_id conf_item_name return_url} {
+    Filestorage for conf_item items
+} {
+    set conf_item_path [im_filestorage_conf_item_path $conf_item_id]
+    set folder_type "conf_item"
+    if {"" == $conf_item_name} { set conf_item_name [db_string conf_item_name "select conf_item_name from im_conf_items where conf_item_id = :conf_item_id" -default ""] }
+    return [im_filestorage_base_component $user_id $conf_item_id $conf_item_name $conf_item_path $folder_type]
 }
 
 
@@ -567,13 +583,6 @@ ad_proc im_filestorage_project_path_helper { project_id } {
 	return
     }
 
-    # Return a demo path for all project, clients etc.
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	set path [ad_parameter "TestDemoDevPath" intranet "internal/demo"]
-	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
-	return "$base_path_unix/$path"
-    }
-
     set query "
 	select
 		p.project_nr,
@@ -644,13 +653,6 @@ ad_proc im_filestorage_ticket_path_helper { ticket_id } {
 	return
     }
 
-    # Return a demo path for all ticket, clients etc.
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	set path [ad_parameter "TestDemoDevPath" intranet "internal/demo"]
-	ns_log Notice "im_filestorage_ticket_path: TestDemoDevServer: $path"
-	return "$base_path_unix/$path"
-    }
-
     if {![db_0or1row tickets_info_query ""]} {
 	ad_return_complaint 1 "Can't find the ticket with ticket_id = $ticket_id"
 	return
@@ -685,13 +687,6 @@ ad_proc im_filestorage_project_sales_path_helper { project_id } {
         </blockquote><br>
         "
 	return
-    }
-
-    # Return a demo path for all project, clients etc.
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	set path [ad_parameter "TestDemoDevPath" "" "internal/demo"]
-	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
-	return "$base_path_unix/$path"
     }
 
     set query "
@@ -738,13 +733,6 @@ ad_proc im_filestorage_user_path { user_id } {
 	return
     }
 
-    # Return a demo path for all project, clients etc.
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	set path [ad_parameter "TestDemoDevUserPath" "" "users"]
-	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
-	return "$base_path_unix/$path"
-    }
-    
     return "$base_path_unix/$user_id"
 }
 
@@ -793,14 +781,6 @@ ad_proc im_filestorage_bug_path { bug_id } {
     set package_key "intranet-filestorage"
     set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
     set base_path_unix [parameter::get -package_id $package_id -parameter "BugBasePathUnix" -default "/tmp/bugs"]
-
-    # Return a demo path for all project, clients etc.
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	set path [ad_parameter "TestDemoDevUserPath" "" "users"]
-	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
-	return "$base_path_unix/$path"
-    }
-    
     return "$base_path_unix/$bug_id"
 }
 
@@ -825,21 +805,31 @@ ad_proc im_filestorage_cost_path { cost_id } {
 	return
     }
 
-    # Return a demo path for all project, clients etc.
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	set path [ad_parameter "TestDemoDevCostPath" "" "costs"]
-	ns_log Notice "im_filestorage_project_path: TestDemoDevServer: $path"
-	return "$base_path_unix/$path"
-    }
-    
     return "$base_path_unix/$cost_id"
 }
 
 
+ad_proc im_filestorage_conf_item_path { conf_item_id } {
+    Determine the location where the conf_item files
+    are stored on the hard disk
+} {
+    set package_key "intranet-filestorage"
+    set package_id [db_string package_id "select package_id from apm_packages where package_key=:package_key" -default 0]
+    set base_path_unix [parameter::get -package_id $package_id -parameter "ConfItemBasePathUnix" -default "/tmp/conf_items"]
 
+    # Check if the base_path has a trailing "/" and produce an error:
+    if {[regexp {.\/$} $base_path_unix]} {
+	ad_return_complaint 1 "<br><blockquote>
+             The '$base_path_unix' path for this filestorage contains a trailing slash ('/') at the end.
+             Please notify your system administrator and ask him or her to remove any trailing
+             slashes in the Admin -&gt; Parameters -&gt; 'intranet-filestorage' section.
+        </blockquote><br>
+        "
+	return
+    }
 
-
-
+    return "$base_path_unix/$conf_item_id"
+}
 
 ad_proc im_filestorage_project_workflow_dirs { project_type_id } {
     Returns a list of directors that have to be created 
@@ -945,12 +935,6 @@ ad_proc im_filestorage_copy_source_directory { project_id sub_project_id } {
     # Localize the workflow stage directories
     set locale "en_US"
     set source [lang::message::lookup $locale intranet-translation.Workflow_source_directory "source"]
-
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	# We're at a demo server, so don't create any directories!
-	return
-    }
-
     set project_path [im_filestorage_project_path $project_id]
     set sub_project_path [im_filestorage_project_path $sub_project_id]
 
@@ -989,12 +973,6 @@ ad_proc im_filestorage_create_directories { project_id } {
     # Localize the workflow stage directories
     set locale "en_US"
     set source [lang::message::lookup $locale intranet-translation.Workflow_source_directory "source"]
-
-    if {[ad_parameter -package_id [im_package_core_id] TestDemoDevServer "" 0]} {
-	# We're at a demo server, so don't create any directories!
-	return
-    }
-
     # Get some missing variables about the project and the company
     set query "
 select

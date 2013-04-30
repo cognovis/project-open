@@ -295,7 +295,7 @@ ad_form -extend -name $form_id -new_request {
 	template::element::set_error $form_id project_nr "[lang::message::lookup "" intranet-core.lt_The_project_nr_that "The Project Nr is too short."] <br>
 	   [lang::message::lookup "" intranet-core.lt_Please_use_a_project_nr_ "Please use a longer Project Nr or modify the parameter 'ProjectNrMinimumLength'."]"
     }
-    if { [string length $project_nr] >= 10} {
+    if { [string length $project_nr] > 100} {
 	incr n_error
 	template::element::set_error $form_id project_nr "[lang::message::lookup "" intranet-core.lt_The_project_nr_is_too_long "The Project Nr is too long."] <br>
 	   [lang::message::lookup "" intranet-core.lt_Please_use_a_shorter_project_nr_ "Please use a shorter Project Nr."]"
@@ -331,6 +331,20 @@ ad_form -extend -name $form_id -new_request {
 	   [_ intranet-core.lt_Please_use_a_project_]"
     }
 
+    # Let's make sure the specified name is unique
+    set project_name_exists [db_string project_name_exists "
+	select 	count(*)
+	from	im_projects
+	where	upper(trim(project_name)) = upper(trim(:project_name))
+	        and project_id <> :project_id
+		and parent_id = :parent_id
+    "]
+	
+    if { $project_name_exists > 0 } {
+	incr n_error
+	template::element::set_error $form_id project_name "[_ intranet-core.lt_The_specified_name_pr]"
+    }
+
 } -new_data {
     
     
@@ -350,16 +364,39 @@ ad_form -extend -name $form_id -new_request {
         set project_nr [im_next_project_nr]
     }
 
-    set previous_company_id [db_string prev_company_id "select company_id from im_projects where project_id = :project_id" -default ""]
+    set previous_company_id [db_string get_previous_company_id "select company_id from im_projects where project_id = :project_id" -default ""]
+    set previous_parent_id [db_string get_previous_parent_id "select parent_id from im_projects where project_id = :project_id" -default ""]
 
-#    ad_return_complaint 1 $previous_company_id
-    # Only check for sub-projects:
-    # The user shouldn't change the customer
     set n_error 0
+
+    # Is this is a sub-project? 
     if {"" != $parent_id } {
+	# Check if user tries to change company_id which should be forbidden in general.  
 	if {"" != $previous_company_id && $company_id != $previous_company_id} {
+	    # We allow changing the compnay only, if user is also changing the Parent Project.   
+	    # This scenrio is quite common when cloning projects 
+	    if { $parent_id == $previous_parent_id  } {
+		incr n_error
+		set err_mess "You can't cange the customer of a sub-project. In case you have changed 'Parent Project' and 'Customer' in one edit step, please consider making one change at a time."
+		template::element::set_error $form_id company_id [lang::message::lookup "" intranet-core.Cant_change_customer_of_subproject $err_mess]
+	    }
+	}
+	
+	# Whatever changes are made, customers of parent & this project need to be identical! 
+	db_1row get_company_data "
+                select
+                        p.company_id as company_id_parent,
+                        c.company_name as company_name_parent
+                from
+                        im_projects p, 
+          		im_companies c
+                where
+			c.company_id = p.company_id and 
+                        p.project_id = :parent_id
+        "			
+	if { $company_id_parent != $company_id } {
 	    incr n_error
-	    template::element::set_error $form_id company_id [lang::message::lookup "" intranet-core.Cant_change_customer_of_subproject "You can't cange the customer of a sub-project"]
+	    template::element::set_error $form_id company_id [lang::message::lookup "" intranet-core.ParentCompanyIsDifferent "Parent Project's client ($company_name_parent) is different from this project client"]
 	}
     }
 

@@ -396,12 +396,12 @@ if {![info exists ignore_hash($warning_key)]} {
 	set project_id $main_project_id
 	append warnings_html "
 	<div class=ms_project_warning_title>
-	[lang::message::lookup "" intranet-ganttproject.Tasks_without_start_constraint "Tasks Without Start-Constraint"]
+	<img src='/intranet/images/navbar_default/1100.png' alt='Warning Icon' />&nbsp;[lang::message::lookup "" intranet-ganttproject.Tasks_without_start_constraint "Found Tasks Without Start-Constraint "]
 	</div>
 	<div class=ms_project_warning_body>
-	[lang::message::lookup "" intranet-ganttproject.Tasks_without_start_constraint_msg "
+	<p>[lang::message::lookup "" intranet-ganttproject.Tasks_without_start_constraint_msg "
 	The following tasks don't have have a constraint to determine their start date.
-        MS-Project will schedule these tasks to start together with the main project, unless you explicitely set a start constraint."]<br>
+        MS-Project will schedule these tasks to start together with the main project, unless you explicitely set a start constraint."]</p><br>
 	<form action=/intranet-ganttproject/fix-tasks-without-start-constraint>
 	[export_form_vars project_id return_url]
 	<table border=0>
@@ -410,7 +410,7 @@ if {![info exists ignore_hash($warning_key)]} {
 	$task_footer
 	</table>
 	</form>
-	[lang::message::lookup "" intranet-ganttproject.Tasks_without_start_constraint_assign. "Please set a start constraint."]
+	<!-- [lang::message::lookup "" intranet-ganttproject.Tasks_without_start_constraint_assign. "Please set a start constraint."]-->
 	</div>
         "
     }

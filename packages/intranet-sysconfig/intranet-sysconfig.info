@@ -9,19 +9,19 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-sysconfig</auto-mount>
 
-    <version name="4.0.3.5.0" url="http://www.project-open.org/download/apm/intranet-sysconfig-4.0.3.5.0.apm">
+    <version name="4.0.3.5.1" url="http://www.project-open.org/download/apm/intranet-sysconfig-4.0.3.5.1.apm">
         <owner url="mailto:frank.bergmann@project-open.com">Frank Bergmann</owner>
         <summary>System Configuration Wizard</summary>
         <vendor url="http://www.project-open.com/">]project-open[</vendor>
         <description format="text/plain">Wizard-based configuration of a ]po[ system for one of the different &quot;flavours&quot;. This wizard appears after a fresh installation as the only option and guides the user through the setup process.</description>
 
-        <provides url="intranet-sysconfig" version="3.2.7.0.0"/>
+        <provides url="intranet-sysconfig" version="4.0.3.5.1"/>
         <requires url="intranet-core" version="3.2"/>
 
         <callbacks>
         </callbacks>
         <parameters>
-        <!-- No version parameters -->
+            <parameter datatype="string"  min_n_values="1"  max_n_values="1"  name="AdminGuideItemsDone" default="" description="Stores the list of items in the admin guide that have already been processed. You don't have to modify this value, it is for system purposes only."/>
         </parameters>
 
     </version>

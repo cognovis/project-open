@@ -130,7 +130,7 @@ if {0 != $render_template_id} {
 
 # Check if the given locale throws an error and reset
 if {[catch {
-    lang::message::lookup $locale "dummy_text"
+    lang::message::lookup $locale "intranet-core.Reporting"
 } errmsg]} {
     set locale $user_locale
 }

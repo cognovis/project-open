@@ -127,7 +127,7 @@ DECLARE
 	p_risk_id		alias for $1;
 	v_name			varchar;
 BEGIN
-	select	substring(risk_name)
+	select	risk_name
 	into	v_name from im_risks
 	where	risk_id = p_risk_id;
 
@@ -217,11 +217,13 @@ end;$body$ language 'plpgsql';
 -- 75200-75299	Intranet Risk Action (100)
 
 -- Status
-SELECT im_category_new (75000, 'Active', 'Intranet Risk Status');
-SELECT im_category_new (75002, 'Deleted', 'Intranet Risk Status');
+SELECT im_category_new (75000, 'Open', 'Intranet Risk Status');
+SELECT im_category_new (75002, 'Closed', 'Intranet Risk Status');
+SELECT im_category_new (75098, 'Deleted', 'Intranet Risk Status');
 
 -- Type
-SELECT im_category_new (75100, 'Default', 'Intranet Risk Type');
+SELECT im_category_new (75100, 'Risk', 'Intranet Risk Type');
+SELECT im_category_new (75102, 'Issue', 'Intranet Risk Type');
 
 -- Action
 SELECT im_category_new (75210, 'Delete', 'Intranet Risk Action');

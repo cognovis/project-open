@@ -773,13 +773,18 @@ ad_proc -public lang::message::lookup {
 			if {"TRANSLATION MISSING" != $default} {
 			    set message $default
 			} else {
-			    if {[string match "acs-translations.*" $key]} {
-				ns_log Debug "lang::message::lookup: Key '$key' does not exist in en_US"
-				set message "MESSAGE KEY MISSING: $key"
-			    } else {
-				ns_log Error "lang::message::lookup: Key '$key' does not exist in en_US"
-				set message "MESSAGE KEY MISSING: $key"
-			    }
+                            if {[string match "acs-translations.*" $key]} {
+                                ns_log Debug "lang::message::lookup: Key '$key' does not exist in en_US"
+                                set message "MESSAGE KEY MISSING: $key"
+                            } else {
+                                set mkey [lindex [split $key .] 1]
+                                if {"" == $mkey} {
+                                    set message ""
+                                } else {
+                                    ns_log Error "lang::message::lookup: Key '$key' does not exist in en_US"
+                                    set message "MESSAGE KEY MISSING: $key"
+                                }
+                            }
 			}
 		    }
                 }

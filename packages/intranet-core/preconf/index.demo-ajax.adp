@@ -3,9 +3,16 @@
 <%
    set version "\]po\[ V4.0:"
    switch [ns_info server] {
-   po40ts   { set page_title "$version Simple Timesheet Management" }
-   po40cons { set page_title "$version PSA - Profesional Services Automation" }
-   default  { set page_title "$version All-Features Demo Server" }
+   l10n      { set page_title "$version L10n - Localization Server" }
+   po40cons  { set page_title "$version PSA - Profesional Services Automation" }
+   po40demo  { set page_title "$version All - Features Demo Server" }
+   po40epm   { set page_title "$version EPM - Enterprise Project Management" }
+   po40itsm  { set page_title "$version ITSM - IT Services Management" }
+   po40psa   { set page_title "$version PSA - Profesional Services Automation" }
+   po40pmo   { set page_title "$version PMO - Project Management Office" }
+   po40trans { set page_title "$version Trans - Translation" }
+   po40ts    { set page_title "$version Simple Timesheet Management" }
+   default   { set page_title "$version Demo" }
    }
 %>
 <html>
@@ -316,12 +323,12 @@ function setBgImage (id,img) {
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
   <tbody>
     <tr>
-      <td> Comments? Contact: <a href="mailto:support@project-open.com">support@project-open.com</a> </td>
+      <td> Comments? Contact: <a href="mailto:[ad_admin_owner]">[ad_admin_owner]</a> </td>
     </tr>
   </tbody>
 </table>
 <!-- monitor_frame -->
 <div class="footer_hack">&nbsp;</div>
-<div id="footer"> Comments? Contact: <a href="mailto:sysadmin@tigerpond.com"> sysadmin@tigerpond.com </a> </div>
+<div id="footer"> Comments? Contact: <a href="mailto:[ad_system_owner]"> [ad_system_owner] </a> </div>
 </body>
 </html>

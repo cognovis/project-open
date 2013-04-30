@@ -93,7 +93,7 @@ set rounding_precision 2
 set rf [expr exp(log(10) * $rounding_precision)]
 
 
-set payment_days [db_string payment_days "select aux_int1 from im_categories where category_id = :payment_term_id"]
+set payment_days [db_string payment_days "select aux_int1 from im_categories where category_id = :payment_term_id" -default ""]
 if {"" == $payment_days} {
     set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultProviderBillPaymentDays" "" 30]
 }
@@ -439,10 +439,14 @@ foreach nr $item_list {
 
 foreach project_id $select_project {
     db_1row "get relations" "
-		select	count(*) as v_rel_exists
-                from    acs_rels
-                where   object_id_one = :project_id
-                        and object_id_two = :invoice_id
+                select  count(*) as v_rel_exists
+                from    acs_rels r,
+                        im_projects p,
+                        im_projects sub_p
+                where   p.project_id = :project_id and
+                        sub_p.tree_sortkey between p.tree_sortkey and tree_right(p.tree_sortkey) and
+                        r.object_id_one = sub_p.project_id and
+                        r.object_id_two = :invoice_id
     "
     if {0 ==  $v_rel_exists} {
 	set rel_id [db_exec_plsql create_rel ""]

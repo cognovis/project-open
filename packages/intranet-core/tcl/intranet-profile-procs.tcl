@@ -262,7 +262,7 @@ namespace eval im_profile {
 
 	# Calculate the options
 	set user_options [user_options_not_cached -profile_ids $profile_ids]
-	ns_log Notice "im_profile::user_options: profile_ids=$profile_ids, options=$user_options"
+	ns_log Debug "im_profile::user_options: profile_ids=$profile_ids, options=$user_options"
 
 	# Store the value in the cache
 	ns_cache set im_profile $key $user_options

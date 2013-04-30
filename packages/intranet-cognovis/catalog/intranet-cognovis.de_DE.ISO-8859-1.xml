@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<message_catalog package_key="intranet-cognovis" locale="de_DE" charset="ISO-8859-1">
-
-  <msg key="Please_log_hours">Bitte loggen Sie Ihre Stunden unter %hour_logging_url%</msg>
-  <msg key="You_did_not_log_hours">Sie haben Ihre Stunden nicht erfasst</msg>
-</message_catalog>

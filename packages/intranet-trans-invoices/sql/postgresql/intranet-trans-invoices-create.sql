@@ -242,7 +242,7 @@ create table im_trans_prices (
 	valid_through		timestamptz,
 				-- make sure the end date is after start date
 				constraint im_trans_prices_date_const
-				check(valid_through - valid_from >= 0),
+				check(valid_through - valid_from >= '0 seconds'::interval),
 	--
 	-- "Output variables"
 	currency		char(3) references currency_codes(ISO)
