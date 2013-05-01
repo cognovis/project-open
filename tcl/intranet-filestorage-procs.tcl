@@ -177,6 +177,9 @@ where
 	and r.profile_id = p.profile_id (+)
 "
     db_foreach project_profiles $project_profile_sql {
+	# 130501 fraber: Eliminate "partner" profile which is not defined on all systems
+	if {"" == $profile_id || 0 == $profile_id} { continue }
+
 	set profile_name_txt [lang::util::suggest_key $profile_name]
 	if {"" == $profile_gif} { set profile_gif "profile" }
 	lappend profiles [list $profile_id $profile_gif [_ intranet-filestorage.$profile_name_txt] ]
