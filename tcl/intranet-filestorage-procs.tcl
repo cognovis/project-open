@@ -2151,7 +2151,9 @@ ad_proc im_filestorage_perm_add_profile { folder_id perm profile_id p} {
     ns_log Notice "add-perms-2: profile_id=$profile_id, folder_id=$folder_id, perm=$perm, p=$p"
 
     # Don't add empty permissions...
-    if {!$p} { continue }
+    if {!$p} { return }
+    if {"" == $profile_id} { return }
+
 
     # Make sure the perm entry exists
     set exists_p [db_string perms_exists "select count(*) from im_fs_folder_perms where folder_id = :folder_id and profile_id = :profile_id" -default 0]
