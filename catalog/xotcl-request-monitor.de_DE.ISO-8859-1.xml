@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="xotcl-request-monitor" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="operation_blocked">Ihre Anfrage wurde mehrmals an den Server geschickt und daher abgebrochen. Bitte warten Sie auf das Ergebnis Ihrer Anfrage, bevor Sie sie erneut abschicken [&lt;a href=&quot;%url%&quot;&gt;Weiter&lt;/a&gt;].</msg>
+  <msg key="repeated_operation">Doppelanfrage/Doppelklick</msg>
+</message_catalog>
