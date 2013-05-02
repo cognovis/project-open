@@ -13,6 +13,7 @@ package require xotcl::serializer
   ::xotcl::Object instproc serialize
   ::xotcl::Object instproc show-object
   ::xotcl::Object instforward db_1row
+  ::xotcl::Object instforward db_0or1row
   ::xotcl::Object instproc destroy_on_cleanup
   ::xotcl::Object instproc set_instance_vars_defaults
   ::xotcl::nonposArgs proc integer
@@ -70,19 +71,22 @@ if {$::xotcl::version < 1.5} {
 
 if {[info command ::nx::Object] ne ""} {
   ns_log notice "Defining minimal XOTcl 1 compatibility"
-  ::nsf::alias ::xo::Attribute instvar ::nsf::methods::object::instvar
+  ::nsf::method::alias ::xo::Attribute instvar ::nsf::methods::object::instvar
 
-  # the following line would cause a dependency of an nx object to xotcl (serializer)
-  #::nsf::alias ::nx::Slot istype ::nsf::classes::xotcl::Object::istype
-  ::nx::Slot public method istype {class}  {
-    return [expr {[::nsf::is class $class] && 
-		  [::nsf::dispatch [self] ::nsf::methods::object::info::hastype $class]}]
-  }
+  # The following line would cause a dependency of an nx object to
+  # xotcl (serializer); since XOTcl depends on NX, this would be a
+  # cyclic dependency.
+  #     ::nsf::method::alias ::nx::Slot istype ::nsf::classes::xotcl::Object::istype
+  # Therefore, we just grab the body to reduce dependencies on nsf internals
+  ::nx::Slot public method istype {class}  [::nx::Object info method body ::nsf::classes::xotcl::Object::istype]
   ::nx::Slot public alias set -frame object ::set
-  ::nx::Slot public method exists {var}   {::nsf::existsvar [self] $var}
+  ::nx::Slot public method exists {var}   {::nsf::var::exists [self] $var}
   ::nx::Object public method serialize {} {::Serializer deepSerialize [self]}
   ::nx::Object method set_instance_vars_defaults {} {:configure}
   ::nx::Object public method destroy_on_cleanup {} {set ::xo::cleanup([self]) [list [self] destroy]}
+  ::nx::Object method qn {query_name} {
+    return "dbqd.[:uplevel [list current class]]-[:uplevel [list current method]].$query_name"
+  }
   ::xotcl::Object instproc set_instance_vars_defaults {} {:configure}
   ::xotcl::Object proc setExitHandler {code} {::nsf::exithandler set $code}
 
@@ -91,6 +95,7 @@ if {[info command ::nx::Object] ne ""} {
     ::nx::Object method show-object
     ::nx::Object method set_instance_vars_defaults
     ::nx::Object method destroy_on_cleanup
+    ::nx::Object method qn
     ::nx::Slot method istype
     ::nx::Slot method exists
     ::nx::Slot method set
@@ -128,6 +133,7 @@ namespace eval ::xo {
 }
 
 ::xotcl::Object instforward db_1row -objscope
+::xotcl::Object instforward db_0or1row -objscope
 
 ::xotcl::Object instproc serialize {} {
   ::Serializer deepSerialize [self]
@@ -245,7 +251,7 @@ proc ::! args {
 }
 
 ::xotcl::Object instproc qn query_name {
-  set qn "dbqd.[my uplevel self class]-[my uplevel self proc].$query_name"
+  set qn "dbqd.[my uplevel [list self class]]-[my uplevel [list self proc]].$query_name"
   return $qn
 }
 namespace eval ::xo {
@@ -382,7 +388,7 @@ namespace eval ::xo {
   } else {
 
     # register only once
-    if {[lsearch $registered ::xo::cleanup] == -1} {
+    if {[lsearch $registered ::xo::freeconn] == -1} {
       ns_ictl trace freeconn ::xo::freeconn
     }
     if {[lsearch [ns_ictl gettraces delete] ::xo::at_delete] == -1} {
@@ -414,6 +420,7 @@ namespace eval ::xo {
   }
 
   proc at_cleanup {args} {
+    ::xo::broadcast receive
     #ns_log notice "*** start of cleanup <$args> ([array get ::xo::cleanup])"
     set at_end ""
     foreach {name cmd} [array get ::xo::cleanup] {
@@ -474,6 +481,7 @@ namespace eval ::xo {
     # problem will not occur.
     #
     ns_log notice "ON DELETE $args"
+    ::xo::broadcast clear
     set t0 [clock clicks -milliseconds]
     #
     # Check, if we have a new XOTcl implementation with ::xotcl::finalize
@@ -621,6 +629,43 @@ namespace eval ::xo {
       set last [string last "\n::xo::ns_log_redirector_manager" $blueprint]
       if {$last > -1} { set blueprint [string range $blueprint 0 [expr {$last-1}]]}
       ns_ictl save "$blueprint\n::xo::ns_log_redirector_manager set_level $value"
+    }
+  }
+}
+
+namespace eval ::xo {
+  #
+  # xo::broadcast implements a simple mechanism to send commands to
+  # different connection and scheduled threads. The receiving threads
+  # have to call "xo::broadcast receive" when they are able to process
+  # the commands. The connection threads realize this in xo::atcleanup
+  # after a request was processed (defined in this file).
+  #
+  ::xotcl::Object create ::xo::broadcast
+  ::xo::broadcast proc send {cmd} {
+    foreach thread_info [ns_info threads] {
+      switch -glob -- [lindex $thread_info 0] {
+	-conn:* -
+	-sched:* {
+	  set tid [lindex $thread_info 2]
+	  nsv_lappend broadcast $tid $cmd
+	}
+      }
+    }
+  }
+  ::xo::broadcast proc clear {} {
+    catch {nsv_unset broadcast [ns_thread id]}
+  }
+  ::xo::broadcast proc receive {} {
+    set tid [ns_thread id]
+    if {[nsv_exists broadcast $tid]} {
+      foreach cmd [nsv_get broadcast $tid] {
+	ns_log notice "broadcast received {$cmd}"
+	if {[catch $cmd errorMsg]} {
+	  ns_log notice "broadcast receive error: $errorMsg for cmd $cmd"
+	}
+      }
+      my clear
     }
   }
 }
