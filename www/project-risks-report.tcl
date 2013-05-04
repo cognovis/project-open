@@ -97,7 +97,7 @@ set levels [list \
 
 # Get dynamic risk fields
 #
-set deref_list [im_dynfield_object_attributes_derefs -object_type "im_risk" -prefix "r."]
+set deref_list [im_dynfield::object_attributes_derefs -object_type "im_risk" -prefix "r."]
 set deref_extra_select [join $deref_list ",\n\t"]
 if {"" != $deref_extra_select} { set deref_extra_select ",\n\t$deref_extra_select" }
 
