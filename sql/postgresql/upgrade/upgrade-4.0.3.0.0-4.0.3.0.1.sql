@@ -57,8 +57,8 @@ BEGIN
                 	where 
 			      column_id = 30010;  
 	       EXCEPTION
-			WHEN other THEN 
-			RAISE NOTICE 'Unable change view column attributes for column_id: 30010;
+			WHEN OTHERS THEN 
+			RAISE NOTICE 'Unable change view column attributes for column_id: 30010';
 			RETURN 0;
                END;
 	END IF;
