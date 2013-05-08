@@ -357,12 +357,12 @@ delete from im_view_columns where column_id >= 90000 and column_id < 90099;
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (90000,900,NULL,'Nr',
-'"<a href=/intranet-material/new?[export_url_vars material_id return_url]>$material_nr</a>"',
+'"<a href=/intranet-material/new?form_mode=display&[export_url_vars material_id return_url]>$material_nr</a>"',
 '','',0,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
 extra_select, extra_where, sort_order, visible_for) values (90002,900,NULL,'Name',
-'"<a href=/intranet-material/new?[export_url_vars material_id return_url]>$material_name</a>"',
+'"<a href=/intranet-material/new?form_mode=display&[export_url_vars material_id return_url]>$material_name</a>"',
 '','',2,'');
 
 insert into im_view_columns (column_id, view_id, group_id, column_name, column_render_tcl,
