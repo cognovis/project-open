@@ -13,10 +13,14 @@ Ext.application({
 	'NoteDetail',
 	'NoteList',
 	'NoteNavigationView',
-	'ProjectList'
+	'ProjectDetail',
+	'ProjectTimesheet',
+	'ProjectList',
+	'ProjectNavigationView'
     ],
     controllers: [
-	'NoteNavigationController'
+	'NoteNavigationController',
+	'ProjectNavigationController'
     ],
 
     viewport: {
@@ -30,7 +34,7 @@ Ext.application({
 	    tabBarPosition: 'bottom',
 	    items: [
 		// The application consists of two pages only:
-		{xtype: 'projectList'},
+		{xtype: 'projectNavigationView'},
 		{xtype: 'splashPage'}, 
 		{xtype: 'noteNavigationView'}
 	    ]
