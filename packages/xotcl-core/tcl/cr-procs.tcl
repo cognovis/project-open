@@ -157,7 +157,10 @@ namespace eval ::xo::db {
   }
 
   CrClass instproc unknown { obj args } {
-    my log "unknown called with $obj $args"
+    # When this happens, this is most likely an error. Ease debugging
+    # by writing the call stack to the error log.
+    ::xo::show_stack
+    my log "::xo::db::CrClass: unknown called with $obj $args"
   }
 
   #
@@ -1555,7 +1558,23 @@ namespace eval ::xo::db {
     # remove as well vars and array starting with "__", assuming these
     # are volatile variables created by initialize_loaded_object or
     # similar mechanisms
-    foreach x [my info vars __*] {if {[my array exists $x]} {my array unset $x} {my unset $x}}
+    set arrays {}
+    set scalars {}
+    foreach x [my info vars __*] {
+      if {[my array exists $x]} {
+	lappend arrays $x [my array get $x]
+	my array unset $x
+      } {
+	lappend scalars $x [my set $x]
+	my unset $x
+      }
+    }
+    return [list $arrays $scalars]
+  }
+  CrCache::Item instproc set_non_persistent_vars {vars} {
+    foreach {arrays scalars} $vars break
+    foreach {var value} $arrays {my array set $var $value}
+    foreach {var value} $scalars {my set $var $value}
   }
   CrCache::Item instproc flush_from_cache_and_refresh {} {
     # cache only names with IDs
@@ -1575,8 +1594,9 @@ namespace eval ::xo::db {
       # session.
       set mixins [$obj info mixin]
       $obj mixin [list]
-      $obj remove_non_persistent_vars
+      set npv [$obj remove_non_persistent_vars]
       ns_cache set xotcl_object_cache $obj [$obj serialize]
+      $obj set_non_persistent_vars $npv
       $obj mixin $mixins
     } else {
       # in any case, flush the canonical name
