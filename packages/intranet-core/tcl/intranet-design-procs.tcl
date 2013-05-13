@@ -1259,7 +1259,7 @@ ad_proc -public im_header {
 
 	template::multirow foreach meta {
 	    set row "<meta"
-	    if {"" != $http_equiv} {  append row " http_equiv='$http_equiv'" }
+	    if {"" != $http_equiv} {  append row " http-equiv='$http_equiv'" }
 	    if {"" != $name} {  append row " name='$name'" }
 	    if {"" != $scheme} {  append row " scheme='$scheme'" }
 	    if {"" != $lang} {  append row " lang='$lang'" }
@@ -1511,7 +1511,7 @@ ad_proc -public im_footer {
     return "
     </div> <!-- monitor_frame -->
     <div class=\"footer_hack\">&nbsp;</div>	
-    <div id=\"footer\">
+    <div id=\"footer\" style=\"visibility: visible\">
        [_ intranet-core.Comments] [_ intranet-core.Contact]: 
        <a href=\"mailto:[ad_parameter -package_id [ad_acs_kernel_id] SystemOwner "" "webmaster@localhost"]\">
 	  [ad_parameter -package_id [ad_acs_kernel_id] SystemOwner "" "webmaster@localhost"]
