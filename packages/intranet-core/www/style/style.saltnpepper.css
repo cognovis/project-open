@@ -875,7 +875,7 @@ a   span  {float:none;}
 .component_footer_hack, .footer_hack {
   position: relative;
   z-index: 101;
-  border-top: solid 3px #fff;
+  /* border-top: solid 3px #fff; */
   height: 3px;
   top: -3px;
   width: 100%;
@@ -1316,7 +1316,7 @@ table.list td {
     .form-required-mark {color: #FF0000;}
 
     .form-element, 
-    .component_body tbody tr.* {
+    .component_body tbody tr {
 	height:22px; 
         border-top: 1px solid #F0EDED;
         border-bottom: 1px solid #F0EDED;
