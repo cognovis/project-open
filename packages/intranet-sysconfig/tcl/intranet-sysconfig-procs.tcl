@@ -104,6 +104,12 @@ ad_proc -public im_sysconfig_admin_guide {
     set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $user_id]
     if {!$user_is_admin_p} { return "" }
 
+    # Skip if the very first SysConfig wizard is active
+    # (directly after running a PO system for the first time)
+    set base_config_wizard_enabled_p [db_string base_en "select enabled_p from im_component_plugins where plugin_name = 'System Configuration Wizard'" -default ""]
+    if {"t" == $base_config_wizard_enabled_p} { return "" }
+
+
     set po "<span class=brandsec>&\#93;</span><span class=brandfirst>po</span><span class=brandsec>&\#91;</span>"
     set project_open "<span class=brandsec>&\#93;</span><span class=brandfirst>project-open</span><span class=brandsec>&\#91;</span>"
     set title "Guide to $po Configuration"
