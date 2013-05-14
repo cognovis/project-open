@@ -85,6 +85,7 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
     set valid_through ""
     set price ""
     set currency ""
+    set price_company_id $company_id
 
     for {set j 0} {$j < $header_len} {incr j} {
 	set var_name [lindex $header_csv_fields $j]
@@ -98,7 +99,7 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
 	if { [catch {	
 	    set result [eval $cmd]
 	} err_msg] } {
-	    append page_body \n<font color=red>$err_msg</font>\n";
+	    append page_body "<font color=red>$err_msg</font>\n";
         }
 #	append page_body "set $var_name '$var_value' : $result\n"
     }
@@ -124,14 +125,19 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
         if {$task_type_id == 0} { append errmsg "<li>Didn't find Task Type '$task_type'\n" }
     }
 
-    set material_id [db_string get_uom_id "select category_id from im_categories where category_type='Intranet Translation Subject Area' and category=:material"  -default ""]
+    if {![string equal "" $material]} {
+	set material_id [db_string matid "select material_id from im_materials where lower(trim(material_name)) = lower(trim(:material))"  -default ""]
+	if {"" == $material_id} {
+	    set material_id [db_string matid "select material_id from im_materials where lower(trim(material_nr)) = lower(trim(:material))"  -default ""]
+	}
+    }
 
     # It doesn't matter whether prices are given in European "," or American "." decimals
     regsub {,} $price {.} price
 
 #    append page_body "\n"
 #    append page_body "uom_id=$uom_id\n"
-#    append page_body "company_id=$company_id\n"
+#    append page_body "price_company_id=$price_company_id\n"
 #    append page_body "task_type_id=$task_type_id\n"
 #    append page_body "material_id=$material_id\n"
 #    append page_body "valid_from=$valid_from\n"
@@ -143,7 +149,7 @@ for {set i 1} {$i < $csv_files_len} {incr i} {
        price_id, uom_id, company_id, task_type_id, material_id,
        valid_from, valid_through, currency, price
     ) VALUES (
-       nextval('im_timesheet_prices_seq'), :uom_id, :company_id, :task_type_id, :material_id,
+       nextval('im_timesheet_prices_seq'), :uom_id, :price_company_id, :task_type_id, :material_id,
        :valid_from, :valid_through, :currency, :price
     )"
 
