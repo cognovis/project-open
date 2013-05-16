@@ -18,7 +18,8 @@ ad_page_contract {
 } {
     { report_id:integer "" }
     { report_code "" }
-    {format "html" }
+    { format "html" }
+    { no_template_p 0 }
     {return_url "/intranet-reporting/index"}
     { user_id:integer 0}
     { auto_login "" }
@@ -150,6 +151,12 @@ switch $format {
     default {
 	# just continue with the page to format output using template
     }
+}
+
+
+if {$no_template_p} {
+    doc_return 200 "text/html" $page_body
+    ad_script_abort
 }
 
 
