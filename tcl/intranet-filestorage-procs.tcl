@@ -285,10 +285,10 @@ proc intranet_download { folder_type } {
 	return
     }
 
-    if $file_readable {
-		rp_serve_concrete_file $file		
+    if ($file_readable) {
+	rp_serve_concrete_file $file		
     } else {
-		doc_return 500 text/html "[_ intranet-filestorage.lt_Did_not_find_the_spec]"
+	doc_return 500 text/html "[_ intranet-filestorage.lt_Did_not_find_the_spec]"
     }
 }
 
