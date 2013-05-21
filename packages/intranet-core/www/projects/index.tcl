@@ -346,9 +346,10 @@ if { ![empty_string_p $upper_letter] && [string compare $upper_letter "ALL"] != 
 if { $include_subprojects_p == "f" } {
     lappend criteria "p.parent_id is null"
 }
-if { $include_subproject_level != "" } {
-    lappend criteria "tree_level(p.tree_sortkey) <= $include_subproject_level"
-}
+
+#if { $include_subproject_level != "" } {
+#    lappend criteria "tree_level(p.tree_sortkey) <= $include_subproject_level"
+#}
 
 
 
