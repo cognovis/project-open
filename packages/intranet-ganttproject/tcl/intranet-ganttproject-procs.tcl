@@ -3174,7 +3174,7 @@ ad_proc -public im_ganttproject_gantt_component {
 
 		    set cell_html "<td>
 			  <table width='100%' border=0 cellspacing=0 cellpadding=0 bordercolor=black style='background-color:\#8CB6CE'>
-			    <tr height=11><td></td></tr>
+			    <tr height=11 style='background-color:\#8CB6CE'><td style='background-color:\#8CB6CE'></td></tr>
 			  </table>
 		    </td>\n"
 
@@ -3193,7 +3193,7 @@ ad_proc -public im_ganttproject_gantt_component {
 		    set cell_html "
 			<td colspan=$last_colspan>
 			  <table width='100%' border=0 cellspacing=0 cellpadding=0 bordercolor=black style='background-color:\#8CB6CE'>
-			    <tr height=11><td></td></tr>
+			    <tr height=11 style='background-color:\#8CB6CE'><td style='background-color:\#8CB6CE'></td></tr>
 			  </table>
 			</td>\n"
 		}

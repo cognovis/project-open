@@ -32,7 +32,6 @@
 
   - README.project-open.X.Y.Z.V.W - this file
   - LICENSE.project-open.X.Y.Z.V.W - the license for the included software
-  - pg_dump.X.Y.Z.V.W.sql - a database dump of the current version
   - packages/* - the ]project-open[ source code
 
   This package does not contains the AOLServer application server
@@ -96,20 +95,23 @@
   - Please follow the upgrade instructions in the upper right hand side
     of the Home page. Depending on the age of your previous version you 
     may have to restart the server several times.
+  - In the case of major updates the /intranet/index page by be broken.
+    In this case please use /acs-admin/apm/ and check for instructions
+    about the upgrade oder of the packages.
 
 
   ______________________________________________________________________
 
   5. Help is available
 
-  Help is available at the "Open Discussion forum at 
+  Free elp is available at the "Open Discussion" forum at 
   http://sourceforge.net/projects/project-open/. You will need to create
   a SourceForge login before you can post to the discussion forum.
-
   Please check the forum for other people with similar issues like yours
-  before creating a new thread.
-  If you post, please include the error message of your browser.
+  before creating a new thread. If you post, please include the error 
+  message of your browser.
 
+  For professional services please contact us at info@project-open.com.
 
   ______________________________________________________________________
 
@@ -125,6 +127,15 @@
     http://www.project-open.org/
     Please register yourself on our Web site. This way we are going
     to send you the ]po[ newsletter once or twice per year.
+
+  - Twitter:
+    http://www.twitter.com/projop (@projop)
+
+  - Facebook:
+    http://www.facebook.com/projectopen.org
+
+  - LinkedIn:
+    http://www.linkedin.com/in/fraber
 
   - ]project-open[ RSS Feed:
     http://www.project-open.net/rss/project-open-community.rss

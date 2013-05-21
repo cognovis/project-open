@@ -1517,6 +1517,8 @@ ad_proc -private im_rest_post_object_type {
     # Get the content of the HTTP POST request
     set content [im_rest_get_content]
 
+    ns_log Notice "im_rest_post_object_type: $rest_otype: [llength [info commands im_rest_post_object_type_$rest_otype]]"
+
     # Switch to object specific procedures for handling new object creation
     # Check if the procedure exists.
     if {0 != [llength [info commands im_rest_post_object_type_$rest_otype]]} {

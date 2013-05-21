@@ -171,8 +171,8 @@ namespace eval ::xo::tdom {
         set HTMLattribute $attribute
       }
       #my msg "[my name] check for $attribute => [my exists $attribute]"
-      if {[my uplevel info exists $attribute]} {
-        lappend pairs $HTMLattribute [my uplevel set $attribute]
+      if {[my uplevel [list info exists $attribute]]} {
+        lappend pairs $HTMLattribute [my uplevel [list set $attribute]]
       }
     }
     return $pairs
@@ -196,6 +196,13 @@ namespace eval ::xo::tdom {
 
 
 namespace eval ::xo {
+  #
+  # Escape provided char in provided string with backslash
+  #
+  proc backslash_escape {char string} {
+    return [string map [list $char \\$char] $string]
+  }
+
   #
   # Localization
   #
@@ -424,7 +431,8 @@ namespace eval ::xo {
     #ns_return 200 text/plain $output
     my instvar name
     if {![my exists name]} {set name "table"}
-    ns_set put [ns_conn outputheaders] Content-Disposition "attachment;filename=$name.csv"
+    set fn [xo::backslash_escape \" $name.csv]
+    ns_set put [ns_conn outputheaders] Content-Disposition "attachment;filename=\"$fn\""
     ns_return 200 text/csv $output
   }
 
@@ -458,7 +466,7 @@ namespace eval ::xo {
 
     Class Field \
 	-superclass ::xo::OrderedComposite::Child \
-	-parameter {label {html {}} {orderby ""} name {richtext false} no_csv {CSSclass ""}} \
+	-parameter {label {html {}} {orderby ""} name {richtext false} no_csv {CSSclass ""} {hide 0}} \
 	-instproc init {} {
 	  my set name [namespace tail [self]]
 	} \
@@ -472,7 +480,7 @@ namespace eval ::xo {
 
     Class BulkAction \
 	-superclass ::xo::OrderedComposite::Child \
-	-parameter {name id {html {}}} \
+	-parameter {name id {html {}} {hide 0}} \
         -instproc actions {cmd} {
           #my init
           set grandParent [[my info parent] info parent]
