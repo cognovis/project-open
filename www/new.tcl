@@ -107,23 +107,6 @@ set context [list $page_title]
 
 
 
-if {![info exists risk_probability_percent] || ![info exists risk_impact]} {
-    set admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
-    set admin_html ""
-    if {$admin_p} { set admin_html "<a href=/intranet-dynfield/attribute-type-map?object_type=im_risk>Click here to enable fields</a><br>&nbsp;<br>" }
-
-    ad_return_complaint 1 "<b>Configuration Error</b>:<br>
-	The fields 'risk_probability' or 'risk_impact' are not activated for your risk type.<br>&nbsp;<br>
-	Please notify your application administrator and ask him or her to enable these
-	fields for all types of risks in:<br>
-	Admin -&gt; DynFields -&gt; Object Types -&gt; Risk -&gt; Attribute Type Map and set
-	all values to 'E'=Edit (3rd option) for all risk types..<br>&nbsp;<br>
-	$admin_html
-    "
-    ad_script_abort
-}
-
-
 # ----------------------------------------------
 # Determine risk type
 
@@ -258,6 +241,26 @@ set field_cnt [im_dynfield::append_attributes_to_form \
 		   -form_id "riskmanagement_risk" \
 ]
 
+
+
+
+# ------------------------------------------------------------------
+# Prepare error message
+# ------------------------------------------------------------------
+
+set admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
+set admin_html ""
+if {$admin_p} { set admin_html "<a href=/intranet-dynfield/attribute-type-map?object_type=im_risk>Click here to enable fields</a><br>&nbsp;<br>" }
+set conf_error_message "<b>Configuration Error</b>:<br>
+	The fields 'risk_probability' or 'risk_impact' are not activated for your risk type.<br>&nbsp;<br>
+	Please notify your application administrator and ask him or her to enable these
+	fields for all types of risks in:<br>
+	Admin -&gt; DynFields -&gt; Object Types -&gt; Risk -&gt; Attribute Type Map and set
+	all values to 'E'=Edit (3rd option) for all risk types..<br>&nbsp;<br>
+	$admin_html
+"
+
+
 # ------------------------------------------------------------------
 # Form Actions
 # ------------------------------------------------------------------
@@ -277,6 +280,10 @@ ad_form -extend -name riskmanagement_risk -on_request {
 	where	r.risk_id = :risk_id
 
 } -new_data {
+
+    if {![info exists risk_probability_percent] || ![info exists risk_impact]} {
+	ad_return_complaint 1 $conf_error_message
+    }
 
     set risk_id [db_string new_risk "
 	select im_risk__new(
@@ -307,6 +314,10 @@ ad_form -extend -name riskmanagement_risk -on_request {
     ad_script_abort
 
 } -edit_data {
+
+    if {![info exists risk_probability_percent] || ![info exists risk_impact]} {
+	ad_return_complaint 1 $conf_error_message
+    }
 
     db_dml risk_update "
 	update im_risks set

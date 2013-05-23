@@ -237,13 +237,13 @@ SELECT im_category_new (75210, 'Delete', 'Intranet Risk Action');
 create or replace view im_risk_status as
 select	category_id as risk_status_id, category as risk_status
 from	im_categories
-where	category_type = 'Intranet Risks Status'
+where	category_type = 'Intranet Risk Status'
 	and enabled_p = 't';
 
 create or replace view im_risk_types as
 select	category_id as risk_type_id, category as risk_type
 from	im_categories
-where	category_type = 'Intranet Risks Type'
+where	category_type = 'Intranet Risk Type'
 	and enabled_p = 't';
 
 
