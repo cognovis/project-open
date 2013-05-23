@@ -17,8 +17,5 @@
 	    </td>
 	</tr>
 </if>
-	</form>
-	</table>
-</if>
 </table>
 </form>
