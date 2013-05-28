@@ -1905,7 +1905,8 @@ if {$linked_invoice_ids ne ""} {
     set linked_list_sql "
 select
 	invoice_id as linked_invoice_id,
-        invoice_nr as linked_invoice_nr
+        invoice_nr as linked_invoice_nr,
+        effective_date as linked_effective_date
 from
 	im_invoices
 where
@@ -1931,6 +1932,7 @@ where
     append linked_list_html "
 	</table>
         </form>\n"
+    set linked_effective_date_pretty [lc_time_fmt $linked_effective_date "%x" $locale]
 }
 
 #set admin_p 1
