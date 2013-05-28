@@ -209,12 +209,12 @@ set report_def [list \
 	""
 	""
 	""
-	"|"
+	"&nbsp;"
 	"\#align=right <b>$program_budget_hours</b>"
 	""
 	""
 	""
-	"|"
+	"&nbsp;"
 	""
 	""
     } \
@@ -226,12 +226,12 @@ set report_def [list \
 		"\#align=right $project_cost"
 		"\#align=right $percent_completed_rounded"
 		"\#align=right $budget_overrun_percentage"
-		"|"
+		"&nbsp;"
 		"\#align=right $project_budget_hours"
 		"\#align=right $reported_hours_cache"
 		"\#align=right $percent_completed_rounded"
 		"\#align=right $budget_hours_overrun_percentage"
-		"|"
+		"&nbsp;"
 		"\#align=right $cost_timesheet_logged_cache"
 		"\#align=right $cost_bills_cache"
 	    }
@@ -244,12 +244,12 @@ set report_def [list \
 	""
 	""
 	""
-	"|"
+	"&nbsp;"
 	"\#align=right [expr $program_budget_hours-$budget_hours_sum]"
 	""
 	""
 	""
-	"|"
+	"&nbsp;"
 	""
 	""
     } \
@@ -390,7 +390,15 @@ switch $output_format {
 	</tr>
 	</table>
 	</form>
-	<table border=0 cellspacing=1 cellpadding=1>\n"
+	<br>
+	<table border=0 cellspacing=3 cellpadding=3>\n
+	<tr>\n
+		<td colspan='2' style='background-color: #fff;'>&nbsp;</td>\n
+		<td colspan='4' class='rowtitle'>[lang::message::lookup "" intranet-core.Costs "Costs"]</td>\n
+		<td>&nbsp;</td>\n
+		<td colspan='4' class='rowtitle'>[lang::message::lookup "" intranet-timesheet2.Hours "Hours"]</td>\n
+                <td colspan='2' style='background-color: #fff;'>&nbsp;</td>\n
+	</tr>\n"
     }
 }
 
@@ -433,7 +441,7 @@ db_foreach sql $sql {
 
     # Calculated variables
     set project_cost [expr $cost_timesheet_logged_cache + $cost_bills_cache]
-    set budget_overrun_percentage "undef"
+    set budget_overrun_percentage  [lang::message::lookup "" intranet-reporting.Undefined "Undefined"]
     if {0.0 != $percent_completed && 0.0 != $project_budget_converted} {
 	set percent_consumed [expr 100.0 * ($project_cost / $project_budget_converted)]
 	set budget_overrun_percentage [expr (100.0 * $percent_consumed / $percent_completed) - 100.0]
@@ -441,7 +449,7 @@ db_foreach sql $sql {
 	if {$budget_overrun_percentage > 5.0} { set budget_overrun_percentage "<font color=red>$budget_overrun_percentage</font>" }
     }
 
-    set budget_hours_overrun_percentage "undef"
+    set budget_hours_overrun_percentage [lang::message::lookup "" intranet-reporting.Undefined "Undefined"]
     if {0.0 != $percent_completed && 0.0 != $project_budget_hours} {
 	set percent_consumed [expr 100.0 * ($reported_hours_cache / $project_budget_hours)]
 	set budget_hours_overrun_percentage [expr (100.0 * $percent_consumed / $percent_completed) - 100.0]
