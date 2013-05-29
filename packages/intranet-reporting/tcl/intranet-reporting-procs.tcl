@@ -364,7 +364,7 @@ ad_proc im_report_render_footer {
     A group_var with a value different from the current one is the
     trigger to display the footer line.
 } {
-    ns_log NOTICE "intranet-reporting-procs::im_report_render_footer-absence_array_list: $absence_array_list"
+    if {$debug} { ns_log Notice "intranet-reporting-procs::im_report_render_footer-absence_array_list: $absence_array_list" }
     if {$debug} { ns_log Notice "render_footer:" }
     array set last_value_array $last_value_array_list
 
@@ -414,7 +414,6 @@ ad_proc im_report_render_footer {
 		set cmd "set value \"$field\""
 		set value [uplevel 1 $cmd]
 	    }
-	    # ns_log NOTICE "intranet-reporting-procs::im_report_render_footer: Setting field: $field -> value: $value"
 	    lappend footer_line $value
 	}
 	set footer_record [list \
@@ -547,10 +546,6 @@ ad_proc im_report_display_footer {
 	array set footer_record $footer_record_list
 	set new_record_value $footer_record(new_value)
 	set footer_line $footer_record(line)
-
-	ns_log NOTICE "intranet-reporting-procs::im_report_display_footer-footer_record_list: $footer_record_list"
-        ns_log NOTICE "intranet-reporting-procs::im_report_display_footer-new_record_value: $new_record_value"
-        ns_log NOTICE "intranet-reporting-procs::im_report_display_footer-footer_line: $footer_line"
 
 	# -------------------------------------------------------
 	# Write out the header if last_value != new_value
