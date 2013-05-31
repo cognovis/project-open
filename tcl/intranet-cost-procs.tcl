@@ -1398,6 +1398,9 @@ ad_proc im_costs_project_finance_component {
 	    set atleast_one_unreadable_p 0
 	}
 
+	# Avoid errors with strange cost_type_ids from planning etc
+	if {![info exists subtotals($old_cost_type_id)]} { set subtotals($old_cost_type_id) 0 }
+
 	# Check permissions - query is cached
 	set read_p [im_cost_center_read_p $cost_center_id $cost_type_id $user_id]
 	if {!$read_p} { 
