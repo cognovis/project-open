@@ -146,7 +146,7 @@ if {[llength $contact_ids] > 0} {
     set company_contact_id [lindex $contact_ids 0]
 }
 
-if {$company_contact_id eq ""} {
+if {![exists_and_not_null company_contact_id]} {
     set company_contact_id $accounting_contact_id
 }
 if {"" == $company_contact_id} { set company_contact_id $accounting_contact_id }
