@@ -401,6 +401,14 @@ db_1row office_info_query "
 # Get everything about the contact person.
 # ---------------------------------------------------------------
 
+# Make sure to unset the company name if the company is a freelancer
+
+if {[string match "Freelance*" $company_name]} {
+    set company_name_pretty ""
+} else {
+    set company_name_pretty $company_name
+}
+
 # Use the "company_contact_id" of the invoices as the main contact.
 # Fallback to the accounting_contact_id and primary_contact_id
 # if not present.
