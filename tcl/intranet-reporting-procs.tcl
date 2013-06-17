@@ -185,7 +185,7 @@ ad_proc im_report_render_cell {
     into a report HTTP session
 } {
     set td_fields ""
-    
+    ns_log NOTICE "intranet-reporting-procs::im_report_render_cell: $cell" 
     # Remove leading spaces
     regexp {^[ ]*(.*)} $cell match cell
 
@@ -743,7 +743,7 @@ ad_proc im_report_write_http_headers {
     append content_type "; charset=$http_encoding"
 
     # Set content disposition for CSV exports
-    if {$output_format == "csv" && $report_name != ""} {
+    if { $output_format == "csv" && $report_name != ""} {
 	set report_key [string tolower $report_name]
 	regsub -all {[^a-zA-z0-9_]} $report_key "_" report_key
 	regsub -all {_+} $report_key "_" report_key
@@ -751,6 +751,13 @@ ad_proc im_report_write_http_headers {
 MIME-Version: 1.0
 Content-Type: $content_type
 Content-Disposition: attachment; filename=${report_key}.csv\r\n"
+    } elseif { $output_format == "txt" && $report_name != "" } {
+        set report_key [string tolower $report_name]
+        regsub -all {[^a-zA-z0-9_]} $report_key "_" report_key
+        regsub -all {_+} $report_key "_" report_key
+        set all_the_headers "HTTP/1.0 200 OK
+MIME-Version: 1.0
+Content-Disposition: attachment; filename=${report_key}.txt\r\n"
     } else {
 	set all_the_headers "HTTP/1.0 200 OK
 MIME-Version: 1.0
