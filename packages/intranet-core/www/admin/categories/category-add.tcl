@@ -81,12 +81,6 @@ if {[info exists mailing_list_info] && [string length $mailing_list_info] > 4000
     append exception_text "<li> [lang::message::lookup "" intranet-core.Category_MailingListInfo_Less_Then_4000_Chars "Please limit your Mailing list information to 4000 characters"]</li>"
 }
 
-# Value for en_US is mandatory 
-if { ![info exists translation("en_US")] } {
-    incr exception_count
-    append exception_text "<li> [lang::message::lookup "" intranet-core.Category_En_Us_Mandatory "Please always provide a value for locale: 'en_US', even though it is not needed"]</li>"
-}
-
 if { $exception_count > 0 } {
     ad_return_complaint $exception_count "<ul>$exception_text</ul>"
     return
