@@ -27,6 +27,8 @@ ad_library {
 ad_proc -public im_view_set_def_vars { 
     {-view_id ""}
     {-view_name ""}
+    {-order_by ""}
+    {-url ""}
     -array_name:required
  } {
      Set the vars defining a view for reuse in the column definition and the SQL statements
@@ -79,8 +81,8 @@ order by
 	
 	set admin_html ""
 	if {$admin_p} { 
-	    set url [export_vars -base "/intranet/admin/views/new-column" {column_id return_url}]
-	    set admin_html "<a href='$url'>[im_gif wrench ""]</a>" 
+	    set admin_url [export_vars -base "/intranet/admin/views/new-column" {column_id return_url}]
+	    set admin_html "<a href='$admin_url'>[im_gif wrench ""]</a>" 
 	}
 	
 	if {"" == $visible_for || [eval $visible_for]} {
@@ -90,20 +92,96 @@ order by
 	    if {"" != $extra_select} { lappend extra_selects $extra_select }
 	    if {"" != $extra_from} { lappend extra_froms $extra_from }
 	    if {"" != $extra_where} { lappend extra_wheres $extra_where }
-	    if {"" != $order_by_clause && $order_by==$column_name} {
-		set view_order_by_clause $order_by_clause
+	    if {"" != $order_by_clause} {
+		lappend order_by_clauses $order_by_clause
+	    } elseif {"" != $variable_name} {
+		lappend order_by_clauses $variable_name
+	    } else {
+		# Desparate ploy to find the correct order by
+		lappend order_by_clauses [string trim [lindex [split $column_render_tcl] 0] "$"]
 	    }
 	}
     }
 
+    # Prepare the column headers
+    set column_headers_pretty [list]
+    set ctr 0
+    foreach col $column_headers {
+	set wrench_html [lindex $column_headers_admin $ctr]
+	regsub -all " " $col "_" col_txt
+	set col_txt [lang::message::lookup "" intranet-core.$col_txt $col]
+	set order_by_clause [lindex $order_by_clauses $ctr] 
+	set old_order_bys [split $order_by ","]	
+	if {$order_by_clause == [lindex $old_order_bys 0]} {
+	    lappend column_headers_pretty "$col_txt$wrench_html"
+	} else {
+	    # If we have already an order_by, sort by that secondarily
+	    # This way the user can click through multiple orderings
+	    # and gets a good combination
+	    set order_bys [list $order_by_clause]
+	    foreach old_order_by $old_order_bys {
+		if {[lsearch $old_order_by $order_bys]<0} {
+		    # This clause wasn't found already, so just append
+		    # it
+		    lappend order_bys $old_order_by
+		}
+	    }
+	   
+	    #set col [lang::util::suggest_key $col]
+	    lappend column_headers_pretty "<a href=\"${url}&order_by=[join $order_bys ","]\">$col_txt</a>$wrench_html"
+	}
+	incr ctr
+    }
+
     # Build the array
     set view_array(column_headers) $column_headers
+    set view_array(column_headers_pretty) $column_headers_pretty
     set view_array(column_vars) $column_vars
     set view_array(column_headers_admin) $column_headers_admin
-    set view_array(extra_select) $extra_select
-    set view_array(extra_from) $extra_from
-    set view_array(extra_where) $extra_where
+    set view_array(extra_selects) $extra_selects
+    set view_array(extra_froms) $extra_froms
+    set view_array(extra_wheres) $extra_wheres
     set view_array(order_by_clause) $view_order_by_clause
+
+}
+
+ad_proc -public im_view_process_def_vars { 
+    -array_name:required
+} {
+     Process the vars of the table to correctly format the headers and join the extra statements
+    This is separate from the define statement, so you can add additional elements in the code.
+
+    Will set the following in the array:
+    - table_header_html
+    - extra_selects 
+    - extra_froms
+    - extra_wheres
+} {
+    upvar 1 $array_name view_array
+    set view_array(table_header_html) ""
+    set view_array(extra_froms_sql) ""
+    set view_array(extra_selects_sql) ""
+    set view_array(extra_wheres_sql) ""
+    set view_array(extra_group_by_sql) ""
+
+    foreach col $view_array(column_headers_pretty) {
+	ds_comment "column: $col"
+	# Append the months to the header
+	append view_array(table_header_html) "<td class=rowtitle>$col</td>\n"
+    }
+
+    foreach extra_from $view_array(extra_froms) {
+	append view_array(extra_froms_sql) ",$extra_from \n\t"
+    }
+
+    foreach extra_select $view_array(extra_selects) {
+	append view_array(extra_selects_sql) ",$extra_select \n\t"
+	append view_array(extra_group_by_sql) ",[lindex [split $extra_select " "] 0] \n\t"
+    }
+    
+    foreach extra_where $view_array(extra_wheres) {
+	append view_array(extra_wheres_sql) ",$extra_where \n\t"
+    }
 
 }
 
