@@ -165,7 +165,6 @@ ad_proc -public im_view_process_def_vars {
     set view_array(extra_group_by_sql) ""
 
     foreach col $view_array(column_headers_pretty) {
-	ds_comment "column: $col"
 	# Append the months to the header
 	append view_array(table_header_html) "<td class=rowtitle>$col</td>\n"
     }
@@ -180,7 +179,7 @@ ad_proc -public im_view_process_def_vars {
     }
     
     foreach extra_where $view_array(extra_wheres) {
-	append view_array(extra_wheres_sql) ",$extra_where \n\t"
+	append view_array(extra_wheres_sql) " and $extra_where \n\t"
     }
 
 }
