@@ -35,7 +35,7 @@ ad_page_contract {
     { letter:trim "all" }
     { view_name "" }
     { view_type "" }
-    { filter_advanced_p:integer 0 }
+    { filter_advanced_p:integer 1 }
 }
 
 # ---------------------------------------------------------------

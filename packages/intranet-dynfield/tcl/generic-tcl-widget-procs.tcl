@@ -60,7 +60,6 @@ ad_proc -public template::widget::generic_tcl { element_reference tag_attributes
     if {$global_var_pos >= 0} {
 	set global_var_name [lindex $params [expr $global_var_pos +1]]
 	set $global_var_name [set ::$global_var_name]
-	ds_comment "$global_var_name [set $global_var_name]"
     }
     
     set memoize_pos [lsearch $params memoize_p]

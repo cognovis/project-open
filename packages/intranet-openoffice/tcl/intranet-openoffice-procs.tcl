@@ -302,3 +302,30 @@ ad_proc -public intranet_openoffice::invoice_pdf {
     content::item::set_live_revision -revision_id $file_revision_id
     return $file_revision_id
 }
+
+ad_proc -public -callback im_timesheet_report_filter -impl intranet-openoffice-spreadsheet {
+    {-form_id:required}
+} {
+    Add the filter for the output_format
+} {
+    uplevel {
+        set output_format_options [concat $output_format_options [list [list Excel xls]] [list [list Openoffice ods]] [list [list PDF pdf]]]
+    }
+}
+
+ad_proc -public -callback im_timesheet_report_before_render -impl intranet-openoffice-spreadsheet {
+    {-view_name:required}
+    {-view_type:required}
+    {-sql:required}
+    {-table_header ""}
+    {-variable_set ""}
+} {
+    Depending on the view_type return a spreadsheet in Excel / Openoffice or PDF
+} {
+ 
+    # Only execute for view types which are supported
+    if {[lsearch [list xls pdf ods] $view_type] > -1} {
+        intranet_openoffice::spreadsheet -view_name $view_name -sql $sql -output_filename "timesheet.$view_type" -table_name "$table_header" -variable_set $variable_set
+        ad_script_abort
+    }
+}

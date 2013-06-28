@@ -945,7 +945,6 @@ ad_proc -public im_project_options {
     set options [list]
 
     template::multirow foreach multirow {
-	ds_comment "malte $project_id"
 	set indent ""
 	for {set i 0} {$i < $tree_level} { incr i} { append indent "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" }
 	lappend options [list "$indent$project_name_shortened" $project_id]
@@ -3359,7 +3358,6 @@ ad_proc -public im_project_get_all_members {
     set project_list [im_project_options -include_empty 0 -project_status_id $project_status_id -exclude_tasks_p 1 -no_conn_p 1]
     
     set user_ids [list]
-    ds_comment "das $project_list :: $project_status_id"
     foreach element $project_list {
 	set project_id [lindex $element 1]
 	

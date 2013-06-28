@@ -58,7 +58,6 @@ db_multirow -extend {attrib_var value} task_info dynfield_attribs_sql "
 
     if {$widget eq "richtext"} {
 	set value [template::util::richtext::get_property contents $value]
-	ds_comment "richtext:: $value"
     }
 
     # Set the value

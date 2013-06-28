@@ -155,6 +155,7 @@ if {[llength $rep_cost_ids] == 0} {
 # ------------------------------------------------------------------
 
 set currency_options [im_currency_options]
+set department_options [im_department_options]
 
 if {"" == $end_date} {
     set end_date $end_century

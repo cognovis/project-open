@@ -463,14 +463,15 @@ ad_proc im_projects_csv1 {
 		im_category_from_id(im_projects.billing_type_id) as billing_type,
 		to_char(end_date, 'HH24:MI') as end_date_time
 	FROM
-		im_projects
-		LEFT OUTER JOIN im_timesheet_tasks ON (im_projects.project_id = im_timsheet_tasks.task_id),
+		im_projects p, im_projects
+		LEFT OUTER JOIN im_timesheet_tasks ON (im_projects.project_id = im_timesheet_tasks.task_id),
 		(select	company_id,
 			company_name,
 			manager_id
 		from	im_companies) c
 	WHERE
 		im_projects.company_id = c.company_id
+                and p.project_id = im_projects.project_id
 		$where_clause
     "
 

@@ -336,7 +336,7 @@ ad_proc -public im_dynfield::search_sql_criteria_from_form {
 			}
 		    }
 		}
-		integer - number - float - generic_sql {
+		integer - number - float - generic_sql - im_category_tree - select - generic_tcl {
 		    lappend criteria "$attribute_table_name.$attribute_name = :$attribute_name"
 		}
 		im_cost_center_tree {
@@ -844,7 +844,7 @@ ad_proc -public im_dynfield::widget_request {
 		            }
 		    
 		            if { [string eq $required_p "f"] && ![string eq $widget "checkbox"]} {
-			            set option_list [linsert $option_list -1 [list " [_ intranet-dynfield.no_value] " ""]]
+			            set option_list [linsert $option_list -1 [list "" ""]]
 		            }
 
 		            # Drop-down widgets need an options list
@@ -1484,7 +1484,7 @@ ad_proc -public im_dynfield::append_attribute_to_form {
         checkbox - radio - select - multiselect - im_category_tree - category_tree {
 	    # These widgets need an additional -options parameter
             if { [string eq $required_p "f"] && ![string eq $widget "checkbox"]} {
-                set option_parameters [linsert $option_parameters -1 [list " [_ intranet-dynfield.no_value] " ""]]
+                set option_parameters [linsert $option_parameters -1 [list "" ""]]
             }
 
             if {![template::element::exists $form_id "$attribute_name"]} {

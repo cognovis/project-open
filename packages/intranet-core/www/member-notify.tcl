@@ -244,7 +244,7 @@ foreach email $email_list {
 	    -body $message_subst \
 	    -file_ids $attachment_ci_id
     } errmsg]} {
-        ns_log Error "member-notify: Error sending to \"$email\": $errmsg"
+        ns_log Error "member-notify: Error sending from \"$sender_email\" to \"$email\": $errmsg"
 	ad_return_error $subject "<p>Error sending out mail:</p><div><code>[ad_quotehtml $errmsg]</code></div>"
 	ad_script_abort
     }

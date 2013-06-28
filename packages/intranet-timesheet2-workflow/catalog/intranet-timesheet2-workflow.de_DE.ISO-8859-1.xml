@@ -16,6 +16,10 @@
   <msg key="Modify_Included_Hours">Verändern der enthaltenen Stunden</msg>
   <msg key="Modify_Logged_Hours">Verändern der geloggten Stunden</msg>
   <msg key="Note">Kommentar</msg>
+  <msg key="Notification_Body_Notify_Applicant_TS_Approved">Ihre Stunden wurden bestätigt:</msg>
+  <msg key="Notification_Body_Notify_Applicant_TS_Not_Approved">Ihre Stunden wurden nicht bestätigt</msg>
+  <msg key="Notification_Subject_Notify_Applicant_TS_Approved">Zeiterfassung</msg>
+  <msg key="Notification_Subject_Notify_Applicant_TS_Not_Approved">Zeiterfassung</msg>
   <msg key="Process_finished">Prozess abgeschlossen</msg>
   <msg key="Ready_to_Confirm_Hours">Bereit zur Bestätigung der Stunden</msg>
   <msg key="Ready_to_Confirmed">Bereit zur Bestätigung</msg>
@@ -28,8 +32,4 @@
   <msg key="Timesheet_Conf_Object">Geloggte Stunden bestätigen</msg>
   <msg key="Timesheet_Not_OK">Zeiterfassung nicht OK</msg>
   <msg key="Timesheet_OK">Zeiterfassung OK</msg>
-  <msg key="Notification_Body_Notify_Applicant_TS_Approved">Ihre Stunden wurden bestätigt:</msg>
-  <msg key="Notification_Body_Notify_Applicant_TS_Not_Approved">Ihre Stunden wurden nicht bestätigt</msg>
-  <msg key="Notification_Subject_Notify_Applicant_TS_Approved">Zeiterfassung</msg>
-  <msg key="Notification_Subject_Notify_Applicant_TS_Not_Approved">Zeiterfassung</msg>
 </message_catalog>

@@ -169,7 +169,10 @@ foreach csv_line_fields $values_list_of_lists {
     }
 
     # Get the first and last month
-    set current_month [db_string first_month "select to_char(min(item_date),'YYMM') from im_planning_items"]
+    
+#    set current_month [db_string first_month "select
+#    to_char(min(item_date),'YYMM') from im_planning_items"]
+    set current_month "1201"
     if {$current_month eq ""} {
 	set current_month [db_string first_month "select to_char(now(),'YYMM') from dual"]
     }
@@ -190,7 +193,7 @@ foreach csv_line_fields $values_list_of_lists {
 	lappend months $current_month
 	set current_month [db_string current_month "select to_char(to_date(:current_month,'YYMM') + interval '1 month','YYMM') from dual"]
     }
-
+    
     set employee_id [db_string employee "select max(employee_id) from im_employees where trim(personnel_number) = :personnel_number" -default ""]
     set project_id ""
         
@@ -204,7 +207,7 @@ foreach csv_line_fields $values_list_of_lists {
 	set avail ""
 	foreach month $months {
 	    if {![info exists $month]} {
-		ns_write "<li>ERROR: We could not find an entry for $employee_id with personnel_number $personnel_number in $project_id for $month</li>"
+#		ns_write "<li>Warning: We could not find an entry for $employee_id with personnel_number $personnel_number in $project_id for $month</li>"
 		continue
 	    }
 	    set start_date "01$month"
