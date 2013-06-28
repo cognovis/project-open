@@ -623,6 +623,17 @@ ad_proc -public im_conf_item_list_component {
 	lappend criteria "ci.conf_item_type_id in ([join [im_sub_categories $restrict_to_type_id] ","])"
     }
 
+    # Associated Object
+    if {[string is integer $object_id] && $object_id > 0} {
+	lappend criteria "ci.conf_item_id in (
+		select	 r.object_id_two
+		from	 acs_rels r,
+			 im_conf_item_project_rels cipr
+		where	 r.rel_id = cipr.rel_id and
+			 r.object_id_one = :object_id
+	)"
+    }
+
     # Owner is stictly the owner_id of the conf_item
     if {[string is integer $owner_id] && $owner_id > 0} {
 	lappend criteria "ci.conf_item_owner_id = :owner_id"

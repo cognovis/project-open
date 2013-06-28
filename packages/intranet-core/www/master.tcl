@@ -120,7 +120,7 @@ if { $show_feedback_p } {
     template::head::add_javascript -src "/intranet/js/jquery.feedbackBadge.min.js" -order 1
 }
 
-set feedback_url "<a href=\"[export_vars -base "/intranet/report-bug-on-page" {{[im_component_page_url] [im_url_with_query]}}]\" title=\"Give us feedback\" id=\"feedback-badge-right\">"
+set feedback_url "<a href=\"[export_vars -base "/intranet/report-bug-on-page" {{page_url [im_url_with_query]}}]\" title='Give us feedback' id='feedback-badge-right' target='new'>"
 append feedback_url "<span>[lang::message::lookup "" intranet-core.Feedback "Feedback"]</span></a>"
 
 # Fraber 121008: Write out permission debugging

@@ -413,7 +413,10 @@ if {[string match "Freelance*" $company_name]} {
 # Fallback to the accounting_contact_id and primary_contact_id
 # if not present.
 
+if { ![info exists company_contact_id] } { set company_contact_id ""}
+
 set company_contact_orig $company_contact_id
+
 if {"" == $company_contact_id} { 
     set company_contact_id $accounting_contact_id
 }

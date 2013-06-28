@@ -63,16 +63,14 @@ set context ""
 set help_text "
 <strong><nobr>$page_title</nobr></strong>
 <br>
-This report shows programs and their contained projects
-with budgets vs. consumed resources (Earned Value Analysis).
-<br>
-Programs need to be of type 'Program' and in status 'open' 
-in order to appear.
-Projects need to be main-projects (no sub-projects), start 
-before end-date and end after start-date.
+<ul>
+<li>This report shows programs and their contained projects with budgets vs. consumed resources (Earned Value Analysis).</li>
+<li>Programs need to be of type 'Program' and in status 'open' in order to appear.</li>
+<li>Projects need to be main-projects (no sub-projects), start before end-date and end after start-date.</li>
+<li>Results include 'Start Date' and exclude 'End Date'</li>
+</ul>
 <br>
 "
-
 
 # ------------------------------------------------------------
 # Defaults
@@ -209,12 +207,12 @@ set report_def [list \
 	""
 	""
 	""
-	"|"
+	"&nbsp;"
 	"\#align=right <b>$program_budget_hours</b>"
 	""
 	""
 	""
-	"|"
+	"&nbsp;"
 	""
 	""
     } \
@@ -222,34 +220,34 @@ set report_def [list \
 	    header { 
 		""
 		"<a href=$project_url$project_id>$project_name</a>"
-		"\#align=right $project_budget_converted"
-		"\#align=right $project_cost"
+		"\#align=right [format \"%.2f\" $project_budget_converted]"
+		"\#align=right [format \"%.2f\" $project_cost]"
 		"\#align=right $percent_completed_rounded"
 		"\#align=right $budget_overrun_percentage"
-		"|"
+		"&nbsp;"
 		"\#align=right $project_budget_hours"
 		"\#align=right $reported_hours_cache"
 		"\#align=right $percent_completed_rounded"
 		"\#align=right $budget_hours_overrun_percentage"
-		"|"
-		"\#align=right $cost_timesheet_logged_cache"
-		"\#align=right $cost_bills_cache"
+		"&nbsp;"
+		"\#align=right [format \"%.2f\" $cost_timesheet_logged_cache]"
+		"\#align=right [format \"%.2f\" $cost_bills_cache]"
 	    }
 	    content {}
     } \
     footer { 
 	"<br>&nbsp;<br>" 
 	"" 
-	"\#align=right [expr $program_budget_converted-$budget_sum]"
+	"\#align=right [format \"%.2f\" [expr {double(round(100*[expr $program_budget_converted-$budget_sum]))/100}]]"
 	""
 	""
 	""
-	"|"
-	"\#align=right [expr $program_budget_hours-$budget_hours_sum]"
+	"&nbsp;"
+	"\#align=right [format \"%.2f\" [expr {double(round(100*[expr $program_budget_hours-$budget_hours_sum]))/100}]]"
 	""
 	""
 	""
-	"|"
+	"&nbsp;"
 	""
 	""
     } \
@@ -390,7 +388,15 @@ switch $output_format {
 	</tr>
 	</table>
 	</form>
-	<table border=0 cellspacing=1 cellpadding=1>\n"
+	<br>
+	<table border=0 cellspacing=5 cellpadding=5>\n
+	<tr>\n
+		<td colspan='2' style='background-color: #fff;'>&nbsp;</td>\n
+		<td colspan='4' class='rowtitle'>[lang::message::lookup "" intranet-core.Costs "Costs"]</td>\n
+		<td>&nbsp;</td>\n
+		<td colspan='4' class='rowtitle'>[lang::message::lookup "" intranet-timesheet2.Hours "Hours"]</td>\n
+                <td colspan='2' style='background-color: #fff;'>&nbsp;</td>\n
+	</tr>\n"
     }
 }
 
@@ -433,7 +439,7 @@ db_foreach sql $sql {
 
     # Calculated variables
     set project_cost [expr $cost_timesheet_logged_cache + $cost_bills_cache]
-    set budget_overrun_percentage "undef"
+    set budget_overrun_percentage  "<i>[lang::message::lookup "" intranet-reporting.Undefined "Undefined"]</i>"
     if {0.0 != $percent_completed && 0.0 != $project_budget_converted} {
 	set percent_consumed [expr 100.0 * ($project_cost / $project_budget_converted)]
 	set budget_overrun_percentage [expr (100.0 * $percent_consumed / $percent_completed) - 100.0]
@@ -441,7 +447,7 @@ db_foreach sql $sql {
 	if {$budget_overrun_percentage > 5.0} { set budget_overrun_percentage "<font color=red>$budget_overrun_percentage</font>" }
     }
 
-    set budget_hours_overrun_percentage "undef"
+    set budget_hours_overrun_percentage "<i>[lang::message::lookup "" intranet-reporting.Undefined "Undefined"]</i>"
     if {0.0 != $percent_completed && 0.0 != $project_budget_hours} {
 	set percent_consumed [expr 100.0 * ($reported_hours_cache / $project_budget_hours)]
 	set budget_hours_overrun_percentage [expr (100.0 * $percent_consumed / $percent_completed) - 100.0]
