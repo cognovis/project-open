@@ -26,8 +26,35 @@ ad_page_contract {
 }
 
 
+ad_proc im_reporting_rest_error {
+    -format:required
+    -error_message:required
+} {
+    Writes out an error message for the specified format
+} {
+    switch $format {
+	xml {
+	    # Return a reasonable XML message indicating bad report issue
+	    im_rest_error -http_status 403 -message $error_message
+	}
+	json {
+	    # Return a reasonable XML message indicating permission issues
+	    set result "{\"success\": false,\n\"message\": \"$error_message\"\n}"
+            doc_return 200 "text/plain" $result
+	}
+	default {
+	    ad_return_complaint 1 "<li>$error_message"
+	}
+    }
+    ad_script_abort
+}
+
+
 # ---------------------------------------------------------------
-# Defaults & Security
+# Defaults
+
+set org_report_id $report_id
+set org_report_code $report_code
 
 # Accept a report_code as an alternative to the report_id parameter.
 # This allows us to access this page via a REST interface more easily,
@@ -40,9 +67,28 @@ if {"" != $report_code} {
 ns_log Notice "/intranet-reporting/view: report_code='[im_opt_val report_code]', report_id='[im_opt_val report_id]'"
 
 
-set no_redirect_p 0
-if {"xml" == $format} { set no_redirect_p 1 }
-set current_user_id [im_require_login -no_redirect_p $no_redirect_p]
+# ---------------------------------------------------------------
+# Authentication
+
+set current_user_id 0
+if {"" != $auto_login} {
+
+    # Provide a reasonable error message if a rookie user forgot to put user_id...
+    if {"" == $user_id || 0 == $user_id} {
+	set msg_l10n [lang::message::lookup "" intranet-reporting.User_id_if_auto_login "You need to specify the parameter user_id if you specify the parameter auto_login."]
+	im_reporting_rest_error -format $format -error_message $msg_l10n
+    }
+
+    set valid_login_p [im_valid_auto_login_p -user_id $user_id -auto_login $auto_login]
+    if {$valid_login_p} { set current_user_id $user_id }
+
+} else {
+
+    set no_redirect_p 0
+    if {"xml" == $format || "json" == $format} { set no_redirect_p 1 }
+    set current_user_id [im_require_login -no_redirect_p $no_redirect_p]
+
+}
 
 if {("xml" == $format || "json" == $format) && 0 == $current_user_id} {
     # Return a XML authentication error
@@ -53,31 +99,26 @@ if {("xml" == $format || "json" == $format) && 0 == $current_user_id} {
 ns_log Notice "/intranet-reporting/view: after im_require_login: user_id=$current_user_id"
 
 # ---------------------------------------------------------------
-# Check security 
+# Check if the report exists
+#
 set menu_id [db_string menu "select report_menu_id from im_reports where report_id = :report_id" -default 0]
+if {0 == $menu_id} {
+    set msg_l10n [lang::message::lookup "" intranet-reporting.The_report_does_not_exist "The specified report does not exist: report_code=%org_report_code%, report_id=%org_report_id%"]
+    im_reporting_rest_error -format $format -error_message $msg_l10n
+}
+
+
+# ---------------------------------------------------------------
+# Check security
+#
 set read_p [db_string report_perms "
         select  im_object_permission_p(m.menu_id, :current_user_id, 'read')
         from    im_menus m
         where   m.menu_id = :menu_id
 " -default 'f']
 if {![string equal "t" $read_p]} {
-    switch $format {
-	xml {
-	    # Return a reasonable XML message indicating
-	    # permission issues
-	    im_rest_error -http_status 403 -message "The current user doesn't have the right to see this report."
-	}
-	json {
-	    # Return a reasonable XML message indicating permission issues
-	    set result "{\"success\": false,\n\"message\": \"The current user doesn't have the right to see this report.\"\n}"
-            doc_return 200 "text/plain" $result
-	}
-	default {
-	    ad_return_complaint 1 "<li>
-	    [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
-	}
-    }
-    ad_script_abort
+    set msg_l10n [lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]
+    im_reporting_rest_error -format $format -error_message $msg_l10n
 }
 
 
