@@ -103,6 +103,19 @@ set csv_header_len [llength $csv_header_fields]
 set values_list_of_lists [im_csv_get_values $csv_files_content $separator]
 
 
+# Get the first and last month
+
+set current_month [lindex $csv_header_fields 5]
+if {$current_month eq ""} {
+    set current_month [db_string first_month "select to_char(now(),'YYMM') from dual"]
+}
+set last_month [lindex $csv_header_fields end]
+set months [list]
+while {$current_month<$last_month} {
+    lappend months $current_month
+    set current_month [db_string current_month "select to_char(to_date(:current_month,'YYMM') + interval '1 month','YYMM') from dual"]
+}
+    
 # ---------------------------------------------------------------
 # Render Page Header
 # ---------------------------------------------------------------
@@ -168,32 +181,6 @@ foreach csv_line_fields $values_list_of_lists {
 	set result [eval $cmd]
     }
 
-    # Get the first and last month
-    
-#    set current_month [db_string first_month "select
-#    to_char(min(item_date),'YYMM') from im_planning_items"]
-    set current_month "1201"
-    if {$current_month eq ""} {
-	set current_month [db_string first_month "select to_char(now(),'YYMM') from dual"]
-    }
-    set last_month [db_string last_month "select to_char(max(item_date),'YYMM') from im_planning_items"]
-    if {$last_month eq ""} {
-	set last_month $current_month
-    }
-    set months [list]
-    while {$current_month<$last_month} {
-	lappend months $current_month
-	set current_month [db_string current_month "select to_char(to_date(:current_month,'YYMM') + interval '1 month','YYMM') from dual"]
-    }
-    
-    # Add six more months
-    set i 0
-    while {$i<7} {
-	incr i
-	lappend months $current_month
-	set current_month [db_string current_month "select to_char(to_date(:current_month,'YYMM') + interval '1 month','YYMM') from dual"]
-    }
-    
     set employee_id [db_string employee "select max(employee_id) from im_employees where trim(personnel_number) = :personnel_number" -default ""]
     set project_id ""
         
