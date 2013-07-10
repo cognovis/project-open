@@ -825,13 +825,11 @@ ad_proc -public im_category_string1 {
     Return the localized version of string1 for the category
 } {
     set category_key "intranet-core.string1_$category_id"
-    set string1_en_US [db_string string1 "select aux_string1 from im_categories where category_id = :category_id" -default ""]
-    if {"" == $string1_en_US} {
-	# The string is not set
+    set default_string1 [db_string string1 "select aux_string1 from im_categories where category_id = :category_id" -default ""]
+    if {$default_string1 eq ""} {
 	return ""
-    } else {
-	return [lang::message::lookup $locale $category_key]
     }
+    return [lang::message::lookup $locale $category_key $default_string1]
 }
 
 ad_proc -public im_category_string2 {
@@ -841,6 +839,6 @@ ad_proc -public im_category_string2 {
     Return the localized version of string1 for the category
 } {
     set category_key "intranet-core.string2_$category_id"
-    set default_string1 [db_string string2 "select aux_string2 from im_categories where category_id = :category_id" -default ""]
+    set default_string2 [db_string string2 "select aux_string2 from im_categories where category_id = :category_id" -default ""]
     return [lang::message::lookup $locale $category_key $default_string2]
 }

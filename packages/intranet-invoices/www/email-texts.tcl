@@ -31,7 +31,7 @@ ad_page_contract {
 
 set first_names ""
 set last_name ""
-set email_texts_html "<table>"
+set email_texts_html "<table border=1 cellspacing=5><tr><th>#intranet-cost.Document_Type#</th><th>#acs-mail-lite.Subject#</th><th>#acs-mail-lite.Message#</th></tr>"
 db_foreach category "select parent_id, category_id from im_categories left outer join im_category_hierarchy on (child_id = category_id) where category_type = 'Intranet Cost Type' order by category_id" {
     if {"" != $parent_id} {
 	set parent "[im_category_from_id $parent_id] -- "

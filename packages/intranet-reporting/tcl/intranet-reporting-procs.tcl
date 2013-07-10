@@ -185,7 +185,7 @@ ad_proc im_report_render_cell {
     into a report HTTP session
 } {
     set td_fields ""
-    
+    ns_log NOTICE "intranet-reporting-procs::im_report_render_cell: $cell" 
     # Remove leading spaces
     regexp {^[ ]*(.*)} $cell match cell
 
@@ -364,7 +364,7 @@ ad_proc im_report_render_footer {
     A group_var with a value different from the current one is the
     trigger to display the footer line.
 } {
-    ns_log NOTICE "intranet-reporting-procs::im_report_render_footer-absence_array_list: $absence_array_list"
+    if {$debug} { ns_log Notice "intranet-reporting-procs::im_report_render_footer-absence_array_list: $absence_array_list" }
     if {$debug} { ns_log Notice "render_footer:" }
     array set last_value_array $last_value_array_list
 
@@ -414,7 +414,6 @@ ad_proc im_report_render_footer {
 		set cmd "set value \"$field\""
 		set value [uplevel 1 $cmd]
 	    }
-	    # ns_log NOTICE "intranet-reporting-procs::im_report_render_footer: Setting field: $field -> value: $value"
 	    lappend footer_line $value
 	}
 	set footer_record [list \
@@ -547,10 +546,6 @@ ad_proc im_report_display_footer {
 	array set footer_record $footer_record_list
 	set new_record_value $footer_record(new_value)
 	set footer_line $footer_record(line)
-
-	ns_log NOTICE "intranet-reporting-procs::im_report_display_footer-footer_record_list: $footer_record_list"
-        ns_log NOTICE "intranet-reporting-procs::im_report_display_footer-new_record_value: $new_record_value"
-        ns_log NOTICE "intranet-reporting-procs::im_report_display_footer-footer_line: $footer_line"
 
 	# -------------------------------------------------------
 	# Write out the header if last_value != new_value
@@ -748,7 +743,7 @@ ad_proc im_report_write_http_headers {
     append content_type "; charset=$http_encoding"
 
     # Set content disposition for CSV exports
-    if {$output_format == "csv" && $report_name != ""} {
+    if { $output_format == "csv" && $report_name != ""} {
 	set report_key [string tolower $report_name]
 	regsub -all {[^a-zA-z0-9_]} $report_key "_" report_key
 	regsub -all {_+} $report_key "_" report_key
@@ -756,6 +751,13 @@ ad_proc im_report_write_http_headers {
 MIME-Version: 1.0
 Content-Type: $content_type
 Content-Disposition: attachment; filename=${report_key}.csv\r\n"
+    } elseif { $output_format == "txt" && $report_name != "" } {
+        set report_key [string tolower $report_name]
+        regsub -all {[^a-zA-z0-9_]} $report_key "_" report_key
+        regsub -all {_+} $report_key "_" report_key
+        set all_the_headers "HTTP/1.0 200 OK
+MIME-Version: 1.0
+Content-Disposition: attachment; filename=${report_key}.txt\r\n"
     } else {
 	set all_the_headers "HTTP/1.0 200 OK
 MIME-Version: 1.0

@@ -401,11 +401,22 @@ db_1row office_info_query "
 # Get everything about the contact person.
 # ---------------------------------------------------------------
 
+# Make sure to unset the company name if the company is a freelancer
+
+if {[string match "Freelance*" $company_name]} {
+    set company_name_pretty ""
+} else {
+    set company_name_pretty $company_name
+}
+
 # Use the "company_contact_id" of the invoices as the main contact.
 # Fallback to the accounting_contact_id and primary_contact_id
 # if not present.
 
+if { ![info exists company_contact_id] } { set company_contact_id ""}
+
 set company_contact_orig $company_contact_id
+
 if {"" == $company_contact_id} { 
     set company_contact_id $accounting_contact_id
 }
@@ -1905,7 +1916,8 @@ if {$linked_invoice_ids ne ""} {
     set linked_list_sql "
 select
 	invoice_id as linked_invoice_id,
-        invoice_nr as linked_invoice_nr
+        invoice_nr as linked_invoice_nr,
+        effective_date as linked_effective_date
 from
 	im_invoices
 where
@@ -1931,6 +1943,7 @@ where
     append linked_list_html "
 	</table>
         </form>\n"
+    set linked_effective_date_pretty [lc_time_fmt $linked_effective_date "%x" $locale]
 }
 
 #set admin_p 1

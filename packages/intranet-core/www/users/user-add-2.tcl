@@ -42,7 +42,7 @@ set given_password $password
 
 set admin_user_id [ad_verify_and_get_user_id]
 db_1row user_info "
-	select	*
+	select	first_names, last_name, email, creation_user
 	from	cc_users
 	where	user_id = :user_id
 "

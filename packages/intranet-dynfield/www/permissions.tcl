@@ -64,8 +64,8 @@ set bgcolor(1) " class=roweven"
 
 set table_header "
 <tr>
-  <td class=rowtitle>Object Type</td>
-  <td class=rowtitle>Attribute</td>
+  <th>Object Type</th>
+  <th>Attribute</th>
 \n"
 
 
@@ -90,6 +90,7 @@ set object_type_constraint "1 = 1"
 
 set group_ids [list]
 set group_names [list]
+set column_selects ""
 
 db_foreach group_list $group_list_sql {
 
@@ -100,13 +101,14 @@ db_foreach group_list $group_list_sql {
     append main_sql_select "\tim_object_permission_p(fa.attribute_id, $group_id, 'write') as p${group_id}_write_p,\n"
 
     append table_header "
-      <td class=rowtitle><A href=$group_url?group_id=$group_id>
+      <th><A href=$group_url?group_id=$group_id>
       [im_gif $profile_gif $group_name]
-    </A></td>\n"
+    </A></th>\n"
     incr num_groups
+	append column_selects "<option value='[expr $num_groups+2]' selected='selected'>$group_name</option>"
 }
 append table_header "
-  <td class=rowtitle>[im_gif del "Delete Dynfield"]</td>
+  <th>[im_gif del "Delete Dynfield"]</th>
 </tr>
 "
 
@@ -118,7 +120,7 @@ append table_header "
 set table "
 <form action=dynfield-action method=post>
 [export_form_vars object_type return_url]
-<table>
+<table id='editable_table'>
 $table_header\n"
 
 set object_type_where ""
@@ -161,6 +163,7 @@ set attributes_sql "
 
 set ctr 0
 set old_package_name ""
+
 db_foreach attributes $attributes_sql {
     incr ctr
     append table "\n<tr$bgcolor([expr $ctr % 2])>\n"
@@ -197,18 +200,9 @@ db_foreach attributes $attributes_sql {
 	    set letter "<b>W</b>"
         }
 	set write "<A href=$toggle_url?[export_url_vars horiz_group_id object_id action return_url]>$letter</A>"
-
-        append table "
-  <td align=center>
-    $read$write
-  </td>
-"
+	append table "<td align=center>$read $write</td>"
     }
-
-    append table "
-  <td>
-    <input type=checkbox name=attribute_id.$im_dynfield_attribute_id>
-  </td>
+    append table "<td><input type=checkbox name=attribute_id.$im_dynfield_attribute_id></td>
 </tr>
 "
 }
@@ -218,11 +212,6 @@ append table "
 </form>
 "
 
-
-
-
-
-
 # ------------------------------------------------------------------
 # Left Navigation Bar
 # ------------------------------------------------------------------
@@ -230,9 +219,16 @@ append table "
 set left_navbar_html "
             <div class=\"filter-block\">
                 <div class=\"filter-title\">
-                    [lang::message::lookup "" intranet-dynfield.DynField_Admin "DynField Admin"]
+                    [lang::message::lookup "" intranet-dynfield.DynField_Admin "DynField Admin"]:
                 </div>
-		[im_dynfield::left_navbar]
+				[im_dynfield::left_navbar]
             </div>
             <hr/>
+            <div class=\"filter-block\">
+                <div class=\"filter-title\">
+                    [lang::message::lookup "" intranet-dynfield.Filter "Filter"]:
+                </div>
+				<select multiple='multiple' size='10'>$column_selects</select>
+            </div>
+			<br>
 "

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="intranet-portfolio-management" package_version="4.0.4.0.0" locale="en_US" charset="ISO-8859-1">
+  <msg key="FilterPrograms">Filter Programs</msg>
+  <msg key="ProjectPrograms">Programs</msg>
+  <msg key="ProgramStatus">Program Status</msg>
+</message_catalog>

@@ -167,7 +167,6 @@ switch [string tolower $user_group_name] {
         set user_group_id [im_profile_freelancers]
         set menu_select_label "users_freelancers"
 	lappend extra_wheres "u.user_id in (select object_id_two from acs_rels where rel_type = 'membership_rel' and  object_id_one = $user_group_id)"
-
     }
     "none" {
 	set menu_select_label "users_all"
@@ -476,6 +475,12 @@ if {"" == $extra_order_by} {
 	"Supervisor" { set extra_order_by "order by e.supervisor_id, name" }
     }
 }
+
+if {$freelancers_exist_p} {
+    lappend extra_select "fl.*"
+    lappend extra_left_join "LEFT OUTER JOIN im_freelancers fl ON (fl.user_id = u.user_id)"
+}
+
 
 # Join the "extra_" SQL pieces 
 set extra_from [join $extra_froms ",\n\t"]

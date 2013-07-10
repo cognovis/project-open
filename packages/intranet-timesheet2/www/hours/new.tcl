@@ -428,7 +428,6 @@ switch $task_visibility_scope {
 						main.tree_sortkey and
 						tree_right(main.tree_sortkey)
 	"
-	
         if { "restrictive" == $permissive_logging && $one_project_only_p } {
             set children_sql "$children_sql
                                 and sub.project_id in (
@@ -438,7 +437,6 @@ switch $task_visibility_scope {
                                 )
             "
         }
-
     }
     "sub_project" {
 	# sub_project: Each (sub-) project determines the visibility of its tasks.

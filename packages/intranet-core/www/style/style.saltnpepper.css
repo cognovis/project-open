@@ -875,7 +875,7 @@ a   span  {float:none;}
 .component_footer_hack, .footer_hack {
   position: relative;
   z-index: 101;
-  border-top: solid 3px #fff;
+  /* border-top: solid 3px #fff; */
   height: 3px;
   top: -3px;
   width: 100%;
@@ -912,9 +912,11 @@ a   span  {float:none;}
 }
 
 .fullwidth-list .component table tr {
+/* removed - defined in .table_list_page
 	height: 22px;
-	border-top: 1px solid #EEEEEE;
-	border-bottom: 1px solid #EEEEEE;
+	border-top: 1px solid #FFFFFF;
+	border-bottom: 1px solid #FFFFFF;
+*/
 }
 
 .fullwidth-list .component table td {
@@ -1040,13 +1042,14 @@ a   span  {float:none;}
 }
 
 .fullwidth-list table {
+/* -- removed, defined in .table_list_page
    text-align:left;
-   /* border-collapse:collapse;  
-   margin:10px; */
+*/
 }
 
 .fullwidth-list .component_body table tr {
- 	padding: 3px;
+/* -- removed, defined in .table_list_page
+ 	padding: 4px;
 /* -- removed, breaks calendar widget
 	height:20px;
 */
@@ -1059,9 +1062,11 @@ a   span  {float:none;}
 
 
 .fullwidth-list .component table {
+/* -- removed, defined in .table_list_page
 	text-align:left;
 	border-collapse:collapse;
 	margin: 2px;
+*/
 }
 
 div#fullwidth-main {
@@ -1180,47 +1185,59 @@ div#fullwidth-components {
    color:#339;
 }
 
+
 table.list td {
         background: none !important;
 }
 
+/* -- table_list_simple -- */
 
-.table_list {
+.fullwidth-list .component table.table_list_simple,
+table.table_list_simple {
 	text-align:left;
 	border-collapse:collapse;
-	margin:3px;
-	padding:3px;
-}
-
-.table_list thead tr {
-	background:#D0D0D0 none repeat scroll 0 50%;
-	border-bottom:1px solid #FFFFFF;
-	color:#000000;
+	margin:5px;
+	padding:5px;
 	font-size:9pt;
-	font-weight:bold;
-}
-
-.table_list thead tr td {
-	height: 14pt;
-}
-
-.table_list tbody  {
-        font-size:9pt;
-}
-
-
-.table_list tbody tr.roweven {
-	background-color:#ddd;
-}
-
-
-.table_list tbody tr.rowodd {
-	background-color:#eee;
-}
-
-.table_list tfoot tr {
+        height: 14pt;
         background-color:#fff;
 }
+
+.fullwidth-list .component table.table_list_simple tr,
+table.table_list_simple tr {
+    border-bottom:1px solid #CCCCCC;
+    border-top: none;
+    background-color:#fff;
+}
+
+.fullwidth-list .component table.table_list_simple tr.rowtitle td,
+table.table_list_simple tr.rowtitle td {
+    font-weight:bold;
+    background-color:#E1E2E1;
+    border-bottom: none;
+    border-top: 1px solid #666;
+    border-right:1px solid #666;
+    border-left:1px solid #666;
+    border-bottom: 1px solid #666;
+    color: #333;
+}
+
+.fullwidth-list .component table.table_list_simple tr.rowtitle,
+table.table_list_simple tr.rowtitle {
+    border-bottom: none;
+    border-right:1px solid #000000;
+    border-left:1px solid #000000;
+}
+
+.fullwidth-list .component .table_list_simple td, 
+.table_list_simple td {
+    background-color:#fff;
+    padding: 5px;
+    border-right:1px solid #CCCCCC;
+    border-left:1px solid #CCCCCC;
+}
+
+/* ---- */
 
 .filter-list {
 	/* START NEW IDEBAR */
@@ -1316,7 +1333,7 @@ table.list td {
     .form-required-mark {color: #FF0000;}
 
     .form-element, 
-    .component_body tbody tr.* {
+    .component_body tbody tr {
 	height:22px; 
         border-top: 1px solid #F0EDED;
         border-bottom: 1px solid #F0EDED;
@@ -1655,8 +1672,8 @@ div.xowiki-content hr {
          /* display: none; */ 
 }
 
-.forumBar {
-	margin-top:-1;
+.fullwidth-list .component table .forumBar {
+        margin-top:-3;
 }
 
 .component table.forumBar td  {

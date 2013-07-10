@@ -334,10 +334,9 @@ set report_def [list \
 			"<b>$hours_project_subtotal</b>"
 			""
 			""
-			""
 		} \
 	] \
-	footer {"" "" "" "" "" "" "" "" ""} \
+	footer {"" "" "" "" "" "" "" ""} \
 ]
 
 
@@ -514,14 +513,14 @@ $filter_html
 	<div id=\"fullwidth-list\" class=\"fullwidth-list\">
 	[im_box_header $page_title]
 
-	<table border=0 cellspacing=2 cellpadding=2>\n"
+	<table border=0 cellspacing='2' cellpadding='2' class='table_list_simple'>\n"
     }
 
     printer {
 	ns_write "
 	<link rel=StyleSheet type='text/css' href='/intranet-reporting/printer-friendly.css' media=all>
         <div class=\"fullwidth-list\">
-	<table border=0 cellspacing=1 cellpadding=1 rules=all>
+	<table border='0' cellspacing='1' cellpadding='1' rules='all'>
 	<colgroup>
 		<col id=datecol>
 		<col id=hourcol>

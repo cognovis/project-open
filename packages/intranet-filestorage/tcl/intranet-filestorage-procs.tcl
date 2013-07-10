@@ -177,6 +177,9 @@ where
 	and r.profile_id = p.profile_id (+)
 "
     db_foreach project_profiles $project_profile_sql {
+	# 130501 fraber: Eliminate "partner" profile which is not defined on all systems
+	if {"" == $profile_id || 0 == $profile_id} { continue }
+
 	set profile_name_txt [lang::util::suggest_key $profile_name]
 	if {"" == $profile_gif} { set profile_gif "profile" }
 	if {"" == $profile_name_txt} {
@@ -286,10 +289,10 @@ proc intranet_download { folder_type } {
 	return
     }
 
-    if $file_readable {
-		rp_serve_concrete_file $file		
+    if ($file_readable) {
+	rp_serve_concrete_file $file		
     } else {
-		doc_return 500 text/html "[_ intranet-filestorage.lt_Did_not_find_the_spec]"
+	doc_return 500 text/html "[_ intranet-filestorage.lt_Did_not_find_the_spec]"
     }
 }
 
@@ -2156,7 +2159,9 @@ ad_proc im_filestorage_perm_add_profile { folder_id perm profile_id p} {
     ns_log Notice "add-perms-2: profile_id=$profile_id, folder_id=$folder_id, perm=$perm, p=$p"
 
     # Don't add empty permissions...
-    if {!$p} { continue }
+    if {!$p} { return }
+    if {"" == $profile_id} { return }
+
 
     # Make sure the perm entry exists
     set exists_p [db_string perms_exists "select count(*) from im_fs_folder_perms where folder_id = :folder_id and profile_id = :profile_id" -default 0]

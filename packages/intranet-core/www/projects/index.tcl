@@ -275,7 +275,17 @@ set user_options [linsert $user_options 0 [list "#intranet-core.All#" ""]]
 ad_form -extend -name $form_id -form {
     {project_type_id:text(im_category_tree),optional {label \#intranet-core.Project_Type\#} {value $project_type_id} {custom {category_type "Intranet Project Type" translate_p 1} } }
     {company_id:text(select),optional {label \#intranet-core.Customer\#} {options $company_options} {value $company_id}}
-    {user_id_from_search:text(select),optional {label \#intranet-core.With_Member\#} {options $user_options}}
+}
+
+# Does user have VIEW permissions on company's employees?  
+set employee_group_id [im_employee_group_id]
+if { "t" == [db_string get_view_perm "select im_object_permission_p(:employee_group_id, :user_id, 'read') from dual"]} {
+    ad_form -extend -name $form_id -form {
+	{user_id_from_search:text(select),optional {label \#intranet-core.With_Member\#} {options $user_options}}
+    }
+}
+
+ad_form -extend -name $form_id -form {
     {start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {value "$start_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
     {end_date:text(text) {label "[_ intranet-timesheet2.End_Date]"} {value "$end_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('end_date', 'y-m-d');" >}}}
     {view_name:text(select) {label \#intranet-core.View_Name\#} {value "$view_name"} {options $view_options}}
@@ -301,16 +311,14 @@ if {$filter_advanced_p} {
         -advanced_filter_p 1 \
 	-page_url "/intranet/projects/index"
 
-    
     # Set the form values from the HTTP form variable frame
     im_dynfield::set_form_values_from_http -form_id $form_id
     im_dynfield::set_local_form_vars_from_http -form_id $form_id
-    
+
     array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
 				   -form_id $form_id \
 				   -object_type $object_type
 			      ]
-
     # Show an admin wrench for setting up the filter design
     if {$admin_p} {
 	set filter_admin_url [export_vars -base "/intranet-dynfield/layout-position" {{object_type im_project} {page_url "/intranet/projects/index"}}]
@@ -346,9 +354,10 @@ if { ![empty_string_p $upper_letter] && [string compare $upper_letter "ALL"] != 
 if { $include_subprojects_p == "f" } {
     lappend criteria "p.parent_id is null"
 }
-if { $include_subproject_level != "" } {
-    lappend criteria "tree_level(p.tree_sortkey) <= $include_subproject_level"
-}
+
+#if { $include_subproject_level != "" } {
+#    lappend criteria "tree_level(p.tree_sortkey) <= $include_subproject_level"
+#}
 
 
 
@@ -372,6 +381,7 @@ switch [string tolower $order_by] {
     "project manager" { set order_by_clause "order by lower(lead_name)" }
     "url" { set order_by_clause "order by upper(url)" }
     "project name" { set order_by_clause "order by lower(project_name)" }
+    "budget" { set order_by_clause "order by coalesce(project_budget,0) DESC" }
     "per" { 
 	set order_by_clause "order by per_order desc" 
 	lappend extra_selects "(case when p.percent_completed is null then 0 else p.percent_completed end) as per_order"
@@ -426,8 +436,10 @@ foreach varname [info locals] {
 
 # Deal with DynField Vars and add constraint to SQL
 #
-if {$filter_advanced_p} {
 
+
+if {$filter_advanced_p} {
+    
     set dynfield_extra_where $extra_sql_array(where)
     set ns_set_vars $extra_sql_array(bind_vars)
     set tmp_vars [util_list_to_ns_set $ns_set_vars]
@@ -569,6 +581,7 @@ SELECT *
 FROM
         ( SELECT
                 p.*,
+		round(p.percent_completed * 10.0) / 10.0 as percent_completed,
                 c.company_name,
                 im_name_from_user_id(p.project_lead_id) as lead_name,
                 im_category_from_id(p.project_type_id) as project_type,

@@ -16,7 +16,6 @@ ad_page_contract {
     { return_url "" }
     { edit_p "" }
     { message "" }
-    { task_status_id "" }
     { task_type_id "9500"}
 }
 
