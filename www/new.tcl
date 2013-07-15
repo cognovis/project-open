@@ -244,7 +244,7 @@ if {$edit_p} { lappend actions [list [lang::message::lookup {} intranet-helpdesk
 ns_log Notice "new: ad_form: Setup fields"
 ad_form \
     -name helpdesk_ticket \
-    -cancel_url $return_url \
+    -cancel_url "/intranet-helpdesk" \
     -action $action_url \
     -actions $actions \
     -has_edit 1 \
