@@ -4,11 +4,7 @@
 <property name="main_navbar_label">project_programs</property>
 <property name="left_navbar">@left_navbar_html;noquote@</property>
 
-<table class="table_list_page">
-       <%= $table_header_html %>
-       <%= $table_body_html %>
-       <%= $table_continuation_html %>
-</table>
+@program_table_html;noquote@
 
 <table cellpadding=0 cellspacing=0 border=0 width=100%>
 <tr>
