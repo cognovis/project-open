@@ -66,7 +66,7 @@ if {![info exists task]} {
 
     set render_template_id 0
     set escalate_from_ticket_id 0
-42728    set format "html"
+    set format "html"
 
     # Don't show this page in WF panel.
     # Instead, redirect to this same page, but in TaskViewPage mode.
