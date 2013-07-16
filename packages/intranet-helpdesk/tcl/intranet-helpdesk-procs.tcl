@@ -533,7 +533,7 @@ namespace eval im_ticket {
 	    set ticket_name_exists_p [db_string pex "select count(*) from im_projects where project_name = :ticket_name"]
 	    if {$ticket_name_exists_p} { ad_return_complaint 1 "<b>Unable to create ticket:</b><br>Ticket Name '$ticket_name' already exists." }
 
-	    set ticket_nr_exists_p [db_string pnex "select count(*) from im_projects where project_nr = :ticket_nr"]
+	    set ticket_nr_exists_p [db_string pnex "select count(*) from im_projects where project_nr = :ticket_nr and parent_id = :ticket_sla_id"]
 	    if {$ticket_nr_exists_p} { ad_return_complaint 1 "<b>Unable to create ticket:</b><br>Ticket Nr '$ticket_nr' already exists." }
 
 	    set ticket_id [db_string exists "select min(project_id) from im_projects where project_type_id = [im_project_type_ticket] and lower(project_nr) = lower(:ticket_nr)" -default ""]
