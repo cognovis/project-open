@@ -2166,7 +2166,7 @@ ad_proc -public im_ganttproject_resource_component {
 	select
 		h.*,
 		trunc(h.perc) as percentage,
-		'<a href=${user_url}'||user_id||'>'||im_name_from_id(h.user_id)||'</a>' as user_name_link,
+		'<a href=${user_url}'||user_id||'>'||im_name_from_user_id(h.user_id)||'</a>' as user_name_link,
 		CASE WHEN h.user_id in (select member_id from group_distinct_member_map where group_id = [im_profile_skill_profile]) THEN '' ELSE im_cost_center_name_from_id(h.department_id) END as dept_name,
 
 		CASE WHEN h.user_id in (select member_id from group_distinct_member_map where group_id = [im_profile_skill_profile]) THEN '' ELSE 'Natural Person' END as skill_p,
@@ -2231,6 +2231,7 @@ ad_proc -public im_ganttproject_resource_component {
     
     # Scale is a list of lists. Example: {{2006 01} {2006 02} ...}
     # The last element is the grand total.
+
     set left_scale_plain [db_list_of_lists left_scale "
 	select distinct	[join $left_vars ", "]
 	from		($middle_sql) c
