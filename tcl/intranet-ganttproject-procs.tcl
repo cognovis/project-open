@@ -2205,6 +2205,8 @@ ad_proc -public im_ganttproject_resource_component {
     "]
     lappend top_scale_plain [list $sigma $sigma $sigma $sigma $sigma $sigma]
 
+    # Example for $top_scale_plain: 
+    # {Q3 Jul} {Q3 Aug} {Q3 Sep} {Q4 Oct} {Q4 Nov} {Q4 Dec} {Q1 Jan} {{&Sigma;} {&Sigma;} {&Sigma;} {&Sigma;} {&Sigma;} {&Sigma;}}
 
     # Insert subtotal columns whenever a scale changes
     set top_scale [list]
@@ -2225,6 +2227,8 @@ ad_proc -public im_ganttproject_resource_component {
 	set last_item $scale_item
     }
 
+    # Example for top_scale 
+    # {Q3 Jul} {Q3 Aug} {Q3 Sep} {Q3 {&Sigma;}} {Q4 Oct} {Q4 Nov} {Q4 Dec} {Q4 {&Sigma;}} {Q1 Jan} {Q1 {&Sigma;}} {{&Sigma;} {&Sigma;} {&Sigma;} {&Sigma;} {&Sigma;} {&Sigma;}}
 
     # ------------------------------------------------------------
     # Create a sorted left dimension
@@ -2242,11 +2246,18 @@ ad_proc -public im_ganttproject_resource_component {
     foreach t [lindex $left_scale_plain 0] { lappend last_sigma $sigma }
     lappend left_scale_plain $last_sigma
 
-    # Add a "subtotal" (= {$dept_id $user_id $sigma}) before every new ocurrence of a user_id
-    # Add a "subtotal" (= {$dept_id $sigma}) after every new department
+    # Structure of left_scale_plain: 
+    # {user_1 task_1} {user_1 task_2} .. { &Sigma; &Sigma;}
+    # Example:
+    # {{Freddy Freelancer} {Anpassungskonstruktion/bei Bedarf}} {{Freddy Freelancer} {Funktionstest}} {{Frank Bergmann} {Schaltplan erstellen}} {{&Sigma;} {&Sigma;}}
+
+    # Now add a "subtotal" (= {$dept_id $user_id $sigma}) before every new ocurrence of a user_id
+    # and add a "subtotal" (= {$dept_id $sigma}) after every new department
+
     set left_scale [list]
     set last_user_id 0
     set last_dept_id ""
+
     foreach scale_item $left_scale_plain {
 	set dept_id [lindex $scale_item 0]
 	set user_id [lindex $scale_item 1]
@@ -2259,12 +2270,17 @@ ad_proc -public im_ganttproject_resource_component {
 	    set last_dept_id $dept_id
 	}
 
-	if {$last_user_id != $user_id} {
-	    lappend left_scale [list $dept_id $user_id $sigma]
-	    set last_user_id $user_id
-	}
+        if {$last_user_id != $user_id} {
+            lappend left_scale [list $dept_id $user_id $sigma]
+            set last_user_id $user_id
+        }
 
-	lappend left_scale $scale_item
+	# In cases where there's no column for 'department' add an empty space, so that results doesn't get shifted 
+	if { 2 == [llength $scale_item] } {
+	    lappend left_scale "$scale_item { &nbsp; } " 
+	} else {
+	    lappend left_scale $scale_item
+	}
     }
 
     # ------------------------------------------------------------
@@ -2296,7 +2312,6 @@ ad_proc -public im_ganttproject_resource_component {
 	    set all_sigmas_p 1
 	    foreach e $scale_entry { if {$e != $sigma} { set all_sigmas_p 0 }	}
 	    if {$all_sigmas_p} { continue }
-
 	    
 	    # Check if the previous item was of the same content
 	    set prev_scale_entry [lindex $top_scale [expr $col-1]]
@@ -2422,8 +2437,9 @@ ad_proc -public im_ganttproject_resource_component {
 	# Start the row and show the left_scale values at the left
 	append html "<tr class=$class>\n"
 	set left_entry_ctr 0
+
+	# This Loop creates User column, Task column and SIGMA column  
 	foreach val $left_entry { 
-	    
 	    # Special logic: Add +/- in front of User name for drill-in
 	    if {"user_name_link" == [lindex $left_vars $left_entry_ctr] & $sigma == $project_val} {
 		
@@ -2449,7 +2465,6 @@ ad_proc -public im_ganttproject_resource_component {
 	    incr left_entry_ctr
 	}
 
-
 	# ------------------------------------------------------------
 	# Write the left_scale values to their corresponding local 
 	# variables so that we can access them easily when calculating
@@ -2462,14 +2477,14 @@ ad_proc -public im_ganttproject_resource_component {
 	
    
 	# ------------------------------------------------------------
-	# Start writing out the matrix elements
+	# Start writing out the matrix elements (table cells) 
 	foreach top_entry $top_scale {
-	    
+	       
 	    # Skip the last line with all sigmas - doesn't sum up...
 	    set all_sigmas_p 1
-	    foreach e $top_entry { if {$e != $sigma} { set all_sigmas_p 0 }	}
+	    foreach e $top_entry { if {$e != $sigma} { set all_sigmas_p 0 } }
 	    if {$all_sigmas_p} { continue }
-	    
+
 	    # Write the top_scale values to their corresponding local 
 	    # variables so that we can access them easily for $key
 	    for {set i 0} {$i < [llength $top_vars]} {incr i} {
