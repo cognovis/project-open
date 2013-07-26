@@ -30,23 +30,9 @@ Ext.define('PO.model.Category', {
             {   name: 'value',				// 'value' is used by Select field as value
                 convert: function(value, record) { return record.get('category_id'); }
             }
-	],
-	proxy: {	
-	    type:		'rest',
-	    url:		'/intranet-rest/im_category',
-	    appendId:	true,			// Append the category_id: ../im_category/<object_id>
-	    timeout:	300000,
-	    
-	    extraParams: {
-		format:		'json',		// Tell the ]po[ REST to return JSON data.
-		deref_p:	'1'
-	    },
-	    reader: {
-		type:	'json',			// Tell the Proxy Reader to parse JSON
-		root:	'data',			// Where do the data start in the JSON file?
-		totalProperty:  'total'		// Total number of tickets for pagination
-	    }
-	}
+	]
+	// Categories don't need a separate proxy 
+	// because they are alway used as part of a store.
     }
 });
 
