@@ -1,14 +1,14 @@
 /*
- * ProjectTimesheet.js
+ * ProjectPanelTimesheet.js
  * (c) 2013 ]project-open[
  * Please see www.project-open.org/en/project_open_license for details
  *
  * Timesheet entry page for a single task, sub-project or main project.
  * Allows the user to log a single timesheet entry.
  */
-Ext.define('PO.view.ProjectTimesheet', {
+Ext.define('PO.view.ProjectPanelTimesheet', {
     extend: 'Ext.form.Panel',
-    xtype: 'projectTimesheet',
+    xtype: 'projectPanelTimesheet',
     config: {
         title: 'Project Timesheet',
         layout: 'vbox',
@@ -46,7 +46,7 @@ Ext.define('PO.view.ProjectTimesheet', {
 		text: 'Save',
 		ui: 'confirm',
 		handler: function() {
-		    console.log('ProjectTimesheet: Button "Save" pressed:');
+		    console.log('ProjectPanelTimesheet: Button "Save" pressed:');
 		    
 		    // Save the form values to the record.
 		    // The record was set by the ProjectNavigationController

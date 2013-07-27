@@ -32,6 +32,8 @@ Ext.define('PO.store.ProjectTimesheetStore', {
 //	    { filterFn: function(item) { return item.get('parent_id') == ''; }}
 	],
 
+	// Proxy specifically for this store: rest_my_timesheet_projects returns 
+	// all projects to which the current user has hour logging permissions
 	proxy: {
 	    type: 'rest',
             url: '/intranet-reporting/view',
