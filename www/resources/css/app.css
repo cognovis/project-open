@@ -27,3 +27,12 @@
         font-size: 11px; padding-left: 165px
 }
 
+.po-nowrap {
+    white-space: nowrap
+}
+
+.btnAction {
+    background: url("/../icons/icon.png);
+    width: 80px;
+    height: 40px;
+}

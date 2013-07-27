@@ -11,7 +11,18 @@ Ext.define('PO.view.ProjectTimesheetDataView', {
 	store: 'ProjectTimesheetStore',
 	useComponents: true,
 	defaultType: 'projectTimesheetDataViewItem',
-	deselectOnContainerClick: false
+	deselectOnContainerClick: false,
+	scrollable: 'both',
+
+/*
+	plugins: [
+            {
+		xclass: 'Ext.plugin.ListPaging',
+		autoPaging: true
+            }
+	]
+*/
+
     }
 
 });

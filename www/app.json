@@ -13,6 +13,10 @@
         {
             "path": "/senchatouch-v211/resources/css/sencha-touch.css",
             "update": "delta"
+        },
+        {
+            "path": "/senchatouch-timesheet/resources/css/app.css",
+            "update": "delta"
         }
     ],
     "appCache": {
