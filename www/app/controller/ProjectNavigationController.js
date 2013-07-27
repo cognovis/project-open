@@ -6,7 +6,7 @@ Ext.define('PO.controller.ProjectNavigationController', {
 	    projectNavigationView: 'projectNavigationView'
 	},
 	control: {
-	    'projectList': {
+	    'projectTimesheetDataView': {
 		disclose: 'showTimesheet',		// Disclose - somebody pressed on the -> button at the list
 		itemtap: 'showDetail'		// ItemTap - somebody tapped on the item itself
 	    }

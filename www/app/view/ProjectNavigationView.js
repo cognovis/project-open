@@ -8,7 +8,7 @@ Ext.define('PO.view.ProjectNavigationView', {
     extend: 'Ext.navigation.View',
     xtype: 'projectNavigationView',
     requires: [
-	'PO.view.ProjectList',
+	'PO.view.ProjectTimesheetDataView',
 	'PO.view.ProjectPanelDetail',
 	'PO.view.ProjectPanelTimesheet'
     ],
@@ -16,7 +16,7 @@ Ext.define('PO.view.ProjectNavigationView', {
 	title: 'Projects',
 	iconCls: 'star',
 	items: [{
-	    xtype: 'projectList'
+	    xtype: 'projectTimesheetDataView'
 	}]
     }
 });

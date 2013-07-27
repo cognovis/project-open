@@ -22,7 +22,11 @@ Ext.application({
 	'NoteList',				// List of all notes
 
 	'ProjectNavigationView',		// Container for navigation between ProjectList and ProjectTimesheet
-	'ProjectList',				// List of projects for user
+//	'ProjectList',				// List of projects for user
+
+	'ProjectTimesheetDataView',
+	'ProjectTimesheetDataViewItem',
+
 	'ProjectPanelTimesheet',		// Allows to log hours to project
 	'ProjectPanelDetail',			// Form page to show + edit project fields
     ],
