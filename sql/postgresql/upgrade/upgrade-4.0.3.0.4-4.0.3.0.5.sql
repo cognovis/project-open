@@ -28,7 +28,7 @@ begin
 		''intranet-core'',		-- package_name
 		''admin_consistency_check'',	-- label
 		''Consistency Checks'',		-- name
-		''/acs-admin/auth/index'',	-- url
+		''/intranet/admin/consistency-check'',	-- url
 		650,				-- sort_order
 		v_admin_menu,			-- parent_menu_id
 		null				-- p_visible_tcl
