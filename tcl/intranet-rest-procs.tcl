@@ -1198,7 +1198,7 @@ ad_proc -private im_rest_get_im_hours {
     if {[info exists query_hash(query)]} { set where_clause $query_hash(query)}
 
     # Determine the list of valid columns for the object type
-    set valid_vars {hour_id user_id project_id day hours days note private_note cost_id conf_object_id invoice_id material_id}
+    set valid_vars {hour_id user_id project_id day hours days note internal_note cost_id conf_object_id invoice_id material_id}
 
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
@@ -1226,21 +1226,40 @@ ad_proc -private im_rest_get_im_hours {
     set unlimited_sql $sql
     append sql [im_rest_object_type_pagination_sql -query_hash_pairs $query_hash_pairs]
 
-
+    set value ""
     set result ""
+    set obj_ctr 0
     db_foreach objects $sql {
+
+	# Check permissions
+	set read_p $rest_otype_read_all_p
+	set read_p 1
+	if {!$read_p} { continue }
+
 	set url "$base_url/$rest_otype/$rest_oid"
 	switch $format {
-	    xml { append result "<object_id id=\"$rest_oid\" href=\"$url\">$rest_oid</object_id>\n" }
+	    xml { append result "<object_id id=\"$rest_oid\" href=\"$url\">$object_name</object_id>\n" }
 	    html { 
 		append result "<tr>
 			<td>$rest_oid</td>
 			<td><a href=\"$url?format=html\">$object_name</a>
-		</tr>\n" 
+		</tr>\n"
 	    }
-	    json { append result "{object_id: $rest_oid}\n" }
+	    json {
+		set komma ",\n"
+		if {0 == $obj_ctr} { set komma "" }
+		set dereferenced_result ""
+		foreach v $valid_vars {
+			eval "set a $$v"
+			regsub -all {\n} $a {\n} a
+			regsub -all {\r} $a {} a
+			append dereferenced_result ", \"$v\": \"[ns_quotehtml $a]\""
+		}
+		append result "$komma{\"id\": \"$rest_oid\", \"object_name\": \"[ns_quotehtml $object_name]\"$dereferenced_result}" 
+	    }
 	    default {}
 	}
+	incr obj_ctr
     }
 	
     switch $format {
@@ -1258,11 +1277,12 @@ ad_proc -private im_rest_get_im_hours {
 	    return
 	}
 	json {  
-	    im_rest_doc_return 200 "text/html" "\[$result\]\n"
+	    # Deal with different JSON variants for different AJAX frameworks
+	    set result "{\"success\": true,\n\"message\": \"im_rest_get_im_hours: Data loaded\",\n\"data\": \[\n$result\n\]\n}"
+	    im_rest_doc_return 200 "text/html" $result
 	    return
 	}
     }
-
     return
 }
 
