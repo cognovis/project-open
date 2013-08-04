@@ -1200,6 +1200,18 @@ ad_proc -private im_rest_get_im_hours {
     # Determine the list of valid columns for the object type
     set valid_vars {hour_id user_id project_id day hours days note internal_note cost_id conf_object_id invoice_id material_id}
 
+
+
+    # -------------------------------------------------------
+    # Check if there are "valid_vars" specified in the HTTP header
+    # and add these vars to the SQL clause
+    set where_clause_list [list]
+    foreach v $valid_vars {
+        if {[info exists query_hash($v)]} { lappend where_clause_list "$v=$query_hash($v)" }
+    }
+    if {"" != $where_clause && [llength $where_clause_list] > 0} { append where_clause " and " }
+    append where_clause [join $where_clause_list " and "]
+
     # Check that the query is a valid SQL where clause
     set valid_sql_where [im_rest_valid_sql -string $where_clause -variables $valid_vars]
     if {!$valid_sql_where} {
@@ -1207,6 +1219,8 @@ ad_proc -private im_rest_get_im_hours {
 	return
     }
     if {"" != $where_clause} { set where_clause "and $where_clause" }
+
+
 
     # Select SQL: Pull out hours.
     set sql "
