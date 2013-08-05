@@ -1027,19 +1027,24 @@ ad_proc -public im_helpdesk_ticket_sla_options {
     }
 
     set sql "
-	select
-		c.company_name || ' (' || p.project_name || ')' as sla_name,
+	select	c.company_name || ' (' || p.project_name || ')' as sla_name,
 		p.project_id
-	from
-		im_projects p,
+	from	im_projects p,
 		im_companies c
-	where
-		p.company_id = c.company_id and
+	where	p.company_id = c.company_id and
 		p.project_type_id = [im_project_type_sla]
 		$permission_sql
-	order by
-		sla_name
     "
+
+    # "Internal SLA" Logic - Remove the Internal SLA from the list
+    # if there is an SLA specific to the user.
+    set count [db_string sla_count "select count(*) from ($sql) t"]
+    if {$count > 1} {
+	append sql "\t\tand p.project_nr != 'internal_sla'"
+    }
+
+    append sql "\t\torder by sla_name"
+
 
     set options [list]
     db_foreach slas $sql {
