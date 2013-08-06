@@ -6,9 +6,9 @@ Ext.define('PO.view.HourList', {
     config: {
 	title: 'Hour List',
 	iconCls: 'star',
-	itemTpl: '<div class="contact2">{project_id} {user_id} {hours} {note} </div>',
+	itemTpl: '<div class="contact2">{date} {hours} {note} </div>',
 	disclosure: true,
-	grouped: false,
+	grouped: true,
 	indexBar: true,
 	store: 'HourOneProjectStore',
 	onItemDisclosure: true

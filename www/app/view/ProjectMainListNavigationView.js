@@ -9,6 +9,7 @@ Ext.define('PO.view.ProjectMainListNavigationView', {
     xtype: 'projectMainListNavigationView',
     requires: [
 	'PO.view.HourList',
+	'PO.view.HourPanelDetail',
 	'PO.view.ProjectMainList',
 	'PO.view.ProjectPanelDetail',
 	'PO.view.ProjectPanelTimesheet'
