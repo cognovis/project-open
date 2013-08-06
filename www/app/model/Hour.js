@@ -17,7 +17,15 @@ Ext.define('PO.model.Hour', {
 	    'invoice_id',				// Invoice where hours have been billed to customer (optional)
 	    'conf_object_id',				// Workflow "confirmation object" for timesheet approval (optional)
 	    'material_id',				// Type of service provided during hours (rarely used)
-	    'days'    					// Hours converted into days for daily invoicing (rarely used)
+	    'days',    					// Hours converted into days for daily invoicing (rarely used)
+
+	    {   name: 'date',
+                convert: function(value, record) {
+                    return record.get('day').substring(0,10);
+                }
+            }
+
+
 	],
 	proxy: {
 	    type:		'rest',

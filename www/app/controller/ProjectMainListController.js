@@ -6,7 +6,8 @@ Ext.define('PO.controller.ProjectMainListController', {
 	refs: {
 	    projectMainListNavigationView: 'projectMainListNavigationView',
 	    projectMainList: 'projectMainList',
-	    hourList: 'hourList'
+	    hourList: 'hourList',
+	    hourDetailListContainer: 'hourDetailListContainer'
 	},
 
 	control: {
@@ -28,21 +29,18 @@ Ext.define('PO.controller.ProjectMainListController', {
 
 	    // load the right data into the store
 	    var store = Ext.data.StoreManager.lookup('HourOneProjectStore');
-	    var proxy = store.getProxy();
-	    var project_id = record.get('project_id');
-	    var user_id = '624';
-	    proxy.setExtraParam('format', 'json');
-	    proxy.setExtraParam('project_id', project_id);
-	    proxy.setExtraParam('user_id', user_id);
-	    store.load();
+	    store.load({
+		params : { 
+		    'project_id': record.get('project_id'),
+		    'user_id': '624'
+		}
+	    })
 
 	    // push an HourList to the NavigationView page
 	    var navView = this.getProjectMainListNavigationView();
             var hourList = Ext.create("PO.view.HourList");
 	    hourList.setStore(store);
 	    var list = navView.push(hourList);
-	    
-//	    Ext.Msg.alert('You clicked on the Button ...','The country code selected is: ' + event.target.name);
 	}
 	else {
 	    // Tapped on the main item

@@ -4,6 +4,7 @@ Ext.define('PO.store.ProjectMainStore', {
     config: {
 	model: 'PO.model.Project',
 	autoLoad: true,
+	pageSize: 10000,
 	sorters: 'project_name',
 	
 	grouper: {

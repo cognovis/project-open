@@ -18,9 +18,16 @@ Ext.define('PO.store.HourOneProjectStore', {
 	autoLoad: false,
 
 	sorters: [{
-            property: 'hour_id',
+            property: 'date',
             direction: 'ASC'
         }],
+
+        grouper: {
+            groupFn: function(record) {
+                return record.get('date');
+            }
+        },
+
 
 	// Proxy specifically for this store
 	proxy: {

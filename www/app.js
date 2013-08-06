@@ -20,7 +20,10 @@ Ext.application({
 	'SplashPage',				// Initial screen with ]po[ logo
 	'NoteNavigationView',			// Container for navigation between NoteList and NoteDetail
 	'ProjectNavigationView',		// Container for navigation between ProjectList and ProjectTimesheet
-	'ProjectMainListNavigationView'
+	'ProjectMainListNavigationView',
+	'HourList',
+	'HourPanelDetail',
+	'HourDetailListContainer'
     ],
     controllers: [
 	'NoteNavigationController',
@@ -38,6 +41,7 @@ Ext.application({
 	    tabBarPosition: 'bottom',
 	    items: [
 		// The application consists of two pages only:
+		{xtype: 'hourPanelDetail'},
 		{xtype: 'projectMainListNavigationView'},
 		{xtype: 'splashPage'}, 
 		{xtype: 'noteNavigationView'}
