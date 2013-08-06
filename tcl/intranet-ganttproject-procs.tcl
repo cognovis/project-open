@@ -2280,12 +2280,8 @@ ad_proc -public im_ganttproject_resource_component {
 			and r.object_id_two = u.user_id
 			and parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
 			and parent.parent_id is null
-			and child.tree_sortkey 
-				between parent.tree_sortkey 
-				and tree_right(parent.tree_sortkey)
-			and d.d 
-				between child.start_date::date
-				and child.end_date::date
+			and child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+			and d.d between child.start_date::date and child.end_date::date
 			$where_clause
     "
 
@@ -2957,7 +2953,7 @@ ad_proc -public im_ganttproject_gantt_component {
 			parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
 			and parent.parent_id is null
 			and child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
-			and d.d between child.start_date and child.end_date
+			and d.d between child.start_date::date and child.end_date::date
 			$where_clause
     "
 
