@@ -385,10 +385,130 @@ ad_proc -public im_gp_extract_db_tree_old_bad {
 
 
 
+# -------------------------------------------------------------------
+# Check for duplicate task names
+# Children of a single parent need to have unique names
+# -------------------------------------------------------------------
+
+ad_proc -public im_gp_check_duplicate_task_names {
+    {-debug_p 1}
+    root_node
+} {
+    Check for duplicate task names:
+    Children of a single parent need to have unique names.
+    This procedure will return a warning message in case of issues.
+} {
+    ns_log Notice "im_gp_check_duplicate_task_names:"
+    set tasks {}
+    foreach child_node [$root_node childNodes] {
+	switch [string tolower [$child_node nodeName]] {
+	    "tasks" {
+		# Tasks section with a flat list of tasks in MS-Project
+		foreach taskchild [$child_node childNodes] {
+		    set nodeName [string tolower [$taskchild nodeName]]
+		    set nodeText [$taskchild text]
+		    # ns_log Notice "im_gp_check_duplicate_task_names: name=$nodeName, text=$nodeText"
+		    switch $nodeName {
+			"task" {
+			    # ns_log Notice "im_gp_check_duplicate_task_names: found 'task' node: name=$nodeName, text=$nodeText"
+			    lappend tasks [im_gp_check_duplicate_task_names2 -debug_p 0 $taskchild]
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+    ns_log Notice "im_gp_check_duplicate_task_names: tasks=$tasks"
+
+    # Store the list of tasks below their parent's WBS
+    array set task_hash {}
+    array set task_children_hash {}
+    array set task_duplicate_hash {}
+    foreach task_tuples $tasks {
+	ns_log Notice "im_gp_check_duplicate_task_names: task_tuples = $task_tuples"
+	set wbs "undefined"
+	set name "undefined"
+	foreach task_tuple $task_tuples {
+	    set var_name [lindex $task_tuple 0]
+	    set var_value [lindex $task_tuple 1]
+	    set $var_name $var_value
+	}
+
+	# Skip the first entry without name
+	if {$wbs == "undefined" || $name == "undefined"} { continue }
+
+	# Remember wbs -> name relationship, so that we later can get the name of the parent
+	set task_hash($wbs) $name
+
+	# Remove the last constituent of the WBS
+	set parent_wbs [lrange [split $wbs "."] 0 end-1]
+	if {"" == $parent_wbs} { set parent_wbs "Top" }
+	ns_log Notice "im_gp_check_duplicate_task_names: wbs=$wbs, parent_wbs=$parent_wbs"
+
+	set task_list {}
+	if {[info exists task_children_hash($parent_wbs)]} { set task_list $task_children_hash($parent_wbs) }
+
+	if {[lsearch $task_list $name] > -1} {
+	    # We have found a duplicate
+	    # Remember the duplicate in case we have severals...
+	    set task_duplicate_hash($wbs) $parent_wbs
+	}
+	lappend task_list $name
+	set task_children_hash($parent_wbs) $task_list
+    }
+
+    # create a useful error message
+    set error_html ""
+    foreach wbs [array names task_duplicate_hash] {
+	set parent_wbs $task_duplicate_hash($wbs)
+	set task_name $task_hash($wbs)
+	set parent_name $task_hash($parent_wbs)
+
+	append error_html "<li>
+	       		  <b>[lang::message::lookup "" intranet-ganttproject.Found_duplicate_task "Found a duplicate task '%task_name%'"]</b>:<br>
+	       		  [lang::message::lookup "" intranet-ganttproject.Found_duplicate_task1 "The parent task '%parent_name%' has more than one sub-task with the name '%task_name%'"].<br>
+	       		  [lang::message::lookup "" intranet-ganttproject.Found_duplicate_task2 "\]project-open\[ does not allow for children with the same name."]
+        "
+	
+    }
+
+    if {"" != $error_html} {
+	ad_return_complaint 1 "<br><ul>$error_html</ul><br>"
+	ad_script_abort
+    }
+    return
+} 
+
+ad_proc -public im_gp_check_duplicate_task_names2 {
+    {-debug_p 1}
+    task_node
+} {
+    Check for duplicate task names:
+    Returns the task hierarchy.
+    Recursively iterates through tasks to check for duplicates
+} {
+    if {$debug_p} { ns_log Notice "im_gp_check_duplicate_task_names2: node=$task_node" }
+
+    set task {}
+    foreach taskchild [$task_node childNodes] {
+	set nodeName [string tolower [$taskchild nodeName]]
+	set nodeText [$taskchild text]
+	if {$debug_p} { ns_log Notice "im_gp_check_duplicate_task_names2: name=$nodeName, text=$nodeText" }
+
+	switch $nodeName {
+	    wbs - name {
+		lappend task [list $nodeName $nodeText]
+	    }
+	}
+    }
+    return $task
+}
+
+
 # ---------------------------------------------------------------
 # Process an incoming MS-Project or OpenProject .xml file
 # ---------------------------------------------------------------
-
 
 ad_proc -public im_gp_save_xml { 
     -debug_p:required
@@ -440,6 +560,15 @@ ad_proc -public im_gp_save_xml {
     ns_log Notice "gantt-upload-2: format=$format"
 
 
+    # -------------------------------------------------------------------
+    # Check for duplicate task names
+    # Children of a single parent need to have unique names
+    # -------------------------------------------------------------------
+
+    im_gp_check_duplicate_task_names -debug_p $debug_p $root_node
+
+
+    
     # -------------------------------------------------------------------
     # Save the tasks.
     # The task_hash contains a mapping table from gantt_project_ids to task_ids.
