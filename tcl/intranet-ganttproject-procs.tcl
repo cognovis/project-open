@@ -442,7 +442,7 @@ ad_proc -public im_gp_check_duplicate_task_names {
 	set task_hash($wbs) $name
 
 	# Remove the last constituent of the WBS
-	set parent_wbs [lrange [split $wbs "."] 0 end-1]
+	set parent_wbs [join [lrange [split $wbs "."] 0 end-1] "."]
 	if {"" == $parent_wbs} { set parent_wbs "Top" }
 	ns_log Notice "im_gp_check_duplicate_task_names: wbs=$wbs, parent_wbs=$parent_wbs"
 
@@ -2284,8 +2284,8 @@ ad_proc -public im_ganttproject_resource_component {
 				between parent.tree_sortkey 
 				and tree_right(parent.tree_sortkey)
 			and d.d 
-				between child.start_date 
-				and child.end_date
+				between child.start_date::date
+				and child.end_date::date
 			$where_clause
     "
 
