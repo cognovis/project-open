@@ -139,8 +139,17 @@ ad_proc -private im_material_options {
 	append where_clause "and material_uom_id = :restrict_to_uom_id\n"
     }
 
+    # Make sure we support ordering by a specific type
+    set order_by_type_p [parameter::get_from_package_key -package_key "intranet-material" -parameter "OrderByTypeP" -default 0]
+
     # Exclude inactive materials
-        append where_clause "and material_status_id <> " [im_material_status_inactive]
+    append where_clause "and material_status_id <> " [im_material_status_inactive]
+    
+    if {$order_by_type_p} {
+	set order_by_sql "im_category_from_id(material_type_id),"
+    } else {
+	set order_by_sql ""
+    }
 
     if {$show_material_codes_p} {
 	    set sql "
@@ -148,8 +157,9 @@ ad_proc -private im_material_options {
 			material_id
 		from	im_materials
 		where 	1=1
+                and material_nr not like 'translation,%'
 			$where_clause
-		order by
+		order by $order_by_sql
 			material_nr
 	    "
     } else {
@@ -158,8 +168,9 @@ ad_proc -private im_material_options {
 			material_id
 		from	im_materials
 		where 	1=1
+                and material_nr not like 'translation,%'
 			$where_clause
-		order by
+		order by $order_by_sql
 			material_name
 	    "
     }

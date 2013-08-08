@@ -20,6 +20,7 @@
         <callbacks>
         </callbacks>
         <parameters>
+            <parameter datatype="number"  min_n_values="1"  max_n_values="1"  name="OrderByTypeP"  default="0" description="Order the materials by type first, then material name or number"/>
         </parameters>
 
     </version>

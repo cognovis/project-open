@@ -120,6 +120,7 @@ set show_qty_rate_p [ad_parameter -package_id [im_package_invoices_id] "InvoiceQ
 set show_our_project_nr [ad_parameter -package_id [im_package_invoices_id] "ShowInvoiceOurProjectNr" "" 1]
 set show_our_project_nr_first_column_p [ad_parameter -package_id [im_package_invoices_id] "ShowInvoiceOurProjectNrFirstColumnP" "" 1]
 set show_leading_invoice_item_nr [ad_parameter -package_id [im_package_invoices_id] "ShowLeadingInvoiceItemNr" "" 0]
+set material_enabled_p [ad_parameter -package_id [im_package_invoices_id] "ShowInvoiceItemMaterialFieldP" "" 0]
 
 # Should we show the customer's PO number in the document?
 # This makes only sense in "customer documents", i.e. quotes, invoices and delivery notes
@@ -845,6 +846,11 @@ append invoice_item_html "
           <td class=rowtitle $decoration_description>[lang::message::lookup $locale intranet-invoices.Description]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 "
 
+# Display the material if we have materials enabled for invoice line items
+if {$material_enabled_p} {
+    append invoice_item_html "<td class=rowtitle>[lang::message::lookup "" intranet-invoices.Material "Material"]</td>"
+}
+
 if {$show_qty_rate_p} {
     append invoice_item_html "
           <td class=rowtitle $decoration_quantity>[lang::message::lookup $locale intranet-invoices.Qty]</td>
@@ -872,8 +878,7 @@ append invoice_item_html "
 "
 
 set ctr 1
-	set colspan [expr 2 + 3*$show_qty_rate_p + 1*$show_company_project_nr + $show_our_project_nr]
-
+set colspan [expr 2 + 1*$material_enabled_p + 3*$show_qty_rate_p + 1*$show_company_project_nr + $show_our_project_nr]
 set oo_table_xml ""
 
 set source_invoice_ids [list]
@@ -913,6 +918,19 @@ if { 0 == $item_list_type } {
 	          <td $bgcolor([expr $ctr % 2])>$item_name</td>
 	    "
 	}
+
+	# Display the material if we have materials enabled for invoice line items
+	if {$material_enabled_p} {
+	    if {"" != $item_material_id && 12812 != $item_material_id} {
+		set item_material [db_string material_name "select material_name from im_materials where material_id = :item_material_id" -default ""]
+	    } else {
+		set item_material ""
+	    }
+	    append invoice_item_html "
+	          <td $bgcolor([expr $ctr % 2])>$item_material</td>
+	    "
+	}	    
+
 	if {$show_qty_rate_p} {
 	    append invoice_item_html "
 	          <td $bgcolor([expr $ctr % 2]) align=right>$item_units_pretty</td>
@@ -966,6 +984,7 @@ if { 0 == $item_list_type } {
                                 item_type_id,
                                 item_uom_id,
                                 item_source_invoice_id,
+                                item_material_id,
                                 price_per_unit,
 				trunc((price_per_unit * item_units) :: numeric, 2) as line_total,
 				(select category from im_categories where category_id = item_uom_id) as item_uom
@@ -1006,6 +1025,18 @@ if { 0 == $item_list_type } {
                 set price_per_unit_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $price_per_unit+0] $rounding_precision] "" $locale]
                 append invoice_item_html "<tr>"
                 append invoice_item_html "<td class='invoiceroweven'>$parent_name</td>"
+	    # Display the material if we have materials enabled for invoice line items
+	    if {$material_enabled_p} {
+		if {"" != $item_material_id && 12812 != $item_material_id} {
+		    set item_material [db_string material_name "select material_name from im_materials where material_id = :item_material_id" -default ""]
+		} else {
+		    set item_material ""
+		}
+		append invoice_item_html "
+	          <td $bgcolor([expr $ctr % 2])>$item_material</td>
+	    "
+	    }	    
+
                 if {$show_qty_rate_p} {
                 	append invoice_item_html "
                         	<td $bgcolor([expr $ctr % 2]) align=right>$item_units_pretty</td>
@@ -1352,6 +1383,11 @@ if { 0 == $item_list_type } {
 		    		set price_per_unit_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $price_per_unit+0] $rounding_precision] "" $locale]
 				append invoice_item_html "<tr>" 
 				append invoice_item_html "<td class='invoiceroweven'>$indent$parent_name</td>" 
+				    # Display the material if we have materials enabled for invoice line items
+				    if {$material_enabled_p} {
+					append invoice_item_html "<td $bgcolor([expr $ctr % 2])>&nbps;</td>"
+				    }	    
+
 				if {$show_qty_rate_p} {
 					append invoice_item_html "
 					<td $bgcolor([expr $ctr % 2]) align=right>$item_units_pretty</td>
