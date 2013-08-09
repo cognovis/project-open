@@ -22,7 +22,7 @@ Ext.define('PO.view.ProjectMainList', {
 	    disclosure: true,
 	    grouped: false,
 	    indexBar: true
-//	    onItemDisclosure: true
+	    onItemDisclosure: true
 	}
 });
 

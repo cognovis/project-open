@@ -1,18 +1,10 @@
-Ext.define('PO.store.ProjectMainStore', {
+Ext.define('PO.store.ProjectTaskStore', {
     extend: 'Ext.data.Store',
-    storeId: 'projectMainStore',
+    storeId: 'projectTaskStore',
     config: {
 	model: 'PO.model.Project',
 	autoLoad: true,
 	pageSize: 10000,
-	
-	grouper: {
-	    groupFn: function(record) { 
-		var fn = record.get('project_name');
-		if (fn == null) { fn = 'a'; }
-		return fn.toLowerCase()[0]; 
-	    }
-	},
 	
 	sorters: [{
 	    property: 'project_name',
@@ -25,7 +17,7 @@ Ext.define('PO.store.ProjectMainStore', {
             appendId: true,
             extraParams: {
                 format: 'json',
-		query: 'parent_id is null and project_status_id in (76)'
+		query: 'substring(tree_sortkey for 32) is null'
             },
             reader: { 
 		type: 'json', 
