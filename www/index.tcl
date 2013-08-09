@@ -1,4 +1,4 @@
-# /packages/senchatouch-notes/www/index.tcl
+# /packages/senchatouch-timesheet/www/index.tcl
 #
 # Copyright (c) 2003-2013 ]project-open[
 # All rights reserved

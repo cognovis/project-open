@@ -41,7 +41,6 @@ Ext.application({
 	    tabBarPosition: 'bottom',
 	    items: [
 		// The application consists of two pages only:
-		{xtype: 'hourPanelDetail'},
 		{xtype: 'projectMainListNavigationView'},
 		{xtype: 'splashPage'}, 
 		{xtype: 'noteNavigationView'}
