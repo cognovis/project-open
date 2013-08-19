@@ -435,10 +435,6 @@ ad_proc -public im_conf_item_permissions {user_id conf_item_id view_var read_var
 }
 
 
-
-
-
-
 # ----------------------------------------------------------------------
 # Configurable list of Configuration Items
 # ---------------------------------------------------------------------
@@ -496,13 +492,17 @@ ad_proc -public im_conf_item_list_component {
 
     # Get the "view" (=list of columns to show)
     set view_id [util_memoize [list db_string get_view_id "select view_id from im_views where view_name = '$view_name'" -default 0]]
+
     if {0 == $view_id} {
 	ns_log Error "im_conf_item_list_component: we didn't find view_name=$view_name"
 	set view_name "im_conf_item_list"
 	set view_id [db_string get_view_id "select view_id from im_views where view_name=:view_name" -default 0]
     }
-    if {$debug} { ns_log Notice "im_conf_item_list_component: view_id=$view_id" }
 
+    if {$debug} { ns_log Notice "im_conf_item_list_component: view_id=$view_id" }
+    if {0 == $view_id} {
+	return [lang::message::lookup "" intranet-core.lt_Internal_error_unknow "Unknown View: $view_name, please inform your System Adminitrator"]
+    }
 
     # ---------------------- Get Columns ----------------------------------
     # Define the column headers and column contents that
@@ -840,6 +840,7 @@ ad_proc -public im_conf_item_list_component {
 	# We've got a conf_item.
 	# Write out a line with conf_item information
 	append table_body_html "<tr$bgcolor([expr $ctr % 2])>\n"
+
 	foreach column_var $column_vars {
 	    append table_body_html "\t<td valign=top>"
 	    set cmd "append table_body_html $column_var"
@@ -859,31 +860,39 @@ ad_proc -public im_conf_item_list_component {
 			Please click <a href=%more_url%>here</a> for the entire list.
 		"]
 		</td></tr>\n"
-
 	    break
 	}
-
     }
 
     # ----------------------------------------------------
     # Show a reasonable message when there are no result rows:
     if { [empty_string_p $table_body_html] } {
-        set new_conf_item_url [export_vars -base "/intranet-confdb/new" {{conf_item_id $object_id} {return_url $current_url}}]"
+
 	set table_body_html "
 		<tr class=table_list_page_plain>
 			<td colspan=$colspan align=left>
 			<b>[_ intranet-confdb.There_are_no_active_conf_items]</b>
 			</td>
 		</tr>
-		<tr>
-			<td colspan=$colspan>
-			<ul>
-			<li><a href=\"$new_conf_item_url\">[lang::message::lookup "" intranet-confdb.New_Conf_Item "New Conf Item"]</a>
-			</ul>
-			</td>
-		</tr>
 	"
     }
+
+
+   if { "im_project" == [acs_object_type $object_id] } {
+            set new_conf_item_url [export_vars -base "/intranet-confdb/new" {{form_mode edit} {return_url $current_url} {conf_item_project_id $object_id}}]
+   } else {
+            set new_conf_item_url [export_vars -base "/intranet-confdb/new" {{form_mode edit} {return_url $current_url}}]
+   }
+
+    append table_body_html "
+	<tr>
+		<td colspan=$colspan>
+	        	<ul>
+                        <li><a href=\"$new_conf_item_url\">[lang::message::lookup "" intranet-confdb.New_Conf_Item "New Conf Item"]</a>
+                        </ul>
+                 </td>
+        </tr>
+    "
     
     set total_in_limited 0
 
