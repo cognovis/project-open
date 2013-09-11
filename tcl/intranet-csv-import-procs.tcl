@@ -269,7 +269,7 @@ ad_proc -public im_csv_import_parsers {
     Returns the list of available parsers
 } {
     switch $object_type {
-	im_project - im_risk - im_timesheet_task - im_ticket {
+	im_project - im_company - im_risk - im_timesheet_task - im_ticket {
 	    set parsers {
 		no_change	"No Change"
 		hard_coded	"Hard Coded Functionality"

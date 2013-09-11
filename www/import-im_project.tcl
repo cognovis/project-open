@@ -134,6 +134,7 @@ foreach csv_line_fields $values_list_of_lists {
     set project_type		""
     set project_type_id	 	""
 
+    set project_manager		""
     set project_lead_id	 	""
     set start_date		""
     set end_date		""
