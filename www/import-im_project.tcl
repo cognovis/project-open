@@ -290,6 +290,17 @@ foreach csv_line_fields $values_list_of_lists {
 	set project_type_id [im_project_type_other]
     }
 
+    # start_date and end_date are required fields
+    if {"" == $start_date} {
+	if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Didn't find project start_date, using today.</font>\n" }
+	set start_date [db_string today "select now()::date from dual"]
+    }
+    if {"" == $end_date} {
+	if {$ns_write_p} { ns_write "<li><font color=brown>Warning: Didn't find project end_date, using today.</font>\n" }
+	set end_date [db_string today "select now()::date from dual"]
+    }
+
+
     # On track status can be NULL without problems
     set on_track_status_id [im_id_from_category [list $on_track_status] "Intranet Project On Track Status"]
 
