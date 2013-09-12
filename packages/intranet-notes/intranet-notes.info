@@ -9,7 +9,7 @@
     <singleton-p>t</singleton-p>
     <auto-mount>intranet-notes</auto-mount>
 
-    <version name="4.0.4.0.0" url="http://www.project-open.org/download/apm/intranet-notes-4.0.4.0.0.apm">
+    <version name="4.0.4.0.1" url="http://www.project-open.org/download/apm/intranet-notes-4.0.4.0.1.apm">
         <owner url="mailto:fraber@project-open.com">Frank Bergmann</owner>
         <summary>Tutorial package to demonstrate a very simple module</summary>
         <release-date>2006-10-11</release-date>
@@ -17,7 +17,7 @@
         <description format="text/plain">Provides List, New and Edit pages for simple text strings ('Notes').</description>
 
         <provides url="intranet-notes" version="3.4.0.2.0"/>
-        <requires url="intranet-core" version="3.4.0.0.0"/>
+        <requires url="intranet-core" version="3.4.0.1.0"/>
 
         <callbacks>
         </callbacks>

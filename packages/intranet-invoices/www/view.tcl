@@ -1919,9 +1919,10 @@ select
         invoice_nr as linked_invoice_nr,
         effective_date as linked_effective_date
 from
-	im_invoices
+	im_invoices, im_costs
 where
 	invoice_id in ([template::util::tcl_to_sql_list $linked_invoice_ids])
+        and cost_id = invoice_id
 "
 
     set linked_ctr 0

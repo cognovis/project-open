@@ -49,6 +49,7 @@ if {$object_read} {
 
 	regsub -all {[^0-9a-zA-Z]} $note_type "_" note_type_key
 	set note_type [lang::message::lookup "" intranet-notes.$note_type_key $note_type]
+	set note [template::util::richtext::get_property html_value $note]
 	set note_formatted [im_note_format -note_type_id $note_type_id -note $note]
 	set notes_edit_url "${new_note_url}&note_id=$note_id"
     }
