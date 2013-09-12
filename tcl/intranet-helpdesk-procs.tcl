@@ -1067,6 +1067,7 @@ ad_proc -public im_helpdesk_project_component {
     Returns a HTML table with the list of tickets for the current
     project.
 } {
+    if {![im_project_has_type $project_id "Service Level Agreement"]} { return "" }
     set view_name "ticket_project_list"
 
     return [im_helpdesk_ticket_component \
