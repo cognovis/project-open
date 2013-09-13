@@ -56,6 +56,9 @@ set end_idx [expr $start_idx + $how_many]
 if {"" == $start_date} { set start_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultStartDate -default "2000-01-01"] }
 if {"" == $end_date} { set end_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultEndDate -default "2100-01-01"] }
 
+set mine_all_l10n [lang::message::lookup "" intranet-core.Mine_All "Mine/All"]
+set all_l10n [lang::message::lookup "" intranet-core.All "All"]
+
 
 # ---------------------------------------------------------------
 # Defined Table Fields
@@ -162,7 +165,7 @@ set form_mode "edit"
 
 set mine_p_options {}
 if {$view_tickets_all_p} { 
-    lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.All "All"] "all" ] 
+    lappend mine_p_options [list $all_l10n "all" ] 
 }
 
 lappend mine_p_options [list [lang::message::lookup "" intranet-helpdesk.My_queues "My Queues"] "queue"]
@@ -190,7 +193,7 @@ set ticket_member_options [util_memoize "db_list_of_lists ticket_members {
 	where   r.object_id_one = p.ticket_id
 	order by user_name
 }" 300]
-set ticket_member_options [linsert $ticket_member_options 0 [list [_ intranet-core.All] ""]]
+set ticket_member_options [linsert $ticket_member_options 0 [list $all_l10n ""]]
 
 set ticket_queue_options [im_helpdesk_ticket_queue_options]
 set ticket_sla_options [im_helpdesk_ticket_sla_options -include_create_sla_p 1 -include_empty_p 1]
@@ -239,7 +242,7 @@ ad_form \
     -mode $form_mode \
     -method GET \
     -form {
-    	{mine_p:text(select),optional {label "Mine/All"} {options $mine_p_options }}
+    	{mine_p:text(select),optional {label "$mine_all_l10n"} {options $mine_p_options }}
 	{start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {value "$start_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
 	{end_date:text(text) {label "[_ intranet-timesheet2.End_Date]"} {value "$end_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('end_date', 'y-m-d');" >}}}
 	{ticket_name:text(text),optional {label "[_ intranet-helpdesk.Ticket_Name]"} {html {size 12}}}
