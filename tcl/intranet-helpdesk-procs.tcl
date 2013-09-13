@@ -981,6 +981,9 @@ ad_proc -public im_helpdesk_ticket_sla_options {
     Returns a list of SLA tuples suitable for ad_form
 } {
     if {0 == $user_id} { set user_id [ad_get_user_id] }
+#    set sla_name_sql [parameter::get_from_package_key -package_key "intranet-helpdesk" -parameter "RenderSlaNameSql" -default "company_name || ' (' || project_name || ')'"]
+    set sla_name_sql [parameter::get_from_package_key -package_key "intranet-helpdesk" -parameter "RenderSlaNameSql" -default "project_name"]
+
 
     # Can the user see all projects?
     set permission_sql ""
@@ -998,7 +1001,7 @@ ad_proc -public im_helpdesk_ticket_sla_options {
     }
 
     set sql "
-	select	c.company_name || ' (' || p.project_name || ')' as sla_name,
+	select	$sla_name_sql as sla_name,
 		p.project_id
 	from	im_projects p,
 		im_companies c
