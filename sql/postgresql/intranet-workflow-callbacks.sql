@@ -250,9 +250,9 @@ end;' language 'plpgsql';
 create or replace function im_workflow__assign_to_group (integer, text, text)
 returns integer as '
 declare
-        p_case_id               alias for $1;
-        p_transition_key        alias for $2;
-        p_custom_arg            alias for $3;
+	p_case_id	       alias for $1;
+	p_transition_key	alias for $2;
+	p_custom_arg	    alias for $3;
 
 	v_task_id		integer;	v_case_id		integer;
 	v_creation_ip		varchar; 	v_creation_user		integer;
@@ -299,9 +299,9 @@ end;' language 'plpgsql';
 create or replace function im_workflow__assign_to_project_admins (integer, text, text)
 returns integer as '
 declare
-        p_case_id               alias for $1;
-        p_transition_key        alias for $2;
-        p_custom_arg            alias for $3;
+	p_case_id	       alias for $1;
+	p_transition_key	alias for $2;
+	p_custom_arg	    alias for $3;
 
 	v_task_id		integer;	v_case_id		integer;
 	v_creation_ip		varchar; 	v_creation_user		integer;
@@ -352,52 +352,64 @@ end;' language 'plpgsql';
 
 
 CREATE OR REPLACE FUNCTION im_workflow__assign_to_project_manager(integer, text)
-  RETURNS integer AS $BODY$
- declare
-     p_task_id        		alias for $1;
-     p_custom_arg       	alias for $2;
-     v_transition_key    	varchar;
-     v_object_type        	varchar;
-     v_case_id        		integer;
-     v_object_id        	integer;
-     v_creation_user        	integer;
-     v_creation_ip        	varchar;
-     v_project_manager_id     	integer;
-     v_project_manager_name     varchar;
-     v_journal_id        	integer;
+RETURNS integer AS $BODY$
+DECLARE
+	p_task_id		alias for $1;
+	p_custom_arg		alias for $2;
+	v_transition_key	varchar;
+	v_object_type		varchar;
+	v_case_id		integer;
+	v_object_id		integer;
+	v_creation_user		integer;
+	v_creation_ip		varchar;
+	v_project_manager_id	integer;
+	v_project_manager_name	varchar;
+	v_journal_id		integer;
+BEGIN
+	-- Get information about the transition and the 'environment'
+	select	tr.transition_key, t.case_id, c.object_id, o.creation_user, o.creation_ip, o.object_type
+	into	v_transition_key, v_case_id, v_object_id, v_creation_user, v_creation_ip, v_object_type
+	from	wf_tasks t, wf_cases c, wf_transitions tr, acs_objects o
+	where	t.task_id = p_task_id and
+		t.case_id = c.case_id and
+		o.object_id = t.case_id and
+		t.workflow_key = tr.workflow_key and
+		t.transition_key = tr.transition_key;
 
- begin
-     -- Get information about the transition and the 'environment'
-     select  tr.transition_key, t.case_id, c.object_id, o.creation_user, o.creation_ip, o.object_type
-     into    v_transition_key, v_case_id, v_object_id, v_creation_user, v_creation_ip, v_object_type
-     from    wf_tasks t, wf_cases c, wf_transitions tr, acs_objects o
-     where   t.task_id = p_task_id
-         and t.case_id = c.case_id
-         and o.object_id = t.case_id
-         and t.workflow_key = tr.workflow_key
-         and t.transition_key = tr.transition_key;
+	-- Get the PM based on the configuration object
+	IF 'im_timesheet_conf_object' = v_object_type THEN
+		select	p.project_lead_id into v_project_manager_id 
+		from	im_projects p, im_timesheet_conf_objects co
+		where	p.project_id = co.conf_project_id and
+			co.conf_id = v_object_id;
+	END IF;
 
-     select    p.project_lead_id into v_project_manager_id from im_projects p, im_timesheet_conf_objects co
-     where     p.project_id = co.conf_project_id
-     and       co.conf_id = v_object_id;
+	-- Get the PM based on the main project project_lead
+	IF 'im_project' = v_object_type OR 'im_timesheet_task' = v_object_type OR 'im_ticket' = v_object_type THEN
+		select	p.project_lead_id into v_project_manager_id 
+		from	im_projects sub_p,
+			im_projects main_p
+		where	sub_p.project_id = v_object_id and
+			main_p.tree_sortkey = tree_root_key(sub_p.tree_sortkey);
+	END IF;
 
-     select im_name_from_id(v_project_manager_id) into v_project_manager_name;
+	select im_name_from_id(v_project_manager_id) into v_project_manager_name;
 
-     RAISE NOTICE 'My projectmanager for % is % and called %', v_object_id, v_project_manager_id, v_project_manager_name;
-     IF v_project_manager_id is not null THEN
-         v_journal_id := journal_entry__new(
-             null, v_case_id,
-             v_transition_key || ' assign_to_project_manager ' || v_project_manager_name,
-             v_transition_key || ' assign_to_project_manager ' || v_project_manager_name,
-             now(), v_creation_user, v_creation_ip,
-             'Assigning to user' || v_project_manager_name
-                 );
-         PERFORM workflow_case__add_task_assignment(p_task_id, v_project_manager_id, 'f');
-         PERFORM workflow_case__notify_assignee (p_task_id, v_project_manager_id, null, null,
-             'wf_' || v_object_type || '_assignment_notif');
-     END IF;
-     return 0;
-end; $BODY$ LANGUAGE 'plpgsql' VOLATILE;
+	RAISE NOTICE 'My projectmanager for % is % and called %', v_object_id, v_project_manager_id, v_project_manager_name;
+	IF v_project_manager_id is not null THEN
+		v_journal_id := journal_entry__new(
+			null, v_case_id,
+			v_transition_key || ' assign_to_project_manager ' || v_project_manager_name,
+			v_transition_key || ' assign_to_project_manager ' || v_project_manager_name,
+			now(), v_creation_user, v_creation_ip,
+			'Assigning to user' || v_project_manager_name
+		);
+		PERFORM workflow_case__add_task_assignment(p_task_id, v_project_manager_id, 'f');
+		PERFORM workflow_case__notify_assignee (p_task_id, v_project_manager_id, null, null,
+			'wf_' || v_object_type || '_assignment_notif');
+	END IF;
+	return 0;
+END; $BODY$ LANGUAGE 'plpgsql' VOLATILE;
 
 
 
@@ -407,107 +419,107 @@ end; $BODY$ LANGUAGE 'plpgsql' VOLATILE;
 create or replace function im_workflow__assign_to_project_admins (integer, text, text)
 returns integer as '
 declare
-        p_case_id               alias for $1;
-        p_transition_key        alias for $2;
-        p_custom_arg            alias for $3;
+	p_case_id	       alias for $1;
+	p_transition_key	alias for $2;
+	p_custom_arg	    alias for $3;
 
-        v_task_id               integer;        v_case_id               integer;
-        v_creation_ip           varchar;        v_creation_user         integer;
-        v_object_id             integer;        v_object_type           varchar;
-        v_journal_id            integer;
-        v_transition_key        varchar;        v_workflow_key          varchar;
+	v_task_id	       integer;	v_case_id	       integer;
+	v_creation_ip	   varchar;	v_creation_user	 integer;
+	v_object_id	     integer;	v_object_type	   varchar;
+	v_journal_id	    integer;
+	v_transition_key	varchar;	v_workflow_key	  varchar;
 
-        row                     RECORD;
+	row		     RECORD;
 begin
-        -- Select out some frequently used variables of the environment
-        select  c.object_id, c.workflow_key, task_id, c.case_id, co.object_type, co.creation_ip
-        into    v_object_id, v_workflow_key, v_task_id, v_case_id, v_object_type, v_creation_ip
-        from    wf_tasks t, wf_cases c, acs_objects co
-        where   c.case_id = p_case_id
-                and c.case_id = co.object_id
-                and t.case_id = c.case_id
-                and t.workflow_key = c.workflow_key
-                and t.transition_key = p_transition_key;
+	-- Select out some frequently used variables of the environment
+	select  c.object_id, c.workflow_key, task_id, c.case_id, co.object_type, co.creation_ip
+	into    v_object_id, v_workflow_key, v_task_id, v_case_id, v_object_type, v_creation_ip
+	from    wf_tasks t, wf_cases c, acs_objects co
+	where   c.case_id = p_case_id
+		and c.case_id = co.object_id
+		and t.case_id = c.case_id
+		and t.workflow_key = c.workflow_key
+		and t.transition_key = p_transition_key;
 
-        FOR row IN
-                select  r.object_id_two as user_id,
-                        im_name_from_user_id(r.object_id_two) as user_name
-                from    wf_cases wfc,
-                        im_projects p,
-                        acs_rels r,
-                        im_biz_object_members bom
-                where   wfc.case_id = v_case_id and
-                        wfc.object_id = p.project_id and
-                        r.object_id_one = p.project_id and
-                        r.rel_id = bom.rel_id and
-                        bom.object_role_id = 1301
-        LOOP
-                v_journal_id := journal_entry__new(
-                    null, v_case_id,
-                    v_transition_key || '' assign_to_user '' || row.user_name,
-                    v_transition_key || '' assign_to_user '' || row.user_name,
-                    now(), v_creation_user, v_creation_ip,
-                    ''Assigning to '' || row.user_name
-                );
-                PERFORM workflow_case__add_task_assignment(v_task_id, row.user_id, ''f'');
-                PERFORM workflow_case__notify_assignee (v_task_id, row.user_id, null, null,
-                        ''wf_'' || v_object_type || ''_assignment_notif'');
-        END LOOP;
+	FOR row IN
+		select  r.object_id_two as user_id,
+			im_name_from_user_id(r.object_id_two) as user_name
+		from    wf_cases wfc,
+			im_projects p,
+			acs_rels r,
+			im_biz_object_members bom
+		where   wfc.case_id = v_case_id and
+			wfc.object_id = p.project_id and
+			r.object_id_one = p.project_id and
+			r.rel_id = bom.rel_id and
+			bom.object_role_id = 1301
+	LOOP
+		v_journal_id := journal_entry__new(
+		    null, v_case_id,
+		    v_transition_key || '' assign_to_user '' || row.user_name,
+		    v_transition_key || '' assign_to_user '' || row.user_name,
+		    now(), v_creation_user, v_creation_ip,
+		    ''Assigning to '' || row.user_name
+		);
+		PERFORM workflow_case__add_task_assignment(v_task_id, row.user_id, ''f'');
+		PERFORM workflow_case__notify_assignee (v_task_id, row.user_id, null, null,
+			''wf_'' || v_object_type || ''_assignment_notif'');
+	END LOOP;
 
-        return 0;
+	return 0;
 end;' language 'plpgsql';
 
 create or replace function im_workflow__assign_to_project_admins (integer, text)
 returns integer as '
 declare
-        p_task_id               alias for $1;
-        p_custom_arg            alias for $2;
+	p_task_id	       alias for $1;
+	p_custom_arg	    alias for $2;
 
-        v_case_id               integer;
-        v_creation_ip           varchar;
-	v_creation_user             integer;
-        v_object_id             integer;        v_object_type           varchar;
-        v_journal_id            integer;
-        v_transition_key        varchar;        v_workflow_key          varchar;
+	v_case_id	       integer;
+	v_creation_ip	   varchar;
+	v_creation_user	     integer;
+	v_object_id	     integer;	v_object_type	   varchar;
+	v_journal_id	    integer;
+	v_transition_key	varchar;	v_workflow_key	  varchar;
 
-        row                     RECORD;
+	row		     RECORD;
 begin
-        -- Select out some frequently used variables of the environment
-        select  tr.transition_key, t.case_id, c.object_id, o.creation_user, o.creation_ip, o.object_type
-        into    v_transition_key, v_case_id, v_object_id, v_creation_user, v_creation_ip, v_object_type
-        from    wf_tasks t, wf_cases c, wf_transitions tr, acs_objects o
-        where   t.task_id = p_task_id
-                and t.case_id = c.case_id
-                and o.object_id = t.case_id
-                and t.workflow_key = tr.workflow_key
-                and t.transition_key = tr.transition_key;
+	-- Select out some frequently used variables of the environment
+	select  tr.transition_key, t.case_id, c.object_id, o.creation_user, o.creation_ip, o.object_type
+	into    v_transition_key, v_case_id, v_object_id, v_creation_user, v_creation_ip, v_object_type
+	from    wf_tasks t, wf_cases c, wf_transitions tr, acs_objects o
+	where   t.task_id = p_task_id
+		and t.case_id = c.case_id
+		and o.object_id = t.case_id
+		and t.workflow_key = tr.workflow_key
+		and t.transition_key = tr.transition_key;
 
-        FOR row IN
-                select  r.object_id_two as user_id,
-                        im_name_from_user_id(r.object_id_two) as user_name
-                from im_timesheet_conf_objects co,
-                        im_projects p,
-                        acs_rels r,
-                        im_biz_object_members bom
-                where   co.conf_id = v_object_id and
-                        co.conf_project_id = p.project_id and
-                        r.object_id_one = p.project_id and
-                        r.rel_id = bom.rel_id and
-                        bom.object_role_id = 1301
-        LOOP
-                v_journal_id := journal_entry__new(
-                    null, v_case_id,
-                    v_transition_key || '' assign_to_user '' || row.user_name,
-                    v_transition_key || '' assign_to_user '' || row.user_name,
-                    now(), v_creation_user, v_creation_ip,
-                    ''Assigning to '' || row.user_name
-                );
-                PERFORM workflow_case__add_task_assignment(p_task_id, row.user_id, ''f'');
-                PERFORM workflow_case__notify_assignee (p_task_id, row.user_id, null, null,
-                        ''wf_'' || v_object_type || ''_assignment_notif'');
-        END LOOP;
+	FOR row IN
+		select  r.object_id_two as user_id,
+			im_name_from_user_id(r.object_id_two) as user_name
+		from im_timesheet_conf_objects co,
+			im_projects p,
+			acs_rels r,
+			im_biz_object_members bom
+		where   co.conf_id = v_object_id and
+			co.conf_project_id = p.project_id and
+			r.object_id_one = p.project_id and
+			r.rel_id = bom.rel_id and
+			bom.object_role_id = 1301
+	LOOP
+		v_journal_id := journal_entry__new(
+		    null, v_case_id,
+		    v_transition_key || '' assign_to_user '' || row.user_name,
+		    v_transition_key || '' assign_to_user '' || row.user_name,
+		    now(), v_creation_user, v_creation_ip,
+		    ''Assigning to '' || row.user_name
+		);
+		PERFORM workflow_case__add_task_assignment(p_task_id, row.user_id, ''f'');
+		PERFORM workflow_case__notify_assignee (p_task_id, row.user_id, null, null,
+			''wf_'' || v_object_type || ''_assignment_notif'');
+	END LOOP;
 
-        return 0;
+	return 0;
 end;' language 'plpgsql';
 
 
@@ -573,7 +585,7 @@ begin
 			state = 'free'
 	LOOP
 		-- PERFORM acs_log__debug('im_workflow__delete_all_other_tokens', 'Deleting token '||row.token_id||' in place '||row.place_key);
-        	delete from wf_tokens where token_id = row.token_id;
+		delete from wf_tokens where token_id = row.token_id;
 	END LOOP;
 
 	-- For all places that link to the current (new!) transition
