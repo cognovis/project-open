@@ -661,9 +661,9 @@ db_foreach tickets_info_query $selection -bind $form_vars {
 
     # L10n
     regsub -all {[^0-9a-zA-Z]} $ticket_type "_" ticket_type_key
-    set ticket_type_l10n [lang::message::lookup "" intranet-core.ticket_type_$ticket_type_key $ticket_type]
+    set ticket_type_l10n [lang::message::lookup "" intranet-core.$ticket_type_key $ticket_type]
     regsub -all {[^0-9a-zA-Z]} $ticket_status "_" ticket_status_key
-    set ticket_status_l10n [lang::message::lookup "" intranet-core.ticket_status_$ticket_status_key $ticket_status]
+    set ticket_status_l10n [lang::message::lookup "" intranet-core.$ticket_status_key $ticket_status]
 
     # Append together a line of data based on the "column_vars" parameter list
     set row_html "<tr$bgcolor([expr $ctr % 2])>\n"
