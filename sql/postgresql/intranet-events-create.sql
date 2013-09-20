@@ -81,7 +81,7 @@ create table im_events (
 	event_end_date		timestamptz
 				constraint im_events_end_const not null,
 
-	description		text
+	event_description	text
 );
 
 -- Unique constraint to avoid that you can add two identical events

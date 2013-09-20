@@ -42,7 +42,8 @@
 		event_material_id	= :event_material_id,
 		event_location_id	= :event_location_id,
 		event_start_date	= $event_start_date_sql,
-		event_end_date		= $event_end_date
+		event_end_date		= $event_end_date_sql,
+		event_description	= :event_description
 	where
 		event_id = :event_id;
     </querytext>

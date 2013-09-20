@@ -220,7 +220,7 @@ set event_name_label [lang::message::lookup {} intranet-events.Event_Name "Name"
 set event_nr_label [lang::message::lookup {} intranet-events.Event_Nr "Nr"]
 set event_name_help [lang::message::lookup {} intranet-events.Event_Name_Help {Please enter a descriptive name for the new event.}]
 
-set edit_p [im_permission $current_user_id add_events_for_customers]
+set edit_p [im_permission $current_user_id add_events]
 set delete_p $edit_p
 
 set actions {}
@@ -244,7 +244,7 @@ ad_form \
 	{event_location_id:text(select),optional {label "[lang::message::lookup {} intranet-events.Location Location]"} {options $location_options}}
 	{event_start_date:date(date) {label "[_ intranet-timesheet2.Start_Date]"} {format "YYYY-MM-DD"} {after_html {<input type="button" style="height:23px; width:23px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendarWithDateWidget('event_start_date', 'y-m-d');" >}}}
 	{event_end_date:date(date) {label "[_ intranet-timesheet2.End_Date]"} {format "YYYY-MM-DD"} {after_html {<input type="button" style="height:23px; width:23px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendarWithDateWidget('event_end_date', 'y-m-d');" >}}}
-	{description:text(textarea),optional {label "[_ intranet-timesheet2.Description]"} {html {cols 40}}}
+	{event_description:text(textarea),optional,nospell {label "[_ intranet-timesheet2.Description]"} {html {cols 40}}}
     }
 
 
@@ -380,11 +380,10 @@ ad_form -extend -name event -on_request {
 
     ns_log Notice "new: edit_data"
     set event_start_date_sql [template::util::date get_property sql_date $event_start_date]
-    set event_end_date_sql [template::util::date get_property sql_timestamp $event_end_date]
+    set event_end_date_sql [template::util::date get_property sql_date $event_end_date]
 
     db_dml event_update {}
     db_dml event_update_acs_object {}
-    db_dml project_update {}
 
     im_dynfield::attribute_store \
 	-object_type "im_event" \
