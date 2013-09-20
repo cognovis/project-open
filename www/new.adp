@@ -1,7 +1,7 @@
 <if @enable_master_p@><master></if>
 <property name="title">@page_title@</property>
 <property name="context">@context;noquote@</property>
-<property name="main_navbar_label">event</property>
+<property name="main_navbar_label">events</property>
 <property name="focus">@focus;noquote@</property>
 <property name="sub_navbar">@sub_navbar;noquote@</property>
 <property name="left_navbar">@left_navbar_html;noquote@</property>
