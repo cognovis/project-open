@@ -1,18 +1,11 @@
-# /packages/intranet-reporting/www/timesheet-companies-projects.tcl
+# /packages/intranet-reporting/www/timesheet-customer-project-xml-xslt.tcl
 #
 # Copyright (C) 2003 - 2013 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/ for licensing details.
 
-
 ad_page_contract {
-	testing reports	
-    @param start_year Year to start the report
-    @param start_unit Month or week to start within the start_year
-    @param truncate_note_length Truncate (ellipsis) the note field
-	   to the given number of characters. 0 indicates no
-	   truncation.
 } {
     { start_date "" }
     { end_date "" }
@@ -29,6 +22,174 @@ ad_page_contract {
 	{ xslt_template_id 0 }
 	{ odt_template_id 0 }
 	{ print_hour_p:multiple ""}
+}
+
+proc im_reporting_render_odt_template {
+        uri_odt_template
+        uri_xml
+        notation
+} {
+    # ------------------------------------------------
+    # Create a temporary directory
+    set odt_tmp_path [ns_tmpnam]
+    ns_log Notice "im_reporting_render_odt_template: odt_tmp_path=$odt_tmp_path"
+    ns_mkdir $odt_tmp_path
+
+    # Make sure the right file suffix is used: ODT/ODS
+    set odt_zip "${odt_tmp_path}.[lindex [split $uri_odt_template "." ] [expr [llength [split $uri_odt_template "." ]]-1]]"
+    set odt_content "${odt_tmp_path}/content.xml"
+
+        # XML
+	set xml_file "${odt_tmp_path}/xml_file.xml"
+
+    # ------------------------------------------------
+    # Create a copy of the ODF template into the temporary dir
+    ns_log Notice "im_reporting_render_odt_template: uri_odt_template='$uri_odt_template'"
+    ns_cp $uri_odt_template $odt_zip
+
+    # Unzip the odt into the temorary directory
+	if {[catch {
+                exec unzip -d $odt_tmp_path $odt_zip
+	} err_msg]} {
+		ad_return_complaint 1  [lang::message::lookup "" intranet-reporting.UnableToUnzip "Unable to unzip ODT template. Please verify if you have choosen a file of type: ODT"]
+                return
+	}
+
+    # Create a copy of the XML template into the temporary dir
+    ns_log Notice "im_reporting_render_odt_template: uri_xml='$uri_xml'"
+    ns_cp $uri_xml $xml_file
+
+    # ------------------------------------------------
+    # Read the 'Report Custom XML' and set hash array with vars provided (attributes)
+
+    set file [open $xml_file]
+    fconfigure $file -encoding "utf-8"
+    set xml_content [read $file]
+    close $file
+
+    set xml_doc [dom parse $xml_content]
+    set root [$xml_doc documentElement]
+    set xml_attribute_nodes [$root selectNodes "//attributes/*"]
+
+    # Let's first replace double '@'
+
+    # ------------------------------------------------
+    # Create list of lines
+
+	set line_list [list]
+	set xml_line_nodes [$root selectNodes "//lines/*"]
+    foreach line_node $xml_line_nodes {
+        # lindex '0' is 'rec',
+		# ad_return_complaint 1 [list [lindex [$line_node asList] 1]]
+		lappend line_list [lindex [$line_node asList] 1]
+    }
+
+        # How many columns in line table?
+	set no_cols [expr [llength [lindex $line_list 0]]/2]
+
+    # ------------------------------------------------
+    # Read the content.xml file
+    set file [open $odt_content]
+    fconfigure $file -encoding "utf-8"
+    set odt_template_content [read $file]
+    close $file
+
+    # ------------------------------------------------
+    # Search the <row> ...<cell>..</cell>.. </row> line
+    # representing the part of the template that needs to
+    # be repeated for every template.
+
+    # Get the list of all "tables" in the document
+    set odt_doc [dom parse $odt_template_content]
+    set root [$odt_doc documentElement]
+    set odt_table_nodes [$root selectNodes "//table:table"]
+
+    # Search for the table that contains "@@"
+    set odt_template_table_node ""
+    foreach table_node $odt_table_nodes {
+		set table_as_list [$table_node asList]
+		if {[regexp {@@} $table_as_list match]} { set odt_template_table_node $table_node }
+    }
+
+    # Deal with the the situation that we didn't find the line
+    if {"" == $odt_template_table_node} {
+                ad_return_complaint 1 "
+                        <b>Didn't find table including '@@ vars'</b>:<br>
+                        We have found a valid OOoo template at '$uri_odt_template'.
+                        However, this template does not include a table with the value
+                        above.
+                "
+                ad_script_abort
+    }
+
+    # Seach for the 2nd table:table-row tag
+    set odt_table_rows_nodes [$odt_template_table_node selectNodes "//table:table-row"]
+    set odt_template_row_node ""
+    set odt_template_row_count 0
+    foreach row_node $odt_table_rows_nodes {
+		set row_as_list [$row_node asList]
+		if {[regexp {@@} $row_as_list match]} { set odt_template_row_node $row_node }
+                incr odt_template_row_count
+    }
+
+    if {"" == $odt_template_row_node} {
+                ad_return_complaint 1 "
+                        <b>Didn't find row including '@@ vars'</b>:<br>
+                        We have found a valid OOoo template at '$uri_odt_template'.
+                        However, this template does not include a row with the value
+                        above.
+                "
+                ad_script_abort
+    }
+
+    # parentNode: <table:table ..>
+	set parent_node [$odt_template_row_node parentNode]
+
+    # Store the node so that we can clone it
+	set row_mold_list [$odt_template_row_node asList]
+
+    # First node to be cloned is the '@@'-row
+	foreach line $line_list {
+		# Clone node content
+        set new_node_list $row_mold_list
+
+        # Replace vars - expecting a well formed key/value list ...
+        foreach {i j} $line {
+			regsub -all "@@$i@@" $new_node_list [list $j] new_node_list
+        }
+        # Append new node at the end of parent node -> works for ODT but not for CALC
+            set new_node [$parent_node appendFromList $new_node_list]
+		}
+
+    # Remove the line with @@ placeholders
+	set foo [$odt_template_row_node delete]
+
+    # ------------------------------------------------
+    # Now replace single '@' -> regular vars
+
+    # Render entire ODT to replace vars
+	set content_xml [$root asXML -indent none]
+
+    foreach attribute_node $xml_attribute_nodes {
+		# lappend tt [$attribute_node selectNodes "."]
+		if { "" != [[$attribute_node selectNodes "."] text]  } {
+			regsub -all "@[$attribute_node nodeName]@" $content_xml [list [[$attribute_node selectNodes "."] text]] content_xml
+		} else {
+			regsub -all "@[$attribute_node nodeName]@" $content_xml "" content_xml
+		}
+	}
+
+    # Save the content to a file.
+	set file [open $odt_content w]
+    fconfigure $file -encoding "utf-8"
+    puts $file $content_xml
+    flush $file
+    close $file
+
+    # The zip -j command replaces the specified file in the OO zipfile
+    ns_log Notice "intranet-reporting-procs.tcl: before zipping"
+    exec zip -j $odt_zip $odt_content
+    return $odt_zip
 }
 
 # ------------------------------------------------------------
