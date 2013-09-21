@@ -24,6 +24,15 @@ ad_page_contract {
 	{ print_hour_p:multiple ""}
 }
 
+proc encodeXmlValue {value} {
+    regsub -all {&} $value {&amp;} value
+    regsub -all {"} $value {&quot;} value
+    regsub -all {'} $value {&apos;} value
+    regsub -all {<} $value {&lt;} value
+    regsub -all {>} $value {&gt;} value
+    return $value
+}
+
 proc im_reporting_render_odt_template {
         uri_odt_template
         uri_xml
@@ -784,17 +793,17 @@ switch $output_format {
 	"
     }
 	xml - template {
-    	append xml_output "<?xml version=\"1.0\"?>\n
-				<report>\n
-							<attributes>\n
-								<start_date>$start_date</start_date>\n
-								<end_date>$end_date</end_date>\n
-								<filter_user_id>${user_id}</filter_user_id>\n
-								<filter_company_id>${company_id}</filter_company_id>\n
-								<filter_project_id>${project_id}</filter_project_id>\n
-							</attributes>\n
-							<lines>\n
-    "
+		set xml_doc [dom parse "<report></report>"]
+		set root [$xml_doc documentElement]
+		set node [$root selectNodes "/report"]
+		$node appendFromList [list attributes {} {}]
+		set node [$root selectNodes "/report/attributes"]
+		$node appendFromList [list start_date [list] [list [list "\#text" $start_date]]]		
+		$node appendFromList [list end_date [list] [list [list "\#text" $end_date]]]
+		$node appendFromList [list filter_user_id [list] [list [list "\#text" $user_id]]]		
+		$node appendFromList [list filter_company_id [list] [list [list "\#text" $company_id]]]		
+		$node appendFromList [list filter_project_id [list] [list [list "\#text" $project_id]]]		
+		#ns_return 1 text/xml [$root asXML]
     }
 }
 
@@ -861,9 +870,28 @@ db_foreach sql $sql {
 	]
 
 	if { "xml" == $output_format || "template" == $output_format } {
-        append xml_output "              <rec company_id=\"$company_id\" company_name=\"$company_name\" project_id=\"$project_id\" project_name=\"$project_name\" project_nr=\"$project_nr\" sub_project_id=\"$sub_project_id\" sub_project_name=\"$sub_project_name\" sub_project_nr=\"$sub_project_nr\" user_id=\"$user_id\" user_name=\"$user_name\" day=\"$date_pretty\" hours=\"$hours\" note=\"$note\" internal_note=\"$internal_note\" />"
-	}
 
+		set attributes "company_id='$company_id'"
+		append attributes " project_id ='$project_id'" 
+		append attributes " project_name ='[encodeXmlValue $project_name]'" 
+		append attributes " project_nr = '[encodeXmlValue $project_nr]'" 
+		append attributes " sub_project_id= '$sub_project_id'"
+ 		append attributes " sub_project_name = '[encodeXmlValue $sub_project_name]'" 
+		append attributes " sub_project_nr ='[encodeXmlValue $sub_project_nr]'" 
+		append attributes " user_id = '$user_id'" 
+		append attributes " user_name = '[encodeXmlValue $user_name]'" 
+		append attributes " day ='$date_pretty'"
+		append attributes " hours ='$hours'"
+		append attributes " note ='[encodeXmlValue $note]'" 
+		append attributes " internal_note ='[encodeXmlValue $internal_note]'"  
+
+		set node [$root selectNodes "/report"]
+		$node appendFromList [list lines [list] [list]]
+		set node [$root selectNodes "/report/lines"]
+		
+		$node appendXML "<rec $attributes />"
+
+	}
 }
 
 im_report_display_footer \
@@ -889,29 +917,21 @@ im_report_render_row \
 switch $output_format {
     html { 
 		ns_write "</table>[im_box_footer]</div></form>"
-		# Tod: Verify how to include div id "monitor_frame" to make following js obsolete 
-		ns_write "<script language='javascript' type='text/javascript'>document.getElementById('slave_content').style.visibility='visible'; document.getElementById('fullwidth-list').style.visibility='visible'; </script>"
+		# Todo: Verify how to include div id "monitor_frame" to make following js obsolete 
+		ns_write "<script language='javascript' type='text/javascript'>document.getElementById('slave_content').style.visibility='visible';"
+		ns_write "document.getElementById('fullwidth-list').style.visibility='visible'; </script>"
 		ns_write "[im_footer]\n"
 	}
     printer { ns_write "</table>\n</div>\n"}
     cvs { }
 	xml {
-		append xml_output "                            </lines>\n"
-		append xml_output "                       </report>\n"
-		# set all_the_headers "HTTP/1.0 200 OK MIME-Version: 1.0 Content-Type: xml"
-		# append all_the_headers "Content-Disposition" "attachment; filename=timesheet-customer-project.xml"
-		# ns_set cput "Content-Disposition" "attachment; filename=timesheet-customer-project.xml"
-		# ns_write "[util_WriteWithExtraOutputHeaders $all_the_headers] $xml_output"
-		# ns_write "$xml_output"
-		ns_return 200 text/xml $xml_output
+		ns_return 200 text/xml [$root asXML]
 	}
 	template {
-		append xml_output "                            </lines>\n"
-		append xml_output "                       </report>\n"
 		# Create tmp file for Reports Default XML 
 		set uri_report_default_xml [ns_tmpnam]
 		set fo [open $uri_report_default_xml {RDWR CREAT}]
-		puts $fo $xml_output
+		puts $fo [$root asXML]
 		close $fo		
 		
 		# Get URI of XSLT choosen by user  
