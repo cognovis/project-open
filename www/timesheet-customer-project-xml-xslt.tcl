@@ -803,6 +803,10 @@ switch $output_format {
 		$node appendFromList [list filter_user_id [list] [list [list "\#text" $user_id]]]		
 		$node appendFromList [list filter_company_id [list] [list [list "\#text" $company_id]]]		
 		$node appendFromList [list filter_project_id [list] [list [list "\#text" $project_id]]]		
+
+		# Add node 'lines' 
+        set node [$root selectNodes "/report"]
+        $node appendFromList [list lines [list] [list]]
 		#ns_return 1 text/xml [$root asXML]
     }
 }
@@ -885,10 +889,7 @@ db_foreach sql $sql {
 		append attributes " note ='[encodeXmlValue $note]'" 
 		append attributes " internal_note ='[encodeXmlValue $internal_note]'"  
 
-		set node [$root selectNodes "/report"]
-		$node appendFromList [list lines [list] [list]]
 		set node [$root selectNodes "/report/lines"]
-		
 		$node appendXML "<rec $attributes />"
 
 	}
