@@ -50,13 +50,13 @@
 		var column = myDataTable.getColumn(target);
 		if (column.key == 'delete') {
 		        if (confirm('Are you sure?')) {
-			var record = this.getRecord(target);
+					var record = this.getRecord(target);
 		            myDataTable.deleteRow(target);
 		            YAHOO.util.Connect.asyncRequest(
                 		'GET',
-		                '/intranet-mail-import/remove-mail-assignment?mail_id=' + record.getData('id') + '&object_id=<%=$object_id%>',
+		                '/intranet-mail-import/xmlhttp-remove-mail-assignment?mail_id=' + record.getData('id') + '&object_id=<%=$object_id%>',
                 		{
-                                    success: function (o) {
+                		        success: function (o) {
                                             // this.deleteRow(target);
 					    alert(o.responseText);
 		                    },
