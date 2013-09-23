@@ -748,11 +748,11 @@ switch $output_format {
 		</tr>
     <tr>
           <td class=form-label>XSLT Filter</td>
-          <td class=form-widget>[im_category_select -include_empty_p 1 -include_empty_name [lang::message::lookup "" intranet-core.Please_Select "Please select"] -translate_p 0 "Intranet Cost Template" "xslt_template_id" ""]</td>
+          <td class=form-widget>[im_category_select -include_empty_p 1 -include_empty_name [lang::message::lookup "" intranet-core.Please_Select "Please select"] -translate_p 0 "Intranet Cost Template" "xslt_template_id" $xslt_template_id]</td>
     </tr>
     <tr>
           <td class=form-label>ODT Template</td>
-          <td class=form-widget>[im_category_select -include_empty_p 1  -include_empty_name [lang::message::lookup "" intranet-core.Please_Select "Please select"] -translate_p 0 "Intranet Cost Template" "odt_template_id" ""]</td>
+          <td class=form-widget>[im_category_select -include_empty_p 1  -include_empty_name [lang::message::lookup "" intranet-core.Please_Select "Please select"] -translate_p 0 "Intranet Cost Template" "odt_template_id" $odt_template_id]</td>
     </tr>	
 
 	<tr>
