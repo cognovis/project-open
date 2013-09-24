@@ -385,10 +385,130 @@ ad_proc -public im_gp_extract_db_tree_old_bad {
 
 
 
+# -------------------------------------------------------------------
+# Check for duplicate task names
+# Children of a single parent need to have unique names
+# -------------------------------------------------------------------
+
+ad_proc -public im_gp_check_duplicate_task_names {
+    {-debug_p 1}
+    root_node
+} {
+    Check for duplicate task names:
+    Children of a single parent need to have unique names.
+    This procedure will return a warning message in case of issues.
+} {
+    ns_log Notice "im_gp_check_duplicate_task_names:"
+    set tasks {}
+    foreach child_node [$root_node childNodes] {
+	switch [string tolower [$child_node nodeName]] {
+	    "tasks" {
+		# Tasks section with a flat list of tasks in MS-Project
+		foreach taskchild [$child_node childNodes] {
+		    set nodeName [string tolower [$taskchild nodeName]]
+		    set nodeText [$taskchild text]
+		    # ns_log Notice "im_gp_check_duplicate_task_names: name=$nodeName, text=$nodeText"
+		    switch $nodeName {
+			"task" {
+			    # ns_log Notice "im_gp_check_duplicate_task_names: found 'task' node: name=$nodeName, text=$nodeText"
+			    lappend tasks [im_gp_check_duplicate_task_names2 -debug_p 0 $taskchild]
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+    ns_log Notice "im_gp_check_duplicate_task_names: tasks=$tasks"
+
+    # Store the list of tasks below their parent's WBS
+    array set task_hash {}
+    array set task_children_hash {}
+    array set task_duplicate_hash {}
+    foreach task_tuples $tasks {
+	ns_log Notice "im_gp_check_duplicate_task_names: task_tuples = $task_tuples"
+	set wbs "undefined"
+	set name "undefined"
+	foreach task_tuple $task_tuples {
+	    set var_name [lindex $task_tuple 0]
+	    set var_value [lindex $task_tuple 1]
+	    set $var_name $var_value
+	}
+
+	# Skip the first entry without name
+	if {$wbs == "undefined" || $name == "undefined"} { continue }
+
+	# Remember wbs -> name relationship, so that we later can get the name of the parent
+	set task_hash($wbs) $name
+
+	# Remove the last constituent of the WBS
+	set parent_wbs [join [lrange [split $wbs "."] 0 end-1] "."]
+	if {"" == $parent_wbs} { set parent_wbs "Top" }
+	ns_log Notice "im_gp_check_duplicate_task_names: wbs=$wbs, parent_wbs=$parent_wbs"
+
+	set task_list {}
+	if {[info exists task_children_hash($parent_wbs)]} { set task_list $task_children_hash($parent_wbs) }
+
+	if {[lsearch $task_list $name] > -1} {
+	    # We have found a duplicate
+	    # Remember the duplicate in case we have severals...
+	    set task_duplicate_hash($wbs) $parent_wbs
+	}
+	lappend task_list $name
+	set task_children_hash($parent_wbs) $task_list
+    }
+
+    # create a useful error message
+    set error_html ""
+    foreach wbs [array names task_duplicate_hash] {
+	set parent_wbs $task_duplicate_hash($wbs)
+	set task_name $task_hash($wbs)
+	set parent_name $task_hash($parent_wbs)
+
+	append error_html "<li>
+	       		  <b>[lang::message::lookup "" intranet-ganttproject.Found_duplicate_task "Found a duplicate task '%task_name%'"]</b>:<br>
+	       		  [lang::message::lookup "" intranet-ganttproject.Found_duplicate_task1 "The parent task '%parent_name%' has more than one sub-task with the name '%task_name%'"].<br>
+	       		  [lang::message::lookup "" intranet-ganttproject.Found_duplicate_task2 "\]project-open\[ does not allow for children with the same name."]
+        "
+	
+    }
+
+    if {"" != $error_html} {
+	ad_return_complaint 1 "<br><ul>$error_html</ul><br>"
+	ad_script_abort
+    }
+    return
+} 
+
+ad_proc -public im_gp_check_duplicate_task_names2 {
+    {-debug_p 1}
+    task_node
+} {
+    Check for duplicate task names:
+    Returns the task hierarchy.
+    Recursively iterates through tasks to check for duplicates
+} {
+    if {$debug_p} { ns_log Notice "im_gp_check_duplicate_task_names2: node=$task_node" }
+
+    set task {}
+    foreach taskchild [$task_node childNodes] {
+	set nodeName [string tolower [$taskchild nodeName]]
+	set nodeText [$taskchild text]
+	if {$debug_p} { ns_log Notice "im_gp_check_duplicate_task_names2: name=$nodeName, text=$nodeText" }
+
+	switch $nodeName {
+	    wbs - name {
+		lappend task [list $nodeName $nodeText]
+	    }
+	}
+    }
+    return $task
+}
+
+
 # ---------------------------------------------------------------
 # Process an incoming MS-Project or OpenProject .xml file
 # ---------------------------------------------------------------
-
 
 ad_proc -public im_gp_save_xml { 
     -debug_p:required
@@ -440,6 +560,15 @@ ad_proc -public im_gp_save_xml {
     ns_log Notice "gantt-upload-2: format=$format"
 
 
+    # -------------------------------------------------------------------
+    # Check for duplicate task names
+    # Children of a single parent need to have unique names
+    # -------------------------------------------------------------------
+
+    im_gp_check_duplicate_task_names -debug_p $debug_p $root_node
+
+
+    
     # -------------------------------------------------------------------
     # Save the tasks.
     # The task_hash contains a mapping table from gantt_project_ids to task_ids.
@@ -2151,12 +2280,8 @@ ad_proc -public im_ganttproject_resource_component {
 			and r.object_id_two = u.user_id
 			and parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
 			and parent.parent_id is null
-			and child.tree_sortkey 
-				between parent.tree_sortkey 
-				and tree_right(parent.tree_sortkey)
-			and d.d 
-				between child.start_date 
-				and child.end_date
+			and child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
+			and d.d between child.start_date::date and child.end_date::date
 			$where_clause
     "
 
@@ -2166,7 +2291,7 @@ ad_proc -public im_ganttproject_resource_component {
 	select
 		h.*,
 		trunc(h.perc) as percentage,
-		'<a href=${user_url}'||user_id||'>'||im_name_from_id(h.user_id)||'</a>' as user_name_link,
+		'<a href=${user_url}'||user_id||'>'||im_name_from_user_id(h.user_id)||'</a>' as user_name_link,
 		CASE WHEN h.user_id in (select member_id from group_distinct_member_map where group_id = [im_profile_skill_profile]) THEN '' ELSE im_cost_center_name_from_id(h.department_id) END as dept_name,
 
 		CASE WHEN h.user_id in (select member_id from group_distinct_member_map where group_id = [im_profile_skill_profile]) THEN '' ELSE 'Natural Person' END as skill_p,
@@ -2205,6 +2330,8 @@ ad_proc -public im_ganttproject_resource_component {
     "]
     lappend top_scale_plain [list $sigma $sigma $sigma $sigma $sigma $sigma]
 
+    # Example for $top_scale_plain: 
+    # {Q3 Jul} {Q3 Aug} {Q3 Sep} {Q4 Oct} {Q4 Nov} {Q4 Dec} {Q1 Jan} {{&Sigma;} {&Sigma;} {&Sigma;} {&Sigma;} {&Sigma;} {&Sigma;}}
 
     # Insert subtotal columns whenever a scale changes
     set top_scale [list]
@@ -2225,12 +2352,15 @@ ad_proc -public im_ganttproject_resource_component {
 	set last_item $scale_item
     }
 
+    # Example for top_scale 
+    # {Q3 Jul} {Q3 Aug} {Q3 Sep} {Q3 {&Sigma;}} {Q4 Oct} {Q4 Nov} {Q4 Dec} {Q4 {&Sigma;}} {Q1 Jan} {Q1 {&Sigma;}} {{&Sigma;} {&Sigma;} {&Sigma;} {&Sigma;} {&Sigma;} {&Sigma;}}
 
     # ------------------------------------------------------------
     # Create a sorted left dimension
     
     # Scale is a list of lists. Example: {{2006 01} {2006 02} ...}
     # The last element is the grand total.
+
     set left_scale_plain [db_list_of_lists left_scale "
 	select distinct	[join $left_vars ", "]
 	from		($middle_sql) c
@@ -2241,11 +2371,18 @@ ad_proc -public im_ganttproject_resource_component {
     foreach t [lindex $left_scale_plain 0] { lappend last_sigma $sigma }
     lappend left_scale_plain $last_sigma
 
-    # Add a "subtotal" (= {$dept_id $user_id $sigma}) before every new ocurrence of a user_id
-    # Add a "subtotal" (= {$dept_id $sigma}) after every new department
+    # Structure of left_scale_plain: 
+    # {user_1 task_1} {user_1 task_2} .. { &Sigma; &Sigma;}
+    # Example:
+    # {{Freddy Freelancer} {Anpassungskonstruktion/bei Bedarf}} {{Freddy Freelancer} {Funktionstest}} {{Frank Bergmann} {Schaltplan erstellen}} {{&Sigma;} {&Sigma;}}
+
+    # Now add a "subtotal" (= {$dept_id $user_id $sigma}) before every new ocurrence of a user_id
+    # and add a "subtotal" (= {$dept_id $sigma}) after every new department
+
     set left_scale [list]
     set last_user_id 0
     set last_dept_id ""
+
     foreach scale_item $left_scale_plain {
 	set dept_id [lindex $scale_item 0]
 	set user_id [lindex $scale_item 1]
@@ -2258,12 +2395,17 @@ ad_proc -public im_ganttproject_resource_component {
 	    set last_dept_id $dept_id
 	}
 
-	if {$last_user_id != $user_id} {
-	    lappend left_scale [list $dept_id $user_id $sigma]
-	    set last_user_id $user_id
-	}
+        if {$last_user_id != $user_id} {
+            lappend left_scale [list $dept_id $user_id $sigma]
+            set last_user_id $user_id
+        }
 
-	lappend left_scale $scale_item
+	# In cases where there's no column for 'department' add an empty space, so that results doesn't get shifted 
+	if { 2 == [llength $scale_item] } {
+	    lappend left_scale "$scale_item { &nbsp; } " 
+	} else {
+	    lappend left_scale $scale_item
+	}
     }
 
     # ------------------------------------------------------------
@@ -2295,7 +2437,6 @@ ad_proc -public im_ganttproject_resource_component {
 	    set all_sigmas_p 1
 	    foreach e $scale_entry { if {$e != $sigma} { set all_sigmas_p 0 }	}
 	    if {$all_sigmas_p} { continue }
-
 	    
 	    # Check if the previous item was of the same content
 	    set prev_scale_entry [lindex $top_scale [expr $col-1]]
@@ -2421,8 +2562,9 @@ ad_proc -public im_ganttproject_resource_component {
 	# Start the row and show the left_scale values at the left
 	append html "<tr class=$class>\n"
 	set left_entry_ctr 0
+
+	# This Loop creates User column, Task column and SIGMA column  
 	foreach val $left_entry { 
-	    
 	    # Special logic: Add +/- in front of User name for drill-in
 	    if {"user_name_link" == [lindex $left_vars $left_entry_ctr] & $sigma == $project_val} {
 		
@@ -2448,7 +2590,6 @@ ad_proc -public im_ganttproject_resource_component {
 	    incr left_entry_ctr
 	}
 
-
 	# ------------------------------------------------------------
 	# Write the left_scale values to their corresponding local 
 	# variables so that we can access them easily when calculating
@@ -2461,14 +2602,14 @@ ad_proc -public im_ganttproject_resource_component {
 	
    
 	# ------------------------------------------------------------
-	# Start writing out the matrix elements
+	# Start writing out the matrix elements (table cells) 
 	foreach top_entry $top_scale {
-	    
+	       
 	    # Skip the last line with all sigmas - doesn't sum up...
 	    set all_sigmas_p 1
-	    foreach e $top_entry { if {$e != $sigma} { set all_sigmas_p 0 }	}
+	    foreach e $top_entry { if {$e != $sigma} { set all_sigmas_p 0 } }
 	    if {$all_sigmas_p} { continue }
-	    
+
 	    # Write the top_scale values to their corresponding local 
 	    # variables so that we can access them easily for $key
 	    for {set i 0} {$i < [llength $top_vars]} {incr i} {
@@ -2812,7 +2953,7 @@ ad_proc -public im_ganttproject_gantt_component {
 			parent.project_status_id in ([join [im_sub_categories [im_project_status_open]] ","])
 			and parent.parent_id is null
 			and child.tree_sortkey between parent.tree_sortkey and tree_right(parent.tree_sortkey)
-			and d.d between child.start_date and child.end_date
+			and d.d between child.start_date::date and child.end_date::date
 			$where_clause
     "
 
