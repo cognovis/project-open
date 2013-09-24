@@ -271,6 +271,7 @@ if {0 != $task_id && "" != $task_id && 0 != $project_id && "" != $project_id && 
 # Constants
 
 set number_format "999,990.99"
+set invoice_template_base_path [ad_parameter -package_id [im_package_invoices_id] InvoiceTemplatePathUnix "" "/tmp/templates/"]
 
 # ------------------------------------------------------------
 # Validation 
@@ -1028,7 +1029,30 @@ switch $output_format {
     printer { ns_write "</table>\n</div>\n"}
     cvs { }
 	xml {
-		ns_return 200 text/xml [$root asXML]
+        if { "" != $xslt_template_id  } {
+            set uri_xslt "$invoice_template_base_path/[im_category_from_id $xslt_template_id]"
+            ns_log NOTICE "timesheet-customer-project-v2 :: uri_xslt: $uri_xslt"
+
+			# Create tmp file for Reports Default XML
+			set uri_report_default_xml [ns_tmpnam]
+			set fo [open $uri_report_default_xml {RDWR CREAT}]
+			puts $fo "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>[$root asXML]"
+			close $fo
+
+            # Create tmp file for Report Custom XML
+            set uri_report_custom_xml [ns_tmpnam]
+            set fo [open $uri_report_custom_xml {RDWR CREAT}]
+            puts $fo " "
+            close $fo
+
+            # Perform transition
+            exec java -jar /usr/lib/libreoffice/basis3.4/program/classes/saxon9.jar -s:$uri_report_default_xml -xsl:$uri_xslt -o:$uri_report_custom_xml
+			ns_returnfile 200 text/xml $uri_report_custom_xml
+
+        } else {
+            # In case no transition file has been assigned we return the default XML file
+			ns_return 200 text/xml [$root asXML]
+        }
 	}
 	template {
 		# Create tmp file for Reports Default XML 
@@ -1038,9 +1062,7 @@ switch $output_format {
 		close $fo		
 		
 		# Get URI of XSLT choosen by user  
-		set invoice_template_base_path [ad_parameter -package_id [im_package_invoices_id] InvoiceTemplatePathUnix "" "/tmp/templates/"]
 		if { "" != $xslt_template_id  } {
-
 			set uri_xslt "$invoice_template_base_path/[im_category_from_id $xslt_template_id]"
 			ns_log NOTICE "timesheet-customer-project-v2 :: uri_xslt: $uri_xslt"
 
