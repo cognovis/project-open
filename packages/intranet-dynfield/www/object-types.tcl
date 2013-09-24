@@ -78,7 +78,7 @@ db_multirow -extend { object_attributes_url } object_types select_object_types {
 			'im_conf_item', 'im_cost_center', 'im_note', 'im_user_absence',
 			'im_invoice', 'im_expense', 'im_expense_bundle',
 			'im_material', 'im_risk', 'im_timesheet_task',
-			'im_sla_parameter'
+			'im_sla_parameter', 'im_event'
 		) 
            or   object_type in (
                   select object_type from acs_attributes aa, im_dynfield_attributes ida
@@ -89,7 +89,6 @@ db_multirow -extend { object_attributes_url } object_types select_object_types {
 } {
     set object_attributes_url "object-type?object_type=$object_type"
 }
-
 
 
 

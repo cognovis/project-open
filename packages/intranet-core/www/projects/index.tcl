@@ -157,6 +157,11 @@ if {"" == $start_date} { set start_date [parameter::get_from_package_key -packag
 if {"" == $end_date} { set end_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultEndDate -default "2100-01-01"] }
 
 
+set min_all_l10n [lang::message::lookup "" intranet-core.Mine_All "Mine/All"]
+set all_l10n [lang::message::lookup "" intranet-core.All "All"]
+
+
+
 # ---------------------------------------------------------------
 # 3. Defined Table Fields
 # ---------------------------------------------------------------
@@ -242,12 +247,12 @@ ad_form \
 
 if {[im_permission $current_user_id "view_projects_all"]} { 
     set mine_p_options [list \
-			    [list [lang::message::lookup "" intranet-core.All "All"] "f" ] \
+			    [list $all_l10n "f" ] \
 			    [list [lang::message::lookup "" intranet-core.With_members_of_my_dept "With member of my department"] "dept"] \
 			    [list [lang::message::lookup "" intranet-core.Mine "Mine"] "t"] \
 			   ]
     ad_form -extend -name $form_id -form {
-        {mine_p:text(select),optional {label "#intranet-core.Projects#"} {options $mine_p_options }}
+        {mine_p:text(select),optional {label "$min_all_l10n"} {options $mine_p_options }}
         {project_status_id:text(im_category_tree),optional {label \#intranet-core.Project_Status\#} {value $project_status_id} {custom {category_type "Intranet Project Status" translate_p 1}} }
     }
 }
@@ -258,7 +263,7 @@ if { [empty_string_p $company_id] } {
     set company_id 0
 }
 
-set company_options [im_company_options -include_empty_p 1 -include_empty_name "#intranet-core.All#" -type "CustOrIntl" ]
+set company_options [im_company_options -include_empty_p 1 -include_empty_name $all_l10n -status "CustOrIntl"]
 set view_options [db_list_of_lists views {select view_label,view_name from im_views where view_type_id = 1451}]
 
 # Get the list of profiles readable for current_user_id
@@ -270,7 +275,7 @@ foreach g $managable_profiles {
 }
 
 set user_options [im_profile::user_options -profile_ids $user_select_groups]
-set user_options [linsert $user_options 0 [list "#intranet-core.All#" ""]]
+set user_options [linsert $user_options 0 [list $all_l10n ""]]
 
 ad_form -extend -name $form_id -form {
     {project_type_id:text(im_category_tree),optional {label \#intranet-core.Project_Type\#} {value $project_type_id} {custom {category_type "Intranet Project Type" translate_p 1} } }
@@ -649,7 +654,7 @@ ns_log Notice "/intranet/project/index: Before formatting filter"
 
 
 set mine_p_options [list \
-	[list [lang::message::lookup "" intranet-core.All "All"] "f" ] \
+	[list $all_l10n "f" ] \
 	[list [lang::message::lookup "" intranet-core.With_members_of_my_dept "With member of my department"] "dept"] \
 	[list [lang::message::lookup "" intranet-core.Mine "Mine"] "t"] \
 ]

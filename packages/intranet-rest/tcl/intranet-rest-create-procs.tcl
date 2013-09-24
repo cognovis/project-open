@@ -1230,6 +1230,7 @@ ad_proc -private im_rest_post_object_im_hour {
     { -rest_oid "" }
     { -content "" }
     { -debug 0 }
+    { -query_hash_pairs ""}
 } {
     Handler for POST calls on particular im_hour objects.
     im_hour is not a real object type and performs a "delete" 

@@ -30,7 +30,7 @@ function extendContract(){
 			sideBarSlide(height, 135, width, 0);
 			sideBarOpacity(1, 0);
 			isExtended = 0;
-			jQuery(".fullwidth-list").animate({marginLeft: "30px"}, slideDuration );
+			jQuery(".fullwidth-list").animate({marginLeft: "35px"}, slideDuration );
 			// make expand tab arrow image face right (outwards)
 			$('#sideBarTab').children().get(0).src = $('#sideBarTab').children().get(0).src.replace(/-active(\.[^.]+)$/, '$1');
 			// alert('hide');
@@ -134,8 +134,9 @@ jQuery().ready(function(){
 	    if (re.exec(ua) != null)
 	    rv = parseFloat( RegExp.$1 );
 	}
-	if ( rv!=0 && document.getElementById("fullwidth-list") != null ) {
-		document.getElementById('fullwidth-list').style.width='100%';
+	// Setting width=100% in IE10 leads again to the large screen ...  
+	if ( rv!=0 && document.getElementById("fullwidth-list") != null && rv<10) {
+	    document.getElementById('fullwidth-list').style.width='100%';
 	}
 
     jQuery(".component_icons").css("opacity","0.1");

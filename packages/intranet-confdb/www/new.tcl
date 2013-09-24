@@ -15,10 +15,11 @@ ad_page_contract {
     @parameter view_name Set to "component" in order to show a specific component
 } {
     conf_item_id:integer,optional
-    {return_url ""}
-    {form_mode ""}
-    {view_name ""}
+    { return_url "" }
+    { form_mode "" }
+    { view_name "" }
     conf_item_type_id:integer,optional
+    { conf_item_project_id "" }
 }
 
 set current_user_id [ad_maybe_redirect_for_registration]
@@ -98,6 +99,10 @@ ad_form \
 	{note:text(textarea),optional {label Note} {html {cols 40} {rows 8} }}
     }
 
+# Pre-set conf_item_project_id
+if { [info exists conf_item_project_id] && "" != $conf_item_project_id } {
+	ad_set_element_value -element conf_item_project_id $conf_item_project_id
+}
 
 # Check that the Intranet Conf Item Type exists or set to default.
 if {![info exists conf_item_type_id]} { 

@@ -125,7 +125,12 @@ set material_enabled_p [ad_parameter -package_id [im_package_invoices_id] "ShowI
 # Should we show the customer's PO number in the document?
 # This makes only sense in "customer documents", i.e. quotes, invoices and delivery notes
 set show_company_project_nr [ad_parameter -package_id [im_package_invoices_id] "ShowInvoiceCustomerProjectNr" "" 1]
-if {![im_category_is_a $cost_type_id [im_cost_type_customer_doc]]} { set show_company_project_nr 0 }
+if {![im_category_is_a $cost_type_id [im_cost_type_customer_doc]]} { 
+    set show_company_project_nr 0 
+    set invoice_or_quote_p 0
+} else {
+    set invoice_or_quote_p 1
+}
 
 
 # Show or not "our" and the "company" project nrs.
