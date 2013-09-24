@@ -13,6 +13,16 @@ ad_library {
 
 
 
+ad_proc im_dynfield::widget_options_not_cached_procs {} {
+    Pulls out all procedures following a patters.
+    This procedure must be define BEFORE the 
+    namespace eval * commands below.
+} {
+    set widgets [::info commands "::template::widget::*"]
+    return $widgets
+}
+
+
 namespace eval im_dynfield:: {}
 namespace eval im_dynfield::util {}
 
@@ -216,12 +226,24 @@ ad_proc -public im_dynfield::widget_options_not_cached {
 	lappend widget_options [list "Select Locales" select_locales]
     }
 
+    # Extract the list of widgets into a simple list for searching
+    set widget_list [list]
+    foreach o $widget_options {
+	set o_base [lindex $o 1]
+	lappend widget_list $o_base
+    }
+
+    # Search for all template::widget::* procs to check for custom functions
+    set widgets [im_dynfield::widget_options_not_cached_procs]
+    foreach widget $widgets {
+	set widget_fn [string range $widget 20 end]
+	if {[lsearch $widget_list $widget_fn] < 0} {
+	    lappend widget_options [list $widget $widget_fn]
+	}
+    }
+
     return $widget_options
 }
-
-
-
-
 
 
 ad_proc -public im_dynfield::search_sql_criteria_from_form {
