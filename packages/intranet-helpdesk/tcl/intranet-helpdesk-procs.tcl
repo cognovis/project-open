@@ -339,35 +339,6 @@ ad_proc -public im_ticket_navbar {
 }
 
 
-
-
-
-
-
-
-
-
-
-# ----------------------------------------------------------------------
-# Components
-# ---------------------------------------------------------------------
-
-ad_proc -public im_ticket_project_component {
-    -object_id
-} {
-    Returns a HTML component to show all project tickets related to a project
-} {
-    set params [list \
-		    [list base_url "/intranet-helpdesk/"] \
-		    [list object_id $object_id] \
-		    [list return_url [im_url_with_query]] \
-		    ]
-
-    set result [ad_parse_template -params $params "/packages/intranet-helpdesk/www/tickets-list-component"]
-    return [string trim $result]
-}
-
-
 # ----------------------------------------------------------------------
 # Components
 # ---------------------------------------------------------------------
@@ -1010,6 +981,9 @@ ad_proc -public im_helpdesk_ticket_sla_options {
     Returns a list of SLA tuples suitable for ad_form
 } {
     if {0 == $user_id} { set user_id [ad_get_user_id] }
+#    set sla_name_sql [parameter::get_from_package_key -package_key "intranet-helpdesk" -parameter "RenderSlaNameSql" -default "company_name || ' (' || project_name || ')'"]
+    set sla_name_sql [parameter::get_from_package_key -package_key "intranet-helpdesk" -parameter "RenderSlaNameSql" -default "project_name"]
+
 
     # Can the user see all projects?
     set permission_sql ""
@@ -1027,19 +1001,24 @@ ad_proc -public im_helpdesk_ticket_sla_options {
     }
 
     set sql "
-	select
-		c.company_name || ' (' || p.project_name || ')' as sla_name,
+	select	$sla_name_sql as sla_name,
 		p.project_id
-	from
-		im_projects p,
+	from	im_projects p,
 		im_companies c
-	where
-		p.company_id = c.company_id and
+	where	p.company_id = c.company_id and
 		p.project_type_id = [im_project_type_sla]
 		$permission_sql
-	order by
-		sla_name
     "
+
+    # "Internal SLA" Logic - Remove the Internal SLA from the list
+    # if there is an SLA specific to the user.
+    set count [db_string sla_count "select count(*) from ($sql) t"]
+    if {$count > 1} {
+	append sql "\t\tand p.project_nr != 'internal_sla'"
+    }
+
+    append sql "\t\torder by sla_name"
+
 
     set options [list]
     db_foreach slas $sql {
@@ -1067,6 +1046,52 @@ ad_proc -public im_helpdesk_home_component {
     {-ticket_status_id 0}
 } {
     Returns a HTML table with the list of tickets of the
+    current user. 
+
+    @param show_empty_ticket_list_p Should we show an empty ticket list?
+           Setting this parameter to 0 the component will just disappear
+           if there are no tickets.
+} {
+    return [im_helpdesk_ticket_component \
+		-show_empty_ticket_list_p $show_empty_ticket_list_p \
+		-view_name $view_name \
+		-ticket_user_id [ad_get_user_id] \
+		-order_by_clause $order_by_clause \
+		-ticket_type_id $ticket_type_id \
+		-ticket_status_id $ticket_status_id \
+    ]
+}
+
+
+
+ad_proc -public im_helpdesk_project_component {
+    {-project_id 0}
+} {
+    Returns a HTML table with the list of tickets for the current
+    project.
+} {
+    if {![im_project_has_type $project_id "Service Level Agreement"]} { return "" }
+    set view_name "ticket_project_list"
+
+    return [im_helpdesk_ticket_component \
+		-show_empty_ticket_list_p 1 \
+		-view_name $view_name \
+		-ticket_sla_id $project_id \
+    ]
+}
+
+
+
+ad_proc -public im_helpdesk_ticket_component {
+    {-show_empty_ticket_list_p 1}
+    {-view_name "ticket_personal_list" }
+    {-ticket_user_id 0}
+    {-order_by_clause ""}
+    {-ticket_type_id 0}
+    {-ticket_status_id 0}
+    {-ticket_sla_id 0}
+} {
+    Returns a HTML table with the list of tickets of the
     current user. Don't do any fancy sorting and pagination, 
     because a single user won't be a member of many active tickets.
 
@@ -1074,8 +1099,6 @@ ad_proc -public im_helpdesk_home_component {
            Setting this parameter to 0 the component will just disappear
            if there are no tickets.
 } {
-    set current_user_id [ad_get_user_id]
-
     if {"" == $order_by_clause} {
 	set order_by_clause  [parameter::get_from_package_key -package_key "intranet-helpdesk" -parameter "HomeTicketListSortClause" -default "p.project_nr DESC"]
     }
@@ -1128,7 +1151,11 @@ ad_proc -public im_helpdesk_home_component {
     set ticket_type_restriction ""
     if {0 != $ticket_type_id} { set ticket_type_restriction "and t.ticket_type_id in ([join [im_sub_categories $ticket_type_id] ","])" }
 
-    set perm_sql "
+    set ticket_sla_restriction ""
+    if {0 != $ticket_sla_id} { set ticket_sla_restriction "and p.parent_id = :ticket_sla_id" }
+
+    if {0 != $ticket_user_id} {
+	set perm_sql "
 	(select
 		p.*
 	from
@@ -1137,14 +1164,14 @@ ad_proc -public im_helpdesk_home_component {
 	where
 		t.ticket_id = p.project_id
 		and (
-			t.ticket_assignee_id = :current_user_id 
-			OR t.ticket_customer_contact_id = :current_user_id
+			t.ticket_assignee_id = :ticket_user_id 
+			OR t.ticket_customer_contact_id = :ticket_user_id
 			OR t.ticket_queue_id in (
 				select distinct
 					g.group_id
 				from	acs_rels r, groups g 
 				where	r.object_id_one = g.group_id and
-					r.object_id_two = :current_user_id
+					r.object_id_two = :ticket_user_id
 			)
 			OR p.project_id in (	
 				-- cases with user as task holding_user
@@ -1153,7 +1180,7 @@ ad_proc -public im_helpdesk_home_component {
 					wf_cases wfc
 				where	wft.state in ('enabled', 'started') and
 					wft.case_id = wfc.case_id and
-					wft.holding_user = :current_user_id
+					wft.holding_user = :ticket_user_id
 			) OR p.project_id in (
 				-- cases with user as task_assignee
 				select distinct wfc.object_id
@@ -1166,16 +1193,32 @@ ad_proc -public im_helpdesk_home_component {
 					wfta.party_id in (
 						select	group_id
 						from	group_distinct_member_map
-						where	member_id = :current_user_id
+						where	member_id = :ticket_user_id
 					    UNION
-						select	:current_user_id
+						select	:ticket_user_id
 					)
 			)
 		)
 		and t.ticket_status_id not in ([im_ticket_status_deleted], [im_ticket_status_closed])
 		$ticket_status_restriction
 		$ticket_type_restriction
+		$ticket_sla_restriction
 	)"
+    } else {
+	set perm_sql "
+	(select
+		p.*
+	from
+	        im_tickets t,
+		im_projects p
+	where
+		t.ticket_id = p.project_id and 
+		t.ticket_status_id not in ([im_ticket_status_deleted], [im_ticket_status_closed])
+		$ticket_status_restriction
+		$ticket_type_restriction
+		$ticket_sla_restriction
+	)"
+    }
 
     set personal_ticket_query "
 	SELECT
@@ -1186,7 +1229,9 @@ ad_proc -public im_helpdesk_home_component {
 	        im_category_from_id(t.ticket_type_id) as ticket_type,
 	        im_category_from_id(t.ticket_status_id) as ticket_status,
 	        im_category_from_id(t.ticket_prio_id) as ticket_prio,
-	        to_char(end_date, 'HH24:MI') as end_date_time
+	        to_char(end_date, 'HH24:MI') as end_date_time,
+		im_name_from_user_id(t.ticket_assignee_id) as ticket_assignee_name,
+		im_name_from_user_id(t.ticket_customer_contact_id) as ticket_customer_contact_name
                 $extra_select
 	FROM
 		$perm_sql p,
