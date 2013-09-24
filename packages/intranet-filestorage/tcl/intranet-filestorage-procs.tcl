@@ -1541,6 +1541,24 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     set file_list ""
     set bread_crum_join ""
     if {"" != $bread_crum_path} { set bread_crum_join "/" }
+    set bread_crum_list [split $bread_crum_path "/"]
+
+    # Check for security
+    set bread_crum_list_checked [list]
+    foreach bc $bread_crum_list {
+	if {".." == $bc} {
+	    im_security_alert \
+		-location im_filestorage_base_component \
+		-message "Break-in attempt" \
+		-value $bc \
+		-severity "Serious"
+	    continue
+	}
+	lappend bread_crum_list_checked $bc
+    }
+    set bread_crum_list $bread_crum_list_checked
+    set bread_crum_path [join $bread_crum_list_checked "/"]
+
 
     # Get the list of all files and split by end of line
     set find_path "$base_path$bread_crum_join$bread_crum_path"
@@ -1564,7 +1582,7 @@ ad_proc -public im_filestorage_base_component { user_id object_id object_name ba
     
     # The base path selected by the user
     set bread_crum_html "<table><tr><td>\n"
-    set bread_crum_list [split $bread_crum_path "/"]
+
 
     # First bread_crum is the project name - always visible
     append bread_crum_html "<a href=$current_url_without_vars?[export_url_bind_vars $bind_vars]>$object_name</a> : "

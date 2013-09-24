@@ -39,6 +39,25 @@ set perm_hash_array [im_filestorage_get_perm_hash $user_id $object_id $user_memb
 array set perm_hash $perm_hash_array
 
 
+
+# Check bread_crum_path
+set bread_crum_list [split $bread_crum_path "/"]
+set bread_crum_list_checked [list]
+foreach bc $bread_crum_list {
+    if {".." == $bc} {
+	im_security_alert \
+	    -location im_filestorage_base_component \
+	    -message "Break-in attempt" \
+	    -value $bc \
+	    -severity "Serious"
+	continue
+    }
+    lappend bread_crum_list_checked $bc
+}
+set bread_crum_list $bread_crum_list_checked
+set bread_crum_path [join $bread_crum_list_checked "/"]
+
+
 # Check permissions and skip
 set user_perms [im_filestorage_folder_permissions $user_id $object_id $bread_crum_path $user_memberships $roles $profiles $perm_hash_array]
 set write_p [lindex $user_perms 2]
