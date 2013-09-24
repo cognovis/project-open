@@ -32,6 +32,7 @@ ad_proc -public im_cost_status_rejected {} { return 3818 }
 # Frequently used Cost Types
 ad_proc -public im_cost_type_invoice {} { return 3700 }
 ad_proc -public im_cost_type_quote {} { return 3702 }
+ad_proc -public im_cost_type_order {} { return 3703 }
 ad_proc -public im_cost_type_bill {} { return 3704 }
 ad_proc -public im_cost_type_po {} { return 3706 }
 ad_proc -public im_cost_type_company_doc {} { return 3708 }
