@@ -30,12 +30,10 @@
 
 .before_after_month, .not_todays_date, .todays_date {
         text-align: left;
-        border: 1px solid #666;
 }
 
 .not_todays_date_weekend, .todays_date_weekend {
         text-align: left;
-        border: 1px solid #666;
 	background: #EEEEEE;
 }
 
@@ -349,32 +347,27 @@ background-position: 0px -10px;
    
 }
 
-#main_users_and_search {
+.main_users_and_search {
 	float:right;
 	padding-top:5px;
 	width:auto;
 	height:23px;
- 
+    font-weight: normal;
 }
-
-#main_header_deco {
-
-}
+#main_header_deco {}
 
 #main_search {
 	float:left;
 	padding-left: 1em;
 }
 
-
-#main_users_online {
+.main_users_online { 
    color: #666666;
    float:left;
-   border-right: 1px solid #000000;
    padding-right: 1em;
 }
 
-#main_users_online A,#main_search INPUT {
+.main_users_online A,#main_search INPUT {
    color: #666666;
    font-size: 8pt;
    text-decoration:none;
@@ -645,7 +638,7 @@ a   span  {float:none;}
 
 #main_title {
   height:18px;
-  font-size: 13pt;
+  font-size: 10pt;
   color: #666666;		
 }
 
@@ -745,7 +738,7 @@ a   span  {float:none;}
 	/* position: relative; */ 
 	left: 2pt;
 	float: left;
-	font-size: 12pt;
+	font-size: 10pt;
 	font-weight: bold;
 	padding-top: 3px;
 }
@@ -911,14 +904,6 @@ a   span  {float:none;}
   overflow: hidden;
 }
 
-.fullwidth-list .component table tr {
-/* removed - defined in .table_list_page
-	height: 22px;
-	border-top: 1px solid #FFFFFF;
-	border-bottom: 1px solid #FFFFFF;
-*/
-}
-
 .fullwidth-list .component table td {
 	padding: 0px 2px 0px 2px;
 	vertical-align: middle;
@@ -966,7 +951,7 @@ a   span  {float:none;}
 }
 
 
-/* filter & lists */
+/* Sidebar Filter */
 
 .filter {
 	 overflow:hidden !important;
@@ -980,16 +965,18 @@ a   span  {float:none;}
 	 right: 0px;
 }
 
-
-  /* new: requires adaption in .adp files*/ 
-	#sideBarTab{
+#sideBarTab {
 	visibility:visible;
 	height:137px;
 	width:28px;
 	position:absolute;
 	left: 7px;
 	top: -185px;
-	}
+}
+
+.filter-block {
+    padding: 0px 3px 3px 3px;
+}
 
 .filter-button {
    position: absolute;
@@ -1002,23 +989,27 @@ a   span  {float:none;}
 }
 
 .filter-block .form-label, 
-.filter-block .form-widget, 
-.filter-block select, 
-.filter-block input {
+.filter-block .form-widget {
    background-color: #fff;
 }
 
-.filter-block  select,
-.filter-block  input {
-	border: solid #999999 1px;
-	padding:2px;
-	margin-top:3px;
-}
-
 .filter-block select {
-  width: 134px;
+    width: 134px;
+    font-family: inherit;
+    font-size: 8pt;
+    border: solid #999999 1px;
+    padding:2px;
+    margin-top: 2px;
+    background-color: #fff;
 }
 
+.filter-title {
+   font-size: 10pt;
+   font-weight: bold;
+   width: 100%;
+   padding-top: 5px;
+   padding-bottom: 5px;
+}
 
 .filter hr {
    border: 0;
@@ -1028,45 +1019,10 @@ a   span  {float:none;}
    width: 244px;
 }
 
-.filter-title {
-   font-size: 14pt;
-   width: 100%;
-   padding-top: 5px;
-   padding-bottom: 5px;
-}
-.filter-block {
-   padding-left: 0.5em;
-   padding-right: 0.5em;
-   padding-top: 5px;
-   padding-bottom: 5px;
-}
-
-.fullwidth-list table {
-/* -- removed, defined in .table_list_page
-   text-align:left;
-*/
-}
-
-.fullwidth-list .component_body table tr {
-/* -- removed, defined in .table_list_page
- 	padding: 4px;
-/* -- removed, breaks calendar widget
-	height:20px;
-*/
-}
-
+/* MAIN Window */
 
 .fullwidth-list table td {
  	padding: 3px;
-}
-
-
-.fullwidth-list .component table {
-/* -- removed, defined in .table_list_page
-	text-align:left;
-	border-collapse:collapse;
-	margin: 2px;
-*/
 }
 
 div#fullwidth-main {
@@ -1094,10 +1050,8 @@ div#fullwidth-components {
 .table_component tbody tr th.list,
 .table_component tbody tr td.rowtitle, td.rowtitle {
    color:#000;
-   font-size:9pt;
    font-weight:bold;
    padding:3px;
-   /* background:#B6C7FE none repeat scroll 0% 50%;*/
    background:#D0D0D0 none repeat scroll 0% 50%;
    border-bottom:1px solid #fff;
    padding:5px 4px 5px 2px;
@@ -1116,7 +1070,6 @@ div#fullwidth-components {
    padding: 4px;
 }
 
-
 .table_list_page tr td {
    padding: 5px 5px 5px 5px;
 }
@@ -1126,7 +1079,6 @@ div#fullwidth-components {
 .table_list_page thead tr.rowtitle th {
 	background:#D0D0D0 none repeat scroll 0% 50%;
 	border-bottom:13px none #000000;
-	font-size:9pt;
 	height:auto;
 	padding:5px 4px 5px 2px;
 	color: #000;
@@ -1142,11 +1094,13 @@ div#fullwidth-components {
 .table_list_page tbody tr.rowplain td,
 .table_list_page tbody tr:hover.rowplain,
 .table_list_page tbody tr:hover.rowplain td 
-
 {
    background:#D0D0D0;
 }
 
+.table_list_page tbody tr td.rowtitle a:link {
+	color: #000000
+}
 
 .table_list_page tbody tr.rowwhite,
 .table_list_page tbody tr.rowwhite td,
@@ -1159,18 +1113,14 @@ div#fullwidth-components {
    background:#fff;
 }
 
-
-
 .table_interim_title {
 	font-weight: bold;
 	color:#000;
 }
 
-
 .table_list_page tfoot tr td, .table_component tfoot tr td, .list tfoot tr td {
    /* background:#e8edff; */
    background:#ffffff;
-   font-size:12px;
    color:#99c;
 }
 
@@ -1190,7 +1140,9 @@ table.list td {
         background: none !important;
 }
 
+
 /* -- table_list_simple -- */
+
 
 .fullwidth-list .component table.table_list_simple,
 table.table_list_simple {
@@ -1764,6 +1716,7 @@ input:link.form-button40,
 a.form-button40, 
 a:link.form-button40,
 a:hover.form-button40 {
+/*
     background-color:#D4D0C8;
     border:2px solid #b7b8b8;
     border-top:1px solid #eee;
@@ -1777,25 +1730,32 @@ a:hover.form-button40 {
     font-family: Arial; 
     line-height:normal !important;
     vertical-align: middle;
+*/
 }
 
 input.form-button40,
 input:hover.form-button40,
 input:link.form-button40 {
+/*
     margin: 4px 0px 0px 0px;
+*/
 }
 
 a.form-button40,
 a:link.form-button40,
 a:hover.form-button40 {
+/*
     margin: 0px 5px 0px 5px;
     line-height:12px;
+*/
 }
 
 .form-button40 button {
+/*
       width:auto;
       overflow:visible;
       padding: 6px 0px 0px 0px;
+*/
 }
 
 .form-button40 button[type]{
@@ -1808,16 +1768,18 @@ a:hover.form-button40 {
 }
 
 .form-button40 img, .buttons a img{
+/*
     margin:0 3px -3px 0 !important;
     padding:0;
     border:none;
     width:16px;
     height:16px;
+*/
 }
 
 select {
 	margin: 0px 0px 0px 0px;
-	vertical-align: bottom;
+	vertical-align: middle;
 }
 
 /* ??? */
@@ -1848,8 +1810,8 @@ th.list-narrow {
 
 /* notification bar */ 
 
-.error-notice {
-    background-color: #f2baba;
+.warning-notice {
+    background-color: #FAF607;
     color: #333333;
     border: 2px #b81616;
     font-weight: bold;
@@ -1858,31 +1820,13 @@ th.list-narrow {
     position:absolute;
     left:0;
     top:0px;
-    z-index: 9999; 
-    width: 100%; 
-    height: 25px;
+    z-index: 9999;
+    width: 100%;
     text-align: center;
     vertical-align: middle;
     display:inline-block;
-    line-height:25px;
+    line-height:25px; 
 }
- 
-.success-notice {
-    background-color: #baf2bb;
-    color: #049900;
-    border: 2px #15a612;
-    font-weight: normal;
-    font-size: 0.95em;
-    margin-left: 0px;
-    margin-right: 0px;
-    position:absolute;
-    left:0;
-    top:0px;
-    z-index: 9999;
-    width: 100%;  
-    height: 25px;
-}
-
 
 /* Overwriting lists.css */
 
@@ -1915,6 +1859,16 @@ tr.last td {
 	padding-right: 5px;	
 }
 
+.x-body {
+   font-family: verdana, arial, helvetica, sans-serif;
+   font-size: 8pt;
+   color: #000000;
+}
 
 
+/* Sidebar - Filter Form */
 
+.po_form_element_help {
+    margin-top: 4px; 
+    margin-bottom: 2px;
+}
