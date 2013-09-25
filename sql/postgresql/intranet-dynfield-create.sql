@@ -860,6 +860,22 @@ SELECT im_menu__new (
 	null,							-- creation_ip
 	null,							-- context_id
 	'intranet-dynfield',					-- package_name
+	'dynfield_otype_events',				-- label
+	'Event',						-- name
+	'/intranet-dynfield/object-type?object_type=im_event',	-- url
+	118,							-- sort_order
+	(select menu_id from im_menus where label = 'dynfield_otype'),	-- parent_menu_id
+	null							-- p_visible_tcl
+);
+
+SELECT im_menu__new (
+	null,							-- p_menu_id
+	'im_menu',						-- object_type
+	now(),							-- creation_date
+	null,							-- creation_user
+	null,							-- creation_ip
+	null,							-- context_id
+	'intranet-dynfield',					-- package_name
 	'dynfield_otype_expenses',				-- label
 	'Expense',						-- name
 	'/intranet-dynfield/object-type?object_type=im_expense', -- url
