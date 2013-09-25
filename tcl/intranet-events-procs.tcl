@@ -21,6 +21,26 @@ ad_proc -public im_event_status_reserved {} { return 82004 }
 ad_proc -public im_event_status_booked {} { return 82006 }
 
 
+
+# ---------------------------------------------------------------------
+# Event Customer Component
+# ---------------------------------------------------------------------
+
+ad_proc im_event_customer_component { event_id form_mode orderby return_url } {
+    Returns a formatted HTML showing the event customers, customer members and related order items
+} {
+    set params [list \
+                    [list event_id $event_id] \
+                    [list form_mode $form_mode] \
+                    [list orderby $orderby] \
+                    [list return_url $return_url] \
+    ]
+
+    set result [ad_parse_template -params $params "/packages/intranet-events/lib/event-customers"]
+    return [string trim $result]
+}
+
+
 # ---------------------------------------------------------------------
 # Events Permissions
 # ---------------------------------------------------------------------
@@ -46,12 +66,6 @@ ad_proc -public im_event_permissions {user_id event_id view_var read_var write_v
         set admin 0
     }
 }
-
-
-
-
-
-
 
 
 
@@ -108,144 +122,6 @@ ad_proc -public im_event_navbar {
 }
 
 
-
-
-
-ad_proc event_list_for_user_and_time_period {user_id first_julian_date last_julian_date} {
-    For a given user and time period, this proc returns a list 
-    of elements where each element corresponds to one day and describes its
-    "work/vacation type".
-    ToDo: Fix or remove
-} {
-    # Select all vacation periods that have at least one day
-    # in the given time period.
-    set sql "
-	-- Direct events owner_id = user_id
-	select
-                to_char(start_date,'yyyy-mm-dd') as start_date,
-                to_char(end_date,'yyyy-mm-dd') as end_date,
-		im_category_from_id(event_type_id) as event_type,
-		im_category_from_id(event_status_id) as event_status,
-		event_id
-	from 
-		im_events
-	where 
-		owner_id = :user_id and
-		group_id is null and
-		start_date <= to_date(:last_julian_date,'J') and
-		end_date   >= to_date(:first_julian_date,'J')
-    UNION
-	-- Events via groups - Check if the user is a member of group_id
-	select
-		to_char(start_date,'yyyy-mm-dd') as start_date,
-		to_char(end_date,'yyyy-mm-dd') as end_date,
-		im_category_from_id(event_type_id) as event_type,
-		im_category_from_id(event_status_id) as event_status,
-		event_id
-	from 
-		im_events
-	where 
-		group_id in (
-                        select
-                                group_id
-                        from
-                                group_element_index gei,
-                                membership_rels mr
-                        where
-                                gei.rel_id = mr.rel_id and
-                                mr.member_state = 'approved' and
-                                gei.element_id = :user_id
-		) and
-		start_date <= to_date(:last_julian_date,'J') and
-		end_date   >= to_date(:first_julian_date,'J')
-    "
-
-
-    # Initialize array with "" elements.
-    for {set i $first_julian_date} {$i<=$last_julian_date} {incr i} {
-	set vacation($i) ""
-    }
-
-    # Process vacation periods and modify array accordingly.
-    db_foreach vacation_period $sql {
-    
-	set event_status_3letter [string range $event_status 0 2]
-        set event_status_3letter_l10n [lang::message::lookup "" intranet-events.Event_status_3letter_$event_status_3letter $event_status_3letter]
-	set absent_status_3letter_l10n $event_status_3letter_l10n
-
-	regsub " " $event_type "_" event_type_key
-	set event_type_l10n [lang::message::lookup "" intranet-core.$event_type_key $event_type]
-
-	set start_date_julian [db_string get_data "select to_char('$start_date'::date,'J')" -default 0]
-	set end_date_julian [db_string get_data "select to_char('$end_date'::date,'J')" -default 0]
-
-	for {set i [max $start_date_julian $first_julian_date]} {$i<=[min $end_date_julian $last_julian_date]} {incr i } {
-	   set vacation($i) "
-		<a href=\"/intranet-events/events/new?form_mode=display&event_id=$event_id\"
-		>[_ intranet-events.Absent_1]</a> 
-		$event_type_l10n<br>
-           "
-	}
-    }
-    # Return the relevant part of the array as a list.
-    set result [list]
-    for {set i $first_julian_date} {$i<=$last_julian_date} {incr i} {
-	lappend result $vacation($i)
-    }
-    return $result
-}
-
-
-ad_proc im_timesheet_events_sum { 
-    -user_id:required
-    {-number_days 7} 
-} {
-    Returns the total number of events multiplied by 8 hours per event.
-    ToDo: Fix or remove
-} {
-    set hours_per_event [parameter::get -package_id [im_package_timesheet2_id] -parameter "TimesheetHoursPerEvent" -default 8]
-
-    set num_events [db_string events_sum "
-	select	count(*)
-	from	im_events a,
-		im_day_enumerator(now()::date - '7'::integer, now()::date) d
-	where	owner_id = :user_id
-		and a.start_date <= d.d
-		and a.end_date >= d.d
-    "]
-
-    return [expr $num_events * $hours_per_event]
-}
-
-
-ad_proc -public im_get_next_event_link { { user_id } } {
-    Returns a html link with the next "personal"event of the given user_id.
-    Do not show Bank Holidays.
-    ToDo: Fix or remove
-} {
-    set sql "
-	select	event_id,
-		to_char(start_date,'yyyy-mm-dd') as start_date,
-		to_char(end_date, 'yyyy-mm-dd') as end_date
-	from
-		im_events, dual
-	where
-		owner_id = :user_id and
-		group_id is null and
-		start_date >= now()
-	order by
-		start_date, end_date
-    "
-
-    set ret_val ""
-    db_foreach select_next_event $sql {
-	set ret_val "<a href=\"/intranet-events/events/new?form_mode=display&event_id=$event_id\">$start_date - $end_date</a>"
-	break
-    }
-    return $ret_val
-}
-
-
 # ---------------------------------------------------------------------
 # Event Cube
 # ---------------------------------------------------------------------
@@ -253,7 +129,6 @@ ad_proc -public im_get_next_event_link { { user_id } } {
 ad_proc im_event_cube_color_list { } {
     Returns the list of colors for the various types of events
 } {
-    # ad_return_complaint 1 [util_memoize im_event_cube_color_list_helper]
 #    return [util_memoize im_event_cube_color_list_helper]
     return [im_event_cube_color_list_helper]
 }
@@ -306,91 +181,6 @@ ad_proc im_event_cube_color_list_helper { } {
     return $color_list
 
 }
-
-
-ad_proc im_event_mix_colors {
-    value
-} {
-    Renders a single report cell, depending on value.
-    Value consists of a string of 0..5 representing the last digit
-    of the event_type:
-            5000 | Vacation	- Red
-            5001 | Personal	- Orange
-            5002 | Sick		- Blue
-            5003 | Travel	- Purple
-            5004 | Training	- Yellow
-            5005 | Bank Holiday	- Grey
-    " " indentifies an "empty vacation", which is represented with
-    color white. This is necessary to represent weekly events,
-    where less then 5 days are taken as event.
-    Value contains a string of last digits of the event types.
-    Multiple values are possible for example "05", meaning that
-    a Vacation and a holiday meet. 
-} {
-    # Show empty cells according to even/odd row formatting
-    if {"" == $value} { return "" }
-    set value [string toupper $value]
-
-    # Define a list of colours to pick from
-    set color_list [im_event_cube_color_list]
-
-    set hex_list {0 1 2 3 4 5 6 7 8 9 A B C D E F}
-
-    set len [string length $value]
-    set r 0
-    set g 0
-    set b 0
-    
-    # Mix the colors for each of the characters in "value"
-    for {set i 0} {$i < $len} {incr i} {
-	set v [string range $value $i $i]
-
-	set col "FFFFFF"
-	if {" " != $v} { set col [lindex $color_list $v] }
-
-	set r [expr $r + [lsearch $hex_list [string range $col 0 0]] * 16]
-	set r [expr $r + [lsearch $hex_list [string range $col 1 1]]]
-	
-	set g [expr $g + [lsearch $hex_list [string range $col 2 2]] * 16]
-	set g [expr $g + [lsearch $hex_list [string range $col 3 3]]]
-	
-	set b [expr $b + [lsearch $hex_list [string range $col 4 4]] * 16]
-	set b [expr $b + [lsearch $hex_list [string range $col 5 5]]]
-    }
-    
-    # Calculate the median
-    set r [expr $r / $len]
-    set g [expr $g / $len]
-    set b [expr $b / $len]
-
-    # Convert the RGB values back into a hex color string
-    set color ""
-    append color [lindex $hex_list [expr $r / 16]]
-    append color [lindex $hex_list [expr $r % 16]]
-    append color [lindex $hex_list [expr $g / 16]]
-    append color [lindex $hex_list [expr $g % 16]]
-    append color [lindex $hex_list [expr $b / 16]]
-    append color [lindex $hex_list [expr $b % 16]]
-
-    return $color
-}
-
-
-
-ad_proc im_event_cube_render_cell {
-    value
-} {
-    Renders a single report cell, depending on value.
-    Takes the color from events color lookup.
-} {
-    set color [im_event_mix_colors $value]
-    if {"" != $color} {
-	return "<td bgcolor=\#$color>&nbsp;</td>\n"
-    } else {
-	return "<td>&nbsp;</td>\n"
-    }
-}
-
 
 ad_proc im_event_cube {
     {-num_days 21}
@@ -652,32 +442,5 @@ ad_proc im_event_cube {
 	$table_body
 	</table>
     "
-}
-
-
-ad_proc -public im_get_next_event_link { { user_id } } {
-    Returns a html link with the next "personal"event of the given user_id.
-    Do not show Bank Holidays.
-} {
-    set sql "
-	select	event_id,
-		to_char(start_date,'yyyy-mm-dd') as start_date,
-		to_char(end_date, 'yyyy-mm-dd') as end_date
-	from
-		im_events, dual
-	where
-		owner_id = :user_id and
-		group_id is null and
-		start_date >= to_date(sysdate::text,'yyyy-mm-dd')
-	order by
-		start_date, end_date
-    "
-
-    set ret_val ""
-    db_foreach select_next_event $sql {
-	set ret_val "<a href=\"/intranet-events/events/new?form_mode=display&event_id=$event_id\">$start_date - $end_date</a>"
-	break
-    }
-    return $ret_val
 }
 

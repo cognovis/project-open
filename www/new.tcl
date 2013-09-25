@@ -34,6 +34,7 @@ if {![info exists task]} {
 	{ view_name "event_list"}
 	{ mine_p "all" }
 	{ form_mode "edit" }
+	{ orderby "orderby" }
         { render_template_id:integer 0 }
 	{ format "html" }
     }
@@ -62,6 +63,8 @@ if {![info exists task]} {
     set plugin_id ""
     set view_name "standard"
     set mine_p "all"
+
+    set orderby "orderby"
 
     set render_template_id 0
     set format "html"
@@ -138,6 +141,8 @@ if {![info exists event_id]} { set form_mode "edit" }
 if {![info exists form_mode]} { set form_mode "display" }
 
 set edit_event_status_p [im_permission $current_user_id edit_event_status]
+# ToDo remove
+set edit_event_status_p 1
 
 # Show the ADP component plugins?
 if {"edit" == $form_mode} { set show_components_p 0 }
@@ -358,12 +363,7 @@ ad_form -extend -name event -on_request {
     }
 
     # Send out notifications?
-    notification::new \
-        -type_id [notification::type::get_type_id -short_name event_notif] \
-        -object_id $event_id \
-        -response_id "" \
-        -notif_subject $event_name \
-        -notif_text $message
+    # notification::new -type_id [notification::type::get_type_id -short_name event_notif] -object_id $event_id -response_id "" -notif_subject $event_name -notif_text $message
 
     # Write Audit Trail
     im_project_audit -project_id $event_id -action after_create
@@ -421,6 +421,14 @@ ad_form -extend -name event -on_request {
     {event_name
 	{ [string length $event_name] < 100 }
 	"[lang::message::lookup {} intranet-events.Event_name_too_long {Event Name too long (max 100 characters).}]" 
+    }
+    {event_name
+        {![db_string event_count "select count(*) from im_events where event_name = :event_name"]}
+	"[lang::message::lookup {} intranet-events.Event_name_already_exists {Event Name already exists}]" 
+    }
+    {event_nr
+        {![db_string event_count "select count(*) from im_events where event_nr = :event_nr"]}
+	"[lang::message::lookup {} intranet-events.Event_nr_already_exists {Event Nr already exists}]" 
     }
 }
 

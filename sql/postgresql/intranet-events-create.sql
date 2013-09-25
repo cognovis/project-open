@@ -23,13 +23,19 @@ SELECT acs_object_type__create_type (
 insert into acs_object_type_tables (object_type,table_name,id_column)
 values ('im_event', 'im_events', 'event_id');
 
-
 -- Setup status and type columns for im_events
 update acs_object_types set 
 	status_type_table = 'im_events',
 	status_column = 'event_status_id', 
-	type_column = 'event_type_id' 
+	type_column = 'event_type_id',
+	type_category_type = 'Intranet Event Type',
+	status_category_type = 'Intranet Event Status'
 where object_type = 'im_event';
+
+-- Create "Trainer" role for tickets
+insert into im_biz_object_role_map values ('im_event',null,1307);
+insert into im_biz_object_role_map values ('im_event',null,1308);
+
 
 -- Define how to link to Event pages from the Forum or the
 -- Search Engine
@@ -87,7 +93,9 @@ create table im_events (
 -- Unique constraint to avoid that you can add two identical events
 -- alter table im_events drop constraint owner_and_start_date_unique;
 alter table im_events 
-add constraint owner_and_start_date_unique unique (event_name, event_type_id, event_start_date, event_end_date);
+add constraint im_events_name_type_un unique (event_name, event_type_id);
+
+
 
 -- Incices to speed up frequent queries
 create index im_events_dates_idx on im_events(event_start_date, event_end_date);
@@ -175,6 +183,113 @@ BEGIN
 
 	return 0;
 end;' language 'plpgsql';
+
+
+
+
+-- ------------------------------------------------------------
+-- Event - Customer Relationship
+-- ------------------------------------------------------------
+
+create table im_event_customer_rels (
+	rel_id			integer
+				constraint im_event_customer_rels_rel_fk
+				references acs_rels (rel_id)
+				constraint im_event_customer_rels_rel_pk
+				primary key
+);
+
+select acs_rel_type__create_type (
+	'im_event_customer_rel',		-- relationship (object) name
+	'Event Customer Relation',		-- pretty name
+	'Event Customer Relations',		-- pretty plural
+	'relationship',				-- supertype
+	'im_event_customer_rels',		-- table_name
+	'rel_id',				-- id_column
+	'intrnet-events',			-- package_name
+	'im_event',				-- object_type_one
+	'member',				-- role_one
+	0,					-- min_n_rels_one
+	null,					-- max_n_rels_one
+	'im_company',				-- object_type_two
+	'member',				-- role_two
+	0,					-- min_n_rels_two
+	null					-- max_n_rels_two
+);
+
+
+
+-- New version of the PlPg/SQL routine with percentage parameter
+--
+create or replace function im_event_customer_rel__new (
+       integer, integer, varchar, integer, integer
+) returns integer as $body$
+DECLARE
+	p_rel_id		alias for $1;	-- null
+	p_creation_user		alias for $2;	-- null
+	p_creation_ip		alias for $3;	-- null
+	p_event_id		alias for $4;	-- object_id_one
+	p_customer_id		alias for $5;	-- object_id_two
+
+	v_rel_id		integer;
+	v_count			integer;
+BEGIN
+	select	min(rel_id) into v_rel_id from acs_rels
+	where	rel_type = 'im_event_customer_rel' and
+		object_id_one = p_event_id
+		and object_id_two = p_customer_id;
+
+	IF v_rel_id is not null THEN return v_rel_id; END IF;
+
+	v_rel_id := acs_rel__new (
+		p_rel_id,			-- rel_id
+		'im_event_customer_rel',	-- relation type
+		p_event_id,			-- object_id_one
+		p_customer_id,			-- object_id_two
+		null,				-- contect_id
+		p_creation_user,		-- creation_user
+		p_creation_ip			-- creation_ip
+	);
+
+	insert into im_event_customer_rels (rel_id) values (v_rel_id);
+
+	return v_rel_id;
+end;$body$ language 'plpgsql';
+
+
+
+create or replace function im_event_customer_rel__delete (integer)
+returns integer as $body$
+DECLARE
+	p_rel_id	alias for $1;
+BEGIN
+	delete from im_event_customer_rels where rel_idi = p_rel_id;
+	PERFORM acs_rel__delete(v_rel_id);
+	return 0;
+end;$body$ language 'plpgsql';
+
+
+create or replace function im_event_customer_rel__delete (integer, integer)
+returns integer as $body$
+DECLARE
+	p_event_id	alias for $1;
+	p_customer_id	alias for $2;
+
+	v_rel_id	integer;
+BEGIN
+	select	min(rel_id) into v_rel_id from acs_rels
+	where	rel_type = 'im_event_customer_rel' and
+		object_id_one = p_event_id
+		and object_id_two = p_customer_id;
+
+	delete from im_event_customer_rels where rel_id = v_rel_id;
+	PERFORM acs_rel__delete(v_rel_id);
+	return 0;
+end;$body$ language 'plpgsql';
+
+
+
+
 
 
 
@@ -335,4 +450,85 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (97090,970,90,'Status','$event_status');
+
+
+
+
+
+-----------------------------------------------------------
+-- DynFields
+-----------------------------------------------------------
+
+-- Insert a design page
+insert into im_dynfield_layout_pages (
+    	page_url,
+	object_type,
+	layout_type
+) values (
+	'/intranet-events/index',
+	'im_event',
+	'table'
+);
+
+SELECT im_dynfield_attribute_new ('im_event', 'num_laptops', 'Num Laptops', 'integer', 'integer', 'f');
+SELECT im_dynfield_attribute_new ('im_event', 'num_beamers', 'Num Laptops', 'integer', 'integer', 'f');
+
+
+
+
+
+
+-- ------------------------------------------------------
+-- Show users associated with event
+--
+SELECT	im_component_plugin__new (
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Event Members',		-- plugin_name
+	'intranet-events',		-- package_name
+	'right',			-- location
+	'/intranet-events/new',		-- page_url
+	null,				-- view_name
+	50,				-- sort_order
+        'im_group_member_component $event_id $current_user_id $user_admin_p $return_url "" "" 1',
+	'lang::message::lookup "" intranet-events.Event_Consultants "Event Consultants"'
+);
+
+SELECT acs_permission__grant_permission(
+        (select plugin_id from im_component_plugins where plugin_name = 'Event Members' and package_name = 'intranet-events'),
+        (select group_id from groups where group_name = 'Employees'),
+        'read'
+);
+
+
+
+-- ------------------------------------------------------
+-- Show customers associated with event
+--
+SELECT	im_component_plugin__new (
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Event Customers',		-- plugin_name
+	'intranet-events',		-- package_name
+	'bottom',			-- location
+	'/intranet-events/new',		-- page_url
+	null,				-- view_name
+	50,				-- sort_order
+        'im_event_customer_component $event_id $form_mode $ordreby $return_url',
+	'lang::message::lookup "" intranet-events.Event_Customers "Event Customers"'
+);
+
+SELECT acs_permission__grant_permission(
+        (select plugin_id from im_component_plugins where plugin_name = 'Event Customers' and package_name = 'intranet-events'),
+        (select group_id from groups where group_name = 'Employees'),
+        'read'
+);
 

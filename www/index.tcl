@@ -173,7 +173,7 @@ if {[im_table_exists im_sql_selectors]} {
     set selector_sql "
 	select	s.name, s.short_name
 	from	im_sql_selectors s
-	where	s.object_type = 'im_event'
+	where	s.object_type = :object_type
     "
     db_foreach selectors $selector_sql {
 	lappend mine_p_options [list $name $short_name]
@@ -197,7 +197,7 @@ set event_creator_options [db_list_of_lists event_creators "
 		im_name_from_user_id(creation_user) as creator_name,
 		creation_user as creator_id
 	from	acs_objects
-	where	object_type = 'im_event'
+	where	object_type = :object_type
 	order by creator_name
 "]
 set event_creator_options [linsert $event_creator_options 0 [list "" ""]]
@@ -523,7 +523,7 @@ if {[im_permission $current_user_id "add_events"]} {
 		from	wf_workflows w,
 			acs_object_types t
 		where	w.workflow_key = t.object_type
-			and w.object_type = 'im_event'
+			and w.object_type = :object_type
 	"
 	db_foreach wfs $wf_sql {
 	    set new_from_wf_url [export_vars -base "/intranet/events/new" {workflow_key}]
