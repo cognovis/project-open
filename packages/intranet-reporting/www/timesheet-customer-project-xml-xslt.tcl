@@ -48,7 +48,7 @@ proc im_reporting_render_odt_template {
     set odt_zip "${odt_tmp_path}.[lindex [split $uri_odt_template "." ] [expr [llength [split $uri_odt_template "." ]]-1]]"
     set odt_content "${odt_tmp_path}/content.xml"
 
-        # XML
+    # XML
 	set xml_file "${odt_tmp_path}/xml_file.xml"
 
     # ------------------------------------------------
@@ -76,9 +76,13 @@ proc im_reporting_render_odt_template {
     set xml_content [read $file]
     close $file
 
+	# ns_return 1 text/xml $xml_content
+
     set xml_doc [dom parse $xml_content]
     set root [$xml_doc documentElement]
     set xml_attribute_nodes [$root selectNodes "//attributes/*"]
+    set xml_company_nodes [$root selectNodes "//company/*"]
+    set xml_user_nodes [$root selectNodes "//user/*"]
 
     # Let's first replace double '@'
 
@@ -138,7 +142,7 @@ proc im_reporting_render_odt_template {
     foreach row_node $odt_table_rows_nodes {
 		set row_as_list [$row_node asList]
 		if {[regexp {@@} $row_as_list match]} { set odt_template_row_node $row_node }
-                incr odt_template_row_count
+        incr odt_template_row_count
     }
 
     if {"" == $odt_template_row_node} {
@@ -157,6 +161,8 @@ proc im_reporting_render_odt_template {
     # Store the node so that we can clone it
 	set row_mold_list [$odt_template_row_node asList]
 
+	set out ""
+
     # First node to be cloned is the '@@'-row
 	foreach line $line_list {
 		# Clone node content
@@ -164,12 +170,12 @@ proc im_reporting_render_odt_template {
 
         # Replace vars - expecting a well formed key/value list ...
         foreach {i j} $line {
-			regsub -all "@@$i@@" $new_node_list [list $j] new_node_list
+			append out "$row_mold_list ::: $i $j/[list $j] <br><br>"
+			regsub -all "@@$i@@" $new_node_list [list [string map {& \\&} $j]] new_node_list
         }
         # Append new node at the end of parent node -> works for ODT but not for CALC
-            set new_node [$parent_node appendFromList $new_node_list]
-		}
-
+        set new_node [$parent_node appendFromList $new_node_list]
+	}
     # Remove the line with @@ placeholders
 	set foo [$odt_template_row_node delete]
 
@@ -178,15 +184,37 @@ proc im_reporting_render_odt_template {
 
     # Render entire ODT to replace vars
 	set content_xml [$root asXML -indent none]
-
+	
+	# ToDo: Optimize
     foreach attribute_node $xml_attribute_nodes {
 		# lappend tt [$attribute_node selectNodes "."]
 		if { "" != [[$attribute_node selectNodes "."] text]  } {
-			regsub -all "@[$attribute_node nodeName]@" $content_xml [list [[$attribute_node selectNodes "."] text]] content_xml
+			regsub -all "@[$attribute_node nodeName]@" $content_xml "[[$attribute_node selectNodes "."] text]" content_xml
 		} else {
 			regsub -all "@[$attribute_node nodeName]@" $content_xml "" content_xml
 		}
-	}
+	}	
+
+    foreach company_node $xml_company_nodes {
+        # lappend tt [$company_node selectNodes "."]
+        if { "" != [[$company_node selectNodes "."] text]  } {
+            regsub -all "@[$company_node nodeName]@" $content_xml "[[$company_node selectNodes "."] text]" content_xml
+        } else {
+            regsub -all "@[$company_node nodeName]@" $content_xml "" content_xml
+        }
+    }
+
+    foreach user_node $xml_user_nodes {
+        # lappend tt [$user_node selectNodes "."]
+        if { "" != [[$user_node selectNodes "."] text]  } {
+            regsub -all "@[$user_node nodeName]@" $content_xml "[[$user_node selectNodes "."] text]" content_xml
+        } else {
+            regsub -all "@[$user_node nodeName]@" $content_xml "" content_xml
+        }
+    }
+	# /ToDo
+
+	# ns_return 1 text/html $out
 
     # Save the content to a file.
 	set file [open $odt_content w]
@@ -243,6 +271,7 @@ if {0 != $task_id && "" != $task_id && 0 != $project_id && "" != $project_id && 
 # Constants
 
 set number_format "999,990.99"
+set invoice_template_base_path [ad_parameter -package_id [im_package_invoices_id] InvoiceTemplatePathUnix "" "/tmp/templates/"]
 
 # ------------------------------------------------------------
 # Validation 
@@ -455,7 +484,8 @@ order by
 set report_def [list \
 	group_by company_id \
 	header {
-		"\#colspan=99 <a href=$base_url&company_id=$company_id&level_of_detail=4 
+		""
+		"\#colspan=98 <a href=$base_url&company_id=$company_id&level_of_detail=4 
 		target=_blank><img src=/intranet/images/plus_9.gif border=0></a> 
 		<b><a href=$company_url$company_id>$company_name</a></b>"
 	} \
@@ -798,12 +828,85 @@ switch $output_format {
 		set node [$root selectNodes "/report"]
 		$node appendFromList [list attributes {} {}]
 		set node [$root selectNodes "/report/attributes"]
-		$node appendFromList [list start_date [list] [list [list "\#text" $start_date]]]		
-		$node appendFromList [list end_date [list] [list [list "\#text" $end_date]]]
+		$node appendFromList [list start_date [list] [list [list "\#text" [encodeXmlValue $start_date]]]]		
+		$node appendFromList [list end_date [list] [list [list "\#text" [encodeXmlValue $end_date]]]]
 		$node appendFromList [list filter_user_id [list] [list [list "\#text" $user_id]]]		
 		$node appendFromList [list filter_company_id [list] [list [list "\#text" $company_id]]]		
 		$node appendFromList [list filter_project_id [list] [list [list "\#text" $project_id]]]		
+		$node appendFromList [list name_report_creator [list] [list [list "\#text" [encodeXmlValue [im_name_from_user_id $current_user_id]]]]]
 
+		if { (0 != $company_id && "" != $company_id) || (0 != $project_id && "" != $project_id)} {
+		   	 if { 0 == $company_id || "" == $company_id } {
+			 	# Get company_id from project 
+				set company_id_sql [db_string get_company_id "select company_id from im_projects where project_id = :project_id" -default 0]
+			 } else {
+			   	set company_id_sql $company_id
+			 }
+			 db_1row company_info "
+					select
+						c.company_name as company_name,
+						c.vat_number as company_vat_number,
+						im_name_from_user_id(c.manager_id) as company_manager_name,
+						im_email_from_user_id(c.manager_id) as company_manager_email,
+						im_name_from_user_id(c.primary_contact_id) as company_primary_contact_name,
+						im_email_from_user_id(c.primary_contact_id) as company_primary_contact_email,
+						im_name_from_user_id(c.accounting_contact_id) as company_accounting_contact_name,
+						im_email_from_user_id(c.accounting_contact_id) as company_accounting_contact_email,
+						o.office_name as company_office_name,
+						o.fax as company_fax,
+						o.phone as company_phone,
+						o.address_line1 as company_address_line1,
+						o.address_line2 as company_address_line2,
+						o.address_city as company_city,
+						o.address_state as company_state,
+						o.address_postal_code as company_postal_code,
+						cou.country_name as company_country_name
+					from
+						im_companies c
+						LEFT OUTER JOIN im_offices o ON (c.main_office_id = o.office_id)
+						LEFT OUTER JOIN country_codes cou ON (o.address_country_code = iso)
+						LEFT OUTER JOIN im_categories paymeth ON (c.default_payment_method_id = paymeth.category_id)
+				    where
+					    c.company_id = :company_id_sql
+			"
+	        set node [$root selectNodes "/report"]
+			$node appendFromList [list company {} {}]
+			set node [$root selectNodes "/report/company"]			
+			$node appendFromList [list company_name [list] [list [list "\#text" [encodeXmlValue $company_name]]]]
+			$node appendFromList [list company_vat_number [list] [list [list "\#text" [encodeXmlValue $company_vat_number]]]]
+			$node appendFromList [list company_manager_name [list] [list [list "\#text" [encodeXmlValue $company_manager_name]]]]
+			$node appendFromList [list company_manager_email [list] [list [list "\#text" [encodeXmlValue $company_manager_email]]]]
+			$node appendFromList [list company_primary_contact_name [list] [list [list "\#text" [encodeXmlValue $company_primary_contact_name]]]]
+			$node appendFromList [list company_primary_contact_email [list] [list [list "\#text" [encodeXmlValue $company_primary_contact_email]]]]
+			$node appendFromList [list company_accounting_contact_name [list] [list [list "\#text" [encodeXmlValue $company_accounting_contact_name]]]]
+			$node appendFromList [list company_accounting_contact_email [list] [list [list "\#text" [encodeXmlValue $company_accounting_contact_email]]]]
+			$node appendFromList [list company_office_name [list] [list [list "\#text" [encodeXmlValue $company_office_name]]]]
+			$node appendFromList [list company_fax [list] [list [list "\#text" [encodeXmlValue $company_fax]]]]
+			$node appendFromList [list company_phone [list] [list [list "\#text" [encodeXmlValue $company_phone]]]]
+			$node appendFromList [list company_address_line1 [list] [list [list "\#text" [encodeXmlValue $company_address_line1]]]]
+			$node appendFromList [list company_address_line2 [list] [list [list "\#text" [encodeXmlValue $company_address_line2]]]]
+			$node appendFromList [list company_city [list] [list [list "\#text" [encodeXmlValue $company_city]]]]
+			$node appendFromList [list company_state [list] [list [list "\#text" [encodeXmlValue $company_state]]]]
+			$node appendFromList [list company_postal_code [list] [list [list "\#text" [encodeXmlValue $company_postal_code]]]]
+			$node appendFromList [list company_country_name [list] [list [list "\#text" [encodeXmlValue $company_country_name]]]]
+		}
+
+        if { 0 != $project_id && "" != $project_id} {
+			set project_name [db_string get_project_name "select project_name from im_projects where project_id = :project_id" -default 0] 
+			set node [$root selectNodes "/report"]
+			$node appendFromList [list project {} {}]
+			set node [$root selectNodes "/report/project"]
+			$node appendFromList [list project_name [list] [list [list "\#text" [encodeXmlValue $project_name]]]]
+		}
+
+        if { 0 != $user_id && "" != $user_id } {
+			set user_name [im_name_from_user_id $user_id] 
+			set node [$root selectNodes "/report"]
+			$node appendFromList [list user {} {}]
+			set node [$root selectNodes "/report/user"]
+			$node appendFromList [list user_name [list] [list [list "\#text" [encodeXmlValue $user_name]]]]
+		}
+		   
 		# Add node 'lines' 
         set node [$root selectNodes "/report"]
         $node appendFromList [list lines [list] [list]]
@@ -926,19 +1029,40 @@ switch $output_format {
     printer { ns_write "</table>\n</div>\n"}
     cvs { }
 	xml {
-		ns_return 200 text/xml [$root asXML]
+        if { "" != $xslt_template_id  } {
+            set uri_xslt "$invoice_template_base_path/[im_category_from_id $xslt_template_id]"
+            ns_log NOTICE "timesheet-customer-project-v2 :: uri_xslt: $uri_xslt"
+
+			# Create tmp file for Reports Default XML
+			set uri_report_default_xml [ns_tmpnam]
+			set fo [open $uri_report_default_xml {RDWR CREAT}]
+			puts $fo "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>[$root asXML]"
+			close $fo
+
+            # Create tmp file for Report Custom XML
+            set uri_report_custom_xml [ns_tmpnam]
+            set fo [open $uri_report_custom_xml {RDWR CREAT}]
+            puts $fo " "
+            close $fo
+
+            # Perform transition
+            exec java -jar /usr/lib/libreoffice/basis3.4/program/classes/saxon9.jar -s:$uri_report_default_xml -xsl:$uri_xslt -o:$uri_report_custom_xml
+			ns_returnfile 200 text/xml $uri_report_custom_xml
+
+        } else {
+            # In case no transition file has been assigned we return the default XML file
+			ns_return 200 text/xml [$root asXML]
+        }
 	}
 	template {
 		# Create tmp file for Reports Default XML 
 		set uri_report_default_xml [ns_tmpnam]
 		set fo [open $uri_report_default_xml {RDWR CREAT}]
-		puts $fo [$root asXML]
+		puts $fo "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>[$root asXML]"
 		close $fo		
 		
 		# Get URI of XSLT choosen by user  
-		set invoice_template_base_path [ad_parameter -package_id [im_package_invoices_id] InvoiceTemplatePathUnix "" "/tmp/templates/"]
 		if { "" != $xslt_template_id  } {
-
 			set uri_xslt "$invoice_template_base_path/[im_category_from_id $xslt_template_id]"
 			ns_log NOTICE "timesheet-customer-project-v2 :: uri_xslt: $uri_xslt"
 
