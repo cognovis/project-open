@@ -1468,6 +1468,7 @@ ad_proc -private im_rest_post_object_type_im_biz_object_member {
     set sort_order ""
 
     # Extract a key-value list of variables from XML or JSON POST request
+	ns_log Notice "im_rest_post_object_type_$rest_otype: Now parsing xml/json content ..."
     array set hash_array [im_rest_parse_xml_json_content -rest_otype $rest_otype -format $format -content $content]
     ns_log Notice "im_rest_post_object_type_$rest_otype: hash_array=[array get hash_array]"
 
@@ -1482,9 +1483,12 @@ ad_proc -private im_rest_post_object_type_im_biz_object_member {
     set required_vars {object_id_one object_id_two}
     foreach var $required_vars {
 	if {![info exists $var]} { 
+		ns_log Notice "im_rest_post_object_type_$rest_otype: Variable '$var' not specified. The following variables are required: $required_vars"	
 	    return [im_rest_error -format $format -http_status 406 -message "Variable '$var' not specified. The following variables are required: $required_vars"] 
 	}
     }
+
+	ns_log Notice "im_rest_post_object_type_$rest_otype: Found all necessary var's" 
 
     if {![info exists percentage]} { set percentage "" }
     if {![info exists object_role_id]} { set object_role_id [im_biz_object_role_full_member] }
@@ -1500,28 +1504,31 @@ ad_proc -private im_rest_post_object_type_im_biz_object_member {
     set rest_oid [db_string duplicates $dup_sql -default ""]
 
     if {"" == $rest_oid} {
-
-	# Add the new relationship only if it doesn't exist yet
-	# Gracefully handle duplicates
-	if {[catch {
-	    set rest_oid [db_string new_im_biz_object_member "
-		select im_biz_object_member__new (
-			null,			-- rel_id
-			:rest_otype,		-- rel_type
-			:object_id_one,
-			:object_id_two,
-			:object_role_id,	-- full member, project manager, key account manger, ...
-			:percentage,		-- percentage of assignment
-			:user_id,		-- Creation user
-			'[ns_conn peeraddr]'	-- Connection IP address for audit
-		)
-	    "]
-	} err_msg]} {
-	    return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
-	}
+		# Add the new relationship only if it doesn't exist yet
+		# Gracefully handle duplicates
+		if {[catch {
+			ns_log Notice "im_rest_post_object_type_$rest_otype: Now calling im_biz_object_member__new ..."
+			set rest_oid [db_string new_im_biz_object_member "
+				select im_biz_object_member__new (
+					null,			-- rel_id
+					:rest_otype,		-- rel_type
+					:object_id_one,
+					:object_id_two,
+					:object_role_id,	-- full member, project manager, key account manger, ...
+					:percentage,		-- percentage of assignment
+					:user_id,		-- Creation user
+					'[ns_conn peeraddr]'	-- Connection IP address for audit
+				)
+	    	"]
+		} err_msg]} {
+			ns_log Notice "im_rest_post_object_type_$rest_otype: Error creating $rest_otype_pretty: '$err_msg'."
+			return [im_rest_error -format $format -http_status 406 -message "Error creating $rest_otype_pretty: '$err_msg'."]
+		}
    
-	im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action after_create
-    }
+		im_audit -user_id $user_id -object_type $rest_otype -object_id $rest_oid -action after_create
+    } else {
+		ns_log Notice "im_rest_post_object_type_$rest_otype: im_biz_object_member__new skipped, found rest_oid: $rest_oid"
+	}
 
     set hash_array(rest_oid) $rest_oid
     set hash_array(rel_id) $rest_oid
