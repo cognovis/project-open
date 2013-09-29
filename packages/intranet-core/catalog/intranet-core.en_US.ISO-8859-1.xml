@@ -386,6 +386,7 @@ We recommend you to upgrade your browser to a more recent version.</msg>
   <msg key="El Salvador">El Salvador</msg>
   <msg key="El_Salvador">El Salvador</msg>
   <msg key="Email">Email</msg>
+  <msg key="EMail">EMail</msg>
   <msg key="Email_address">Email address</msg>
   <msg key="Email_sent">Email sent</msg>
   <msg key="Employee">Employee</msg>
@@ -487,6 +488,7 @@ We recommend you to upgrade your browser to a more recent version.</msg>
   <msg key="Gantt">Gantt</msg>
   <msg key="gelscht">deleted</msg>
   <msg key="Gen">Gen</msg>
+  <msg key="Gender">Geschlecht</msg>
   <msg key="General_Home">Home</msg>
   <msg key="Generic_PM">Generic PM</msg>
   <msg key="Generic_Table_Header_ocs_bios">BIOS</msg>
@@ -621,6 +623,7 @@ We recommend you to upgrade your browser to a more recent version.</msg>
   <msg key="Home_ZIP">Home ZIP</msg>
   <msg key="Honduras">Honduras</msg>
   <msg key="Hour">Hour</msg>
+  <msg key="Hour_Reduction">Reduction in Working Hours</msg>
   <msg key="How_it_should_be_right">How it should be right</msg>
   <msg key="hr">hr</msg>
   <msg key="HR_Help">HR Help</msg>
@@ -1307,6 +1310,7 @@ other way for the user to find out.</msg>
   <msg key="Ouch">Ouch!</msg>
   <msg key="Our_employees_related">Our Employees (managing the company)</msg>
   <msg key="Outstanding">Outstanding</msg>
+  <msg key="Overtime">Overtime</msg>
   <msg key="p">p</msg>
   <msg key="Package">Package</msg>
   <msg key="Package_Manager">Package Manager</msg>
@@ -1594,6 +1598,7 @@ other way for the user to find out.</msg>
   <msg key="Spam">Spam</msg>
   <msg key="Spam_Members">Spam Members</msg>
   <msg key="Spam_Users">Spam Users</msg>
+  <msg key="Special_Leave">Special Leave</msg>
   <msg key="sq">sq</msg>
   <msg key="SQL_Profiling">SQL Profiling</msg>
   <msg key="sr">sr</msg>
@@ -1739,6 +1744,7 @@ other way for the user to find out.</msg>
   <msg key="User_Configuration_Items">Configuration Items</msg>
   <msg key="User_Exists">User Exits</msg>
   <msg key="User_Exits">User Exits</msg>
+  <msg key="User_ID">User_ID</msg>
   <msg key="User_Id">User ID</msg>
   <msg key="User_Matrix">User Matrix</msg>
   <msg key="User_name">User name</msg>
