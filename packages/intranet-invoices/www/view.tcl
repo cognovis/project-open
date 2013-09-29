@@ -742,13 +742,6 @@ if {"" != $address_country_code} {
     set country_name [lang::message::lookup $locale intranet-core.$country_name $country_name]
 }
 
-# ------------------------------------
-# Tax and payment information
-# ------------------------------------
-set taxability_string [im_category_string1 -category_id $vat_type_id]
-set payment_string [im_category_string1 -category_id $payment_term_id]
-
-
 # ---------------------------------------------------------------
 # Update the amount paid for this cost_item
 # ---------------------------------------------------------------
@@ -1506,6 +1499,15 @@ set payment_terms [im_category_from_id -locale $locale $payment_term_id]
 set payment_terms_note [im_category_string1 -category_id $payment_term_id -locale $locale]
 eval [template::adp_compile -string $payment_terms_note]
 set payment_terms_note $__adp_output
+
+# -------------------------
+# Deal with payment method and variables in them
+# -------------------------
+
+set payment_method [im_category_from_id -locale $locale $payment_method_id]
+set payment_method_note [im_category_string1 -category_id $payment_method_id -locale $locale]
+eval [template::adp_compile -string $payment_method_note]
+set payment_method_note $__adp_output
 
 # -------------------------------
 # Support for cost center text
