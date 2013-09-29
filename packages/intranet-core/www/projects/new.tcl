@@ -1,4 +1,4 @@
-# /packages/intranet-cogonovis/www/projects/project-ae.tcl
+# /packages/intranet-core/www/projects/new.tcl
 #
 # Copyright (C) 1998-2012 various parties
 # The software is based on ArsDigita ACS 3.4
