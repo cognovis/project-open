@@ -742,6 +742,13 @@ if {"" != $address_country_code} {
     set country_name [lang::message::lookup $locale intranet-core.$country_name $country_name]
 }
 
+# ------------------------------------
+# Tax and payment information
+# ------------------------------------
+set taxability_string [im_category_string1 -category_id $vat_type_id]
+set payment_string [im_category_string1 -category_id $payment_term_id]
+
+
 # ---------------------------------------------------------------
 # Update the amount paid for this cost_item
 # ---------------------------------------------------------------
@@ -1420,6 +1427,64 @@ if { 0 == $item_list_type } {
 	append invoice_item_html "<tr><td class='invoiceroweven' colspan ='100' align='right'>[lc_numeric [im_numeric_add_trailing_zeros [expr $amount_sub_total+0] $rounding_precision] "" $locale]&nbsp;$currency</td></tr>"
 }
 
+
+# ---------------------------------------------------------------
+# Source Invoices list
+# ---------------------------------------------------------------
+
+set linked_list_html ""
+set linked_invoice_nr ""
+set linked_invoice_ids [relation::get_objects -object_id_two $invoice_id -rel_type "im_invoice_invoice_rel"]
+set linked_invoice_ids [concat [relation::get_objects -object_id_one $invoice_id -rel_type "im_invoice_invoice_rel"] $linked_invoice_ids]
+if {$linked_invoice_ids eq ""} {
+    # this might be a parent, try it again for children
+    set linked_invoice_ids [relation::get_objects -object_id_one $invoice_id -rel_type "im_invoice_invoice_rel"]
+}
+if {$linked_invoice_ids ne ""} {
+
+    set linked_list_html "
+	<table border=0 cellPadding=1 cellspacing=1>
+        <tr>
+          <td align=middle class=rowtitle colspan=3>
+	    [lang::message::lookup $locale intranet-invoices.Linked_Invoices]
+	  </td>
+        </tr>"
+
+    set linked_list_sql "
+select
+	invoice_id as linked_invoice_id,
+        invoice_nr as linked_invoice_nr,
+        effective_date as linked_effective_date
+from
+	im_invoices, im_costs
+where
+	invoice_id in ([template::util::tcl_to_sql_list $linked_invoice_ids])
+        and cost_id = invoice_id
+"
+
+    set linked_ctr 0
+    db_foreach linked_list $linked_list_sql {
+	append linked_list_html "
+        <tr $bgcolor([expr $linked_ctr % 2])>
+          <td>
+	    <A href=/intranet-invoices/view?invoice_id=$linked_invoice_id>
+	      $linked_invoice_nr
+ 	    </A>
+	  </td></tr>\n"
+	incr linked_ctr
+    }
+
+    if {!$linked_ctr} {
+	append linked_list_html "<tr class=roweven><td align=center><i>[lang::message::lookup $locale intranet-invoices.No_linkeds_found]</i></td></tr>\n"
+    }
+
+    append linked_list_html "
+	</table>
+        </form>\n"
+    set linked_effective_date_pretty [lc_time_fmt $linked_effective_date "%x" $locale]
+}
+
+
 # ---------------------------------------------------------------
 # Add subtotal + VAT + TAX = Grand Total
 # ---------------------------------------------------------------
@@ -1932,60 +1997,5 @@ db_foreach column_list_sql $column_sql {
 
 
 append project_base_data_html "</table>"
-
-# ---------------------------------------------------------------
-# Source Invoices list
-# ---------------------------------------------------------------
-
-set linked_list_html ""
-set linked_invoice_ids [relation::get_objects -object_id_two $invoice_id -rel_type "im_invoice_invoice_rel"]
-set linked_invoice_ids [concat [relation::get_objects -object_id_one $invoice_id -rel_type "im_invoice_invoice_rel"] $linked_invoice_ids]
-if {$linked_invoice_ids eq ""} {
-    # this might be a parent, try it again for children
-    set linked_invoice_ids [relation::get_objects -object_id_one $invoice_id -rel_type "im_invoice_invoice_rel"]
-}
-if {$linked_invoice_ids ne ""} {
-
-    set linked_list_html "
-	<table border=0 cellPadding=1 cellspacing=1>
-        <tr>
-          <td align=middle class=rowtitle colspan=3>
-	    [lang::message::lookup $locale intranet-invoices.Linked_Invoices]
-	  </td>
-        </tr>"
-
-    set linked_list_sql "
-select
-	invoice_id as linked_invoice_id,
-        invoice_nr as linked_invoice_nr,
-        effective_date as linked_effective_date
-from
-	im_invoices, im_costs
-where
-	invoice_id in ([template::util::tcl_to_sql_list $linked_invoice_ids])
-        and cost_id = invoice_id
-"
-
-    set linked_ctr 0
-    db_foreach linked_list $linked_list_sql {
-	append linked_list_html "
-        <tr $bgcolor([expr $linked_ctr % 2])>
-          <td>
-	    <A href=/intranet-invoices/view?invoice_id=$linked_invoice_id>
-	      $linked_invoice_nr
- 	    </A>
-	  </td></tr>\n"
-	incr linked_ctr
-    }
-
-    if {!$linked_ctr} {
-	append linked_list_html "<tr class=roweven><td align=center><i>[lang::message::lookup $locale intranet-invoices.No_linkeds_found]</i></td></tr>\n"
-    }
-
-    append linked_list_html "
-	</table>
-        </form>\n"
-    set linked_effective_date_pretty [lc_time_fmt $linked_effective_date "%x" $locale]
-}
 
 #set admin_p 1
