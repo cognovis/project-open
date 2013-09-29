@@ -109,7 +109,7 @@ set object_type "im_company"
 # user group. 
 set person_subtype_id [db_string subtype "select category_id from im_categories where category_type = 'Intranet User Type' and aux_int1 = :profile" -default ""]
 
-template::form::section -legendtext asdf $form_id [lang::message::lookup "" intranet-core.Person Person]
+template::form::section -legendtext [lang::message::lookup "" intranet-core.Person Person] $form_id [lang::message::lookup "" intranet-core.Person Person]
 
 im_dynfield::append_attributes_to_form \
     -object_type "user" \
@@ -122,14 +122,15 @@ im_dynfield::append_attributes_to_form \
     -page_url "default" \
     -object_subtype_id $person_subtype_id
 
-template::form::section -legendtext sdfg $form_id [lang::message::lookup "" intranet-core.Company Company]
+template::form::section -legendtext [lang::message::lookup "" intranet-core.Company Company] $form_id [lang::message::lookup "" intranet-core.Company Company]
 
 im_dynfield::append_attributes_to_form \
     -object_type "im_company" \
     -form_id $form_id \
-    -page_url "default" 
+    -page_url "default" \
+    -object_subtype_id $default_company_type_id
 
-template::form::section -legendtext dfgh $form_id [lang::message::lookup "" intranet-core.Office Office]
+template::form::section -legendtext [lang::message::lookup "" intranet-core.Office Office] $form_id [lang::message::lookup "" intranet-core.Office Office]
 
 im_dynfield::append_attributes_to_form \
     -object_type "im_office" \
