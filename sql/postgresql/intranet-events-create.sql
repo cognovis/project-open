@@ -45,6 +45,12 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_event','edit','/intranet-events/events/new?event_id=');
 
 
+-- Add a status field in order to track user's assignment
+alter table im_biz_object_members 
+add column member_status_id integer 
+constraint im_biz_object_members_status_fk references im_categories;
+
+
 
 ------------------------------------------------------
 -- Events Table
@@ -290,7 +296,24 @@ end;$body$ language 'plpgsql';
 
 
 
+-- ------------------------------------------------------------
+-- Event - Order Item Relationship
+-- ------------------------------------------------------------
 
+create table im_event_order_item_rels (
+    	event_id	integer
+			constraint im_event_order_item_rels_event_fk
+			references im_events,
+	order_item_id	integer
+			constraint im_event_order_item_rels_order_item_fk
+			references im_invoice_items,
+	primary key(event_id, order_item_id)
+);
+
+
+-- Incices to speed up frequent queries
+create index im_event_order_item_rels_event_idx on im_event_order_item_rels(event_id);
+-- create index im_event_order_item_rels_order_item_idx on im_event_order_item_rels(order_item_id);
 
 
 
@@ -325,7 +348,8 @@ SELECT im_priv_create('edit_events_all', 'Accounting');
 -- 82000-81999  Events (1000)
 -- 82000-82099	Event Status (100)
 -- 82100-82199	Event Type (100)
--- 82200-82999	reserved (800)
+-- 82200-82299	Participant Member Status (100)
+-- 82300-82999	reserved (800)
 
 
 SELECT im_category_new (82000, 'Unplanned', 'Intranet Event Status');
@@ -334,6 +358,11 @@ SELECT im_category_new (82004, 'Reserved', 'Intranet Event Status');
 SELECT im_category_new (82006, 'Booked', 'Intranet Event Status');
 
 SELECT im_category_new (82100, 'Default', 'Intranet Event Type');
+
+
+SELECT im_category_new (82200, 'Confirmed', 'Intranet Event Participant Status');
+SELECT im_category_new (82210, 'Reserved', 'Intranet Event Participant Status');
+SELECT im_category_new (82290, 'Deleted', 'Intranet Event Participant Status');
 
 
 -----------------------------------------------------------
@@ -494,7 +523,7 @@ SELECT	im_component_plugin__new (
 	'/intranet-events/new',		-- page_url
 	null,				-- view_name
 	50,				-- sort_order
-        'im_group_member_component $event_id $current_user_id $user_admin_p $return_url "" "" 1',
+        'im_group_member_component $event_id $current_user_id $user_admin_p $return_url [im_profile_employee] "" 1',
 	'lang::message::lookup "" intranet-events.Event_Consultants "Event Consultants"'
 );
 
@@ -509,6 +538,7 @@ SELECT acs_permission__grant_permission(
 -- ------------------------------------------------------
 -- Show customers associated with event
 --
+
 SELECT	im_component_plugin__new (
 	null,				-- plugin_id
 	'im_component_plugin',		-- object_type
@@ -522,7 +552,7 @@ SELECT	im_component_plugin__new (
 	'/intranet-events/new',		-- page_url
 	null,				-- view_name
 	50,				-- sort_order
-        'im_event_customer_component $event_id $form_mode $ordreby $return_url',
+        'im_event_customer_component $event_id $form_mode $orderby $return_url',
 	'lang::message::lookup "" intranet-events.Event_Customers "Event Customers"'
 );
 
@@ -532,3 +562,61 @@ SELECT acs_permission__grant_permission(
         'read'
 );
 
+
+
+
+-- Order Items associated with event
+--
+
+SELECT	im_component_plugin__new (
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Event Order Items',		-- plugin_name
+	'intranet-events',		-- package_name
+	'bottom',			-- location
+	'/intranet-events/new',		-- page_url
+	null,				-- view_name
+	50,				-- sort_order
+        'im_event_order_item_component $event_id $form_mode $orderby $return_url',
+	'lang::message::lookup "" intranet-events.Event_Order_Items "Event Order Items"'
+);
+
+SELECT acs_permission__grant_permission(
+        (select plugin_id from im_component_plugins where plugin_name = 'Event Order Items' and package_name = 'intranet-events'),
+        (select group_id from groups where group_name = 'Employees'),
+        'read'
+);
+
+
+
+
+-- ------------------------------------------------------
+-- Show customers associated with event
+--
+
+SELECT	im_component_plugin__new (
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Event Participants',		-- plugin_name
+	'intranet-events',		-- package_name
+	'bottom',			-- location
+	'/intranet-events/new',		-- page_url
+	null,				-- view_name
+	100,				-- sort_order
+        'im_event_participant_component $event_id $form_mode $orderby $return_url',
+	'lang::message::lookup "" intranet-events.Event_Participants "Event Participants"'
+);
+
+SELECT acs_permission__grant_permission(
+        (select plugin_id from im_component_plugins where plugin_name = 'Event Participants' and package_name = 'intranet-events'),
+        (select group_id from groups where group_name = 'Employees'),
+        'read'
+);

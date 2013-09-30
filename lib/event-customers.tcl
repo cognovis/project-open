@@ -29,6 +29,10 @@ list::create \
 	    label "Name" 
 	    link_url_col company_url
 	}
+	company_path { 
+	    label "Path" 
+	    link_url_col company_url
+	}
 	company_delete {
 	    label ""
 	    display_template {
@@ -57,8 +61,3 @@ db_multirow -extend {company_url delete_url} customer_list_multirow get_customer
     set delete_url [export_vars -base "customer-del" { event_id {customer_id $company_id} {return_url $current_url} }]
     set company_url [export_vars -base "/intranet/companies/view" { company_id {return_url $current_url} }]
 }
-
-
-# Set the variable for the ADP page
-# set return_url $current_url
-

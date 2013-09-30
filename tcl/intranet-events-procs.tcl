@@ -20,6 +20,10 @@ ad_proc -public im_event_status_planned {} { return 82002 }
 ad_proc -public im_event_status_reserved {} { return 82004 }
 ad_proc -public im_event_status_booked {} { return 82006 }
 
+# Status for each event participant
+ad_proc -public im_event_participant_status_confirmed {} { return 82200 }
+ad_proc -public im_event_participant_status_reserved {} { return 82210 }
+ad_proc -public im_event_participant_status_deleted {} { return 82290 }
 
 
 # ---------------------------------------------------------------------
@@ -37,6 +41,37 @@ ad_proc im_event_customer_component { event_id form_mode orderby return_url } {
     ]
 
     set result [ad_parse_template -params $params "/packages/intranet-events/lib/event-customers"]
+    return [string trim $result]
+}
+
+
+
+ad_proc im_event_order_item_component { event_id form_mode orderby return_url } {
+    Returns a formatted HTML showing the event order_items
+} {
+    set params [list \
+                    [list event_id $event_id] \
+                    [list form_mode $form_mode] \
+                    [list orderby $orderby] \
+                    [list return_url $return_url] \
+    ]
+
+    set result [ad_parse_template -params $params "/packages/intranet-events/lib/event-order-items"]
+    return [string trim $result]
+}
+
+
+ad_proc im_event_participant_component { event_id form_mode orderby return_url } {
+    Returns a formatted HTML showing the event participants, participant members and related order items
+} {
+    set params [list \
+                    [list event_id $event_id] \
+                    [list form_mode $form_mode] \
+                    [list orderby $orderby] \
+                    [list return_url $return_url] \
+    ]
+
+    set result [ad_parse_template -params $params "/packages/intranet-events/lib/event-participants"]
     return [string trim $result]
 }
 
