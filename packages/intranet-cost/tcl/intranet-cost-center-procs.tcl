@@ -442,3 +442,55 @@ ad_proc -public im_user_cost_centers { user_id } {
     im_security_alert_check_integer -location "im_user_cost_centers" -value $user_id
     return [util_memoize [list db_list user_ccs "select * from im_user_cost_centers($user_id)"]]
 }
+
+ad_proc -public im_manager_cost_centers { 
+    -user_id 
+} {
+    Returns the list of all cost-centes the user manages
+    including sub cost-centers
+} {
+    set cost_center_options [im_cost_center_options -department_only_p 1 -manager_id $user_id]
+
+    set manager_of_cc_ids ""
+    if {"" != $cost_center_options} {
+	foreach option $cost_center_options {
+	    lappend manager_of_cc_ids [lindex $option 1] 
+	}
+    }
+    return $manager_of_cc_ids 
+}
+
+ad_proc -public im_manager_of_cost_center_p {
+    {-user_id ""}
+    -cost_center_id
+} {
+    Find out if the user is a manager of a cost center
+} {
+    if {"" == $user_id} {
+	set user_id [ad_conn user_id]
+    }
+
+    if {[lsearch [im_manager_cost_centers -user_id $user_id] $cost_center_id]>-1} {
+	return 1
+    } else {
+	return 0
+    }
+}
+
+
+ad_proc -public im_manager_of_user_p {
+    {-user_id ""}
+    {-manager_id ""}
+} {
+    Find out if the manager manages the user in a department hierarchy
+} {
+    if {"" == $user_id} {
+	set user_id [ad_conn user_id]
+    }
+    if {"" == $manager_id} {
+	set manager_id [ad_conn user_id]
+    }
+
+    set managed_cost_centers [im_manager_cost_centers -user_id $manager_id]
+    return [db_string managed_p "select 1 from im_user_cost_centers($user_id)  where im_user_cost_centers in ([template::util::tcl_to_sql_list $managed_cost_centers]) limit 1" -default 0]
+}

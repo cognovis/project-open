@@ -20,4 +20,3 @@
 	</table>
 
 <%= [im_box_footer] %>
-

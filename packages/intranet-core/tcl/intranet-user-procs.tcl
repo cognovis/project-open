@@ -1446,3 +1446,19 @@ ad_proc im_supervisor_select {
 
     return [im_options_to_select_box "user_supervisor_id" $sql $default]
 }
+
+ad_proc im_supervisor_of_employee_p {
+    {-supervisor_id ""}
+    {-employee_id ""}
+} { 
+    returns 1 if the supervisor is a direct supervisor of the user
+    might be later changed to support indirect supervision
+} {
+    if {"" == $supervisor_id} {
+	set supervisor_id [ad_conn user_id]
+    } 
+    if {"" == $employee_id} {
+	set employee_id [ad_conn user_id]
+    } 
+    return [db_string supervisor_p "select 1 from im_employees where supervisor_id = :supervisor_id and employee_id = :employee_id" -default "0"]
+}
