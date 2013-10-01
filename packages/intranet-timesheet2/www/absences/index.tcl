@@ -65,7 +65,7 @@ set add_absences_p [im_permission $user_id "add_absences"]
 set org_absence_type_id $absence_type_id
 set show_context_help_p 1
 set name_order [parameter::get -package_id [apm_package_id_from_key intranet-core] -parameter "NameOrder" -default 1]
-
+set hide_colors_p 0
 set today [db_string today "select now()::date"]
 
 if {![im_permission $user_id "view_absences"] && !$view_absences_all_p && !$view_absences_direct_reports_p} { 
@@ -734,5 +734,6 @@ set absence_cube_html [im_absence_cube \
 			   -user_id_from_search $user_id_from_search \
 			   -cost_center_id $cost_center_id \
 			   -user_id $user_id \
+			   -hide_colors_p $hide_colors_p
 ]
 

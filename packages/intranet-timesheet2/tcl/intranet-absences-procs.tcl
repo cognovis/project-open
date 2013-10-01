@@ -433,6 +433,7 @@ ad_proc im_absence_cube {
     {-user_id_from_search "" }
     {-user_id ""}
     {-cost_center_id ""}
+    {-hide_colors_p 0}
 } {
     Returns a rendered cube with a graphical absence display
     for users.
@@ -675,6 +676,7 @@ ad_proc im_absence_cube {
 	    set value ""
 	    if {[info exists absence_hash($key)]} { set value $absence_hash($key) }
 	    if {[info exists holiday_hash($date_date)]} { append value $holiday_hash($date_date) }
+	    if {$hide_colors_p && $value != "" } {set value "1"}
 	    append table_body [im_absence_cube_render_cell $value]
 	    ns_log NOTICE "intranet-absences-procs::im_absence_cube_render_cell: $value"
 	}
