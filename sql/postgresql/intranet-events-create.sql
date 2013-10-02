@@ -47,7 +47,7 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 
 -- Add a status field in order to track user's assignment
 alter table im_biz_object_members 
-add column member_status_id integer 
+add column member_status_id integer default 82210
 constraint im_biz_object_members_status_fk references im_categories;
 
 
@@ -55,45 +55,53 @@ constraint im_biz_object_members_status_fk references im_categories;
 ------------------------------------------------------
 -- Events Table
 --
+
+create sequence im_event_nr_seq;
 create table im_events (
-	event_id		integer
-				constraint im_events_pk
-				primary key
-				constraint im_events_id_fk
-				references im_user_absences,
+	event_id			integer
+					constraint im_events_pk
+					primary key
+					constraint im_events_id_fk
+					references im_user_absences,
 
-	event_name		text
-				constraint im_events_name_nn not null,
+	event_name			text
+					constraint im_events_name_nn not null,
 
-	event_nr		text
-				constraint im_events_nr_nn not null,
+	event_nr			text
+					constraint im_events_nr_nn not null,
 
 	-- Status and type for orderly objects...
-	event_type_id		integer
-				constraint im_events_type_fk
-				references im_categories
-				constraint im_events_type_nn
-				not null,
-	event_status_id		integer
-				constraint im_events_status_fk
-				references im_categories
-				constraint im_events_type_nn 
-				not null,
+	event_type_id			integer
+					constraint im_events_type_fk
+					references im_categories
+					constraint im_events_type_nn
+					not null,
+	event_status_id			integer
+					constraint im_events_status_fk
+					references im_categories
+					constraint im_events_type_nn 
+					not null,
 
 	-- Other content fields
-	event_material_id	integer
-				constraint im_events_material_fk
-				references im_materials,
-	event_location_id	integer
-				constraint im_events_location_fk
-				references im_conf_items,
+	event_material_id		integer
+					constraint im_events_material_fk
+					references im_materials,
+	event_location_id		integer
+					constraint im_events_location_fk
+					references im_conf_items,
 
-	event_start_date	timestamptz
-				constraint im_events_start_const not null,
-	event_end_date		timestamptz
-				constraint im_events_end_const not null,
+	event_start_date		timestamptz
+					constraint im_events_start_const not null,
+	event_end_date			timestamptz
+					constraint im_events_end_const not null,
 
-	event_description	text
+	-- Link to associated timesheet task + sweeper info
+	event_timesheet_task_id		integer
+					constraint im_events_ts_task_fk
+					references im_timesheet_tasks,
+	event_timesheet_last_swept	timestamptz,
+
+	event_description		text
 );
 
 -- Unique constraint to avoid that you can add two identical events
@@ -301,12 +309,13 @@ end;$body$ language 'plpgsql';
 -- ------------------------------------------------------------
 
 create table im_event_order_item_rels (
-    	event_id	integer
-			constraint im_event_order_item_rels_event_fk
-			references im_events,
-	order_item_id	integer
-			constraint im_event_order_item_rels_order_item_fk
-			references im_invoice_items,
+    	event_id		integer
+				constraint im_event_order_item_rels_event_fk
+				references im_events,
+	order_item_id		integer
+				constraint im_event_order_item_rels_order_item_fk
+				references im_invoice_items,
+	order_item_amount	integer default 1
 	primary key(event_id, order_item_id)
 );
 
@@ -613,6 +622,36 @@ SELECT	im_component_plugin__new (
 	100,				-- sort_order
         'im_event_participant_component $event_id $form_mode $orderby $return_url',
 	'lang::message::lookup "" intranet-events.Event_Participants "Event Participants"'
+);
+
+SELECT acs_permission__grant_permission(
+        (select plugin_id from im_component_plugins where plugin_name = 'Event Participants' and package_name = 'intranet-events'),
+        (select group_id from groups where group_name = 'Employees'),
+        'read'
+);
+
+
+
+
+-- ------------------------------------------------------
+-- Show customers associated with event
+--
+
+SELECT	im_component_plugin__new (
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Event New Participant',	-- plugin_name
+	'intranet-events',		-- package_name
+	'right',			-- location
+	'/intranet-events/new',		-- page_url
+	null,				-- view_name
+	100,				-- sort_order
+        'im_user_biz_card_component -limit_to_company_id $event_customer_ids -also_add_to_biz_object [list $event_id 1300] -return_url $return_url',
+	'lang::message::lookup "" intranet-events.Event_New_Participants "Event New Participants"'
 );
 
 SELECT acs_permission__grant_permission(

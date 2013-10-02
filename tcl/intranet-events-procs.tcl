@@ -26,6 +26,212 @@ ad_proc -public im_event_participant_status_reserved {} { return 82210 }
 ad_proc -public im_event_participant_status_deleted {} { return 82290 }
 
 
+
+namespace eval im_event {
+
+# ----------------------------------------------------------------------
+# Event - Timesheet Task Sweeper
+# ---------------------------------------------------------------------
+
+    ad_proc -public task_sweeper {
+	{-sweep_mode "full"}
+	{-sweep_last_interval "60 minutes" }
+	{-event_id ""}
+    } {
+        Periodic sweeper that checks that every event 
+	is represented by a timesheet task with the same members,
+	so that event trainers can log their hours.
+
+	@param full_sweep_p Normally sweeps only affect events
+	       without task or recently modified events.
+        @author frank.bergmann@project-open.com
+    } {
+	# -------------------------------------------------
+	# Constants etc.
+	set year [db_string year "select to_char(now()::date, 'YYYY') from dual"]
+
+	# -------------------------------------------------
+	# Determine which events to sweep
+
+	# Default: Sweep only recently modified events or 
+	# completely dirty ones (no timesheet task entry)
+	set sweep_sql "
+		select	e.*
+		from	im_events e,
+			acs_objects o
+		where	e.event_id = o.object_id and
+			(	-- no task yet
+				event_timesheet_task_id is null
+			OR	-- never swept yet
+				event_timesheet_last_swept is null
+			OR	-- modified since last sweep
+				o.last_modified > event_timesheet_last_swept
+			)
+	"
+	# Full sweep - sweep all events, which may take minutes...
+	if {"full" == $sweep_mode} {
+	    set sweep_sql "select e.* from im_events e"
+	}
+
+	# Sweep only a specific event
+	if {"" != $event_id && [string is integer $event_id]} { 
+	    set sweep_sql "select e.* from im_events e where e.event_id = $event_id" 
+	}
+
+	# -------------------------------------------------
+        # Check the situation of relevant events
+	db_foreach sweep_events $sweep_sql {
+	    
+	    # Make sure the parent project exists
+	    set parent_project_id [db_string parent_project_id "
+		select	project_id
+		from	im_projects
+		where	project_nr = :year || '_events'
+	    " -default ""]
+	    if {"" == $parent_project_id} {
+		set parent_project_id [project::new \
+					   -project_name       "$year Events" \
+					   -project_nr         "${year}_events" \
+					   -project_path       "${year}_events" \
+					   -company_id         [im_company_internal] \
+					   -parent_id          "" \
+					   -project_type_id    [im_project_type_consulting] \
+					   -project_status_id  [im_project_status_open] \
+		]
+		db_dml update_parent_project "
+			update im_projects set
+			    	start_date = to_date(:year || '-01-01', 'YYYY-MM-DD'),
+				end_date = to_date(:year || '-12-31', 'YYYY-MM-DD')
+			where project_id = :parent_project_id
+		"
+	    }
+	    set task_nr "event_$event_nr"
+	    set task_name "Event $event_nr"
+
+	    # -----------------------------------------------------
+	    # Create the timesheet task
+	    set task_id [db_string task_id "
+	    	select	p.project_id
+		from	im_projects p,
+			im_timesheet_tasks t
+		where	p.project_id = t.task_id and
+			p.parent_id = :parent_project_id and
+			p.project_nr = :task_nr
+	    " -default ""]
+
+	    set project_id $parent_project_id
+	    set material_id [im_material_default_material_id]
+	    set cost_center_id ""
+	    set uom_id [im_uom_hour]
+	    set task_type_id [im_project_type_task]
+	    set task_status_id [im_project_status_open]
+	    set note $event_description
+	    set planned_units 0
+	    set billable_units 0
+	    set percent_completed ""
+
+	    if {"" == $task_id} {
+		set task_id [db_string task_insert {}]
+	    }
+	    db_dml task_update {}
+	    db_dml project_update {}
+
+	    db_dml update_event "
+		update im_events
+		set event_timesheet_task_id = :task_id
+		where event_id = :event_id
+	    "
+
+	    # -----------------------------------------------------
+	    # Copy event members to task
+	    set event_member_sql "
+		select	object_id_two as user_id,
+			bom.object_role_id as role_id
+		from	acs_rels r,
+			im_biz_object_members bom
+		where	r.rel_id = bom.rel_id and
+			object_id_one = :event_id
+	    "
+	    array set event_member_hash {}
+	    db_foreach event_members $event_member_sql {
+		im_biz_object_add_role -percentage 100 $user_id $task_id $role_id
+		set event_member_hash($user_id) $role_id
+	    }
+
+	    # -----------------------------------------------------
+	    # Remove task members who are not event members
+	    set task_member_sql "
+		select	object_id_two as user_id,
+			bom.object_role_id as role_id
+		from	acs_rels r,
+			im_biz_object_members bom
+		where	r.rel_id = bom.rel_id and
+			object_id_one = :task_id
+	    "
+	    array set task_member_hash {}
+	    db_foreach task_members $task_member_sql {
+		set task_member_hash($user_id) $role_id
+	    }
+
+	    foreach uid [array names task_member_hash] {
+		if {![info exists event_member_hash($uid)]} {
+		    db_string delete_membership "
+		    	select im_biz_object_member__delete(:task_id, :uid)
+		    "
+		}
+	    }
+
+	    # Marks as swept
+	    db_dml update_event "
+		update im_events
+		set event_timesheet_last_swept = now()
+		where event_id = :event_id
+	    "
+
+	    # Write Audit Trail
+	    im_project_audit -project_id $task_id -action after_create
+	}
+    }
+
+    # ----------------------------------------------------------------------
+    # Generate unique event_nr
+    # ---------------------------------------------------------------------
+
+    ad_proc -public next_event_nr {
+    } {
+        Create a new event_nr. Calculates the max() of current
+	event_nrs and add +1, or just use a sequence for the next value.
+
+        @author frank.bergmann@project-open.com
+	@return next event_nr
+    } {
+	set next_event_nr_method [parameter::get_from_package_key -package_key "intranet-events" -parameter "NextEventNrMethod" -default "sequence"]
+
+	switch $next_event_nr_method {
+	    sequence {
+		# Make sure everybody _really_ gets a different NR!
+		return [db_nextval im_event_nr_seq]
+	    }
+	    default {
+		# Try to avoid any "holes" in the list of event NRs
+		set last_event_nr [db_string last_pnr "
+		select	max(event_nr::integer)
+		from	im_events
+		where	event_nr ~ '^\[0-9\]+$'
+	        " -default 0]
+
+		# Make sure the counter is not behind the current value
+		while {[db_string last_value "select im_event_nr_seq.last_value from dual"] < $last_event_nr} {
+		    db_dml update "select nextval('im_event_seq')"
+		}
+		return [expr $last_event_nr + 1]
+	    }
+	}
+    }
+}
+
+
+
 # ---------------------------------------------------------------------
 # Event Customer Component
 # ---------------------------------------------------------------------

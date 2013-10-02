@@ -72,7 +72,12 @@ list::create \
 	}
 	participant_status { 
 	    label "Status" 
-	    link_url_col participant_url
+	    display_template {
+		<select name=participant_status_id.@participant_list_multirow.participant_id@>
+		<option value=[im_event_participant_status_reserved] @participant_list_multirow.reserved_enabled@>Reserved</option>
+		<option value=[im_event_participant_status_confirmed] @participant_list_multirow.confirmed_enabled@>Confirmed</option>
+		</select>
+	    }
 	}
 	participant_delete {
 	    label ""
@@ -90,8 +95,9 @@ list::create \
     }
 
 
-db_multirow -extend {company_url delete_url} participant_list_multirow get_participants "
+db_multirow -extend {company_url delete_url reserved_enabled confirmed_enabled} participant_list_multirow get_participants "
 	select	*,
+		u.user_id as participant_id,
 		im_category_from_id(bom.member_status_id) as participant_status
 	from	persons pe,
 		parties pa,
@@ -112,9 +118,8 @@ db_multirow -extend {company_url delete_url} participant_list_multirow get_parti
 " {
     set delete_url [export_vars -base "participant-del" { event_id user_id {return_url $current_url} }]
     set participant_url [export_vars -base "/intranet/users/view" { user_id {return_url $current_url} }]
+    set reserved_enabled ""
+    set confirmed_enabled ""
+    if {[im_event_participant_status_reserved] == $member_status_id} { set reserved_enabled "selected" }
+    if {[im_event_participant_status_confirmed] == $member_status_id} { set confirmed_enabled "selected" }
 }
-
-
-# Set the variable for the ADP page
-# set return_url $current_url
-

@@ -23,8 +23,9 @@
 	<td width="50%">
 		<%= [im_box_header "[lang::message::lookup "" intranet-events.Event_Details "Event Details"]"] %>
 		<formtemplate id="event"></formtemplate>
-		@event_action_html;noquote@
+<!--		@event_action_html;noquote@
 		@notification_html;noquote@
+-->
 		<%= [im_box_footer] %>
 		<%= [im_component_bay left] %>
 	</td>

@@ -1,4 +1,4 @@
-# /packages/intranet-events/www/order-item-add.tcl
+# /packages/intranet-events/www/participant-update.tcl
 #
 # Copyright (c) 1998-2008 ]project-open[
 # All rights reserved
@@ -11,8 +11,8 @@ ad_page_contract {
     @author frank.bergmann@event-open.com
 } {
     event_id:integer
-    order_item_id:integer,multiple
     return_url
+    { participant_status_id:array,integer,optional }
 }
 
 # ---------------------------------------------------------------
@@ -26,15 +26,19 @@ if {!$write} {
     ad_script_abort
 }
 
-foreach oi $order_item_id {
-    set exists_p [db_string rel_exists "select count(*) from im_event_order_item_rels where event_id = :event_id and order_item_id = :oi"]
-    if {!$exists_p} {
-	db_dml create_rel "
-	insert into im_event_order_item_rels
-	(event_id, order_item_id, order_item_amount) values 
-	(:event_id, :oi, 1)
-        "
-    }
+foreach participant_id [array names participant_status_id] {
+    set status_id $participant_status_id($participant_id)
+    db_dml update_order_amount "
+		update im_biz_object_members
+		set member_status_id = :status_id
+		where rel_id in (
+			   	select	rel_id
+				from	acs_rels
+				where	object_id_one = :event_id and
+					object_id_two = :participant_id
+			)
+    "
 }
+
 
 ad_returnredirect $return_url

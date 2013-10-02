@@ -15,8 +15,9 @@
 	<%= $table_header_html %>
 	<%= $table_body_html %>
 	<%= $table_continuation_html %>
-	<%= $table_submit_html %>
+<!--	%= $table_submit_html %   -->
 	</table>
+
 
 </td>
 <td width="<%= $dashboard_column_width %>">

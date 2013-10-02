@@ -63,6 +63,12 @@ list::create \
 	    label "Item" 
 	    link_url_col order_item_url
 	}
+	order_item_units { 
+	    label "Units" 
+	    display_template {
+		<input type=textbox size=5 name=order_item_units.@order_item_list_multirow.item_id@ value="@order_item_list_multirow.order_item_amount@">
+	    }
+	}
 	delete {
 	    label ""
 	    display_template {

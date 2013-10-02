@@ -21,7 +21,7 @@ if {![info exists task]} {
     } {
 	event_id:integer,optional
 	{ event_name "" }
-	{ event_nr "" }
+	{ event_nr [im_event::next_event_nr] }
 	{ event_sla_id "" }
 	{ event_customer_contact_id "" }
 	{ task_id "" }
@@ -84,10 +84,23 @@ if {![info exists task]} {
 # Default & Security
 # ------------------------------------------------------------------
 
+
+# Invalid event_id?
+if {[info exists event_id] && "" == $event_id} { unset event_id }
+
+
 # By default return to the existing event
 # IF we are editing an existing event (event_id exists and is not empty)
+set event_customer_ids [list]
 if {[info exists event_id] && "" != $event_id} {
     set return_url [export_vars -base "/intranet-events/new" {event_id {form_mode display}} ]
+    set event_customer_ids [db_list event_customer_ids "
+	select	company_id
+	from	acs_rels r,
+		im_companies c
+	where	r.object_id_one = :event_id and
+		r.object_id_two = c.company_id	   
+    "]
 }
 
 ns_log Notice "new: after ad_page_contract"
@@ -97,8 +110,6 @@ set user_id $current_user_id
 set current_url [im_url_with_query]
 set action_url "/intranet-events/new"
 set focus "event.var_name"
-
-if {[info exists event_id] && "" == $event_id} { unset event_id }
 
 set view_events_all_p [im_permission $current_user_id "view_events_all"]
 set copy_from_event_name ""
@@ -112,7 +123,7 @@ set message_html ""
 
 set page_title [lang::message::lookup "" intranet-events.New_Event "New Event"]
 if {[exists_and_not_null event_id]} {
-    set page_title [db_string title "select project_name from im_projects where project_id = :event_id" -default ""]
+    set page_title "[lang::message::lookup "" intranet-events.Event "Event"] [db_string title "select event_name from im_events where event_id = :event_id" -default ""]"
 }
 if {"" == $page_title && 0 != $event_type_id} { 
     set event_type [im_category_from_id $event_type_id]
@@ -278,7 +289,8 @@ if {!$edit_event_status_p} { set event_action_html "" }
 
 
 set event_elements [list]
-lappend event_elements {event_type_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-events.Type Type]"} {custom {category_type "Intranet Event Type" translate_p 1 package_key "intranet-events"}}}
+# lappend event_elements {event_type_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-events.Type Type]"} {custom {category_type "Intranet Event Type" translate_p 1 package_key "intranet-events"}}}
+lappend event_elements {event_type_id:text(hidden)}
 
 if {$edit_event_status_p} {
     lappend event_elements {event_status_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-events.Status Status]"} {custom {category_type "Intranet Event Status" translate_p 1 package_key "intranet-events"}} }
@@ -317,8 +329,6 @@ set field_cnt [im_dynfield::append_attributes_to_form \
 # Fix for problem changing to "edit" form_mode
 set form_action [template::form::get_action event]
 if {"" != $form_action} { set form_mode "edit" }
-set next_event_nr ""
-set event_nr ""
 
 ns_log Notice "new: before ad_form on_request"
 ad_form -extend -name event -on_request {
@@ -401,6 +411,9 @@ ad_form -extend -name event -on_request {
 
     ns_log Notice "new: after_submit"
 
+    # Generate im_timesheet_task entries for each event
+    im_event::task_sweeper
+
     # Reset the lock on the event
     db_dml set_lock "
 	update im_biz_objects set
@@ -423,11 +436,11 @@ ad_form -extend -name event -on_request {
 	"[lang::message::lookup {} intranet-events.Event_name_too_long {Event Name too long (max 100 characters).}]" 
     }
     {event_name
-        {![db_string event_count "select count(*) from im_events where event_name = :event_name"]}
+        {![db_string event_count "select count(*) from im_events where event_name = :event_name and event_id != :event_id"]}
 	"[lang::message::lookup {} intranet-events.Event_name_already_exists {Event Name already exists}]" 
     }
     {event_nr
-        {![db_string event_count "select count(*) from im_events where event_nr = :event_nr"]}
+        {![db_string event_count "select count(*) from im_events where event_nr = :event_nr and event_id != :event_id"]}
 	"[lang::message::lookup {} intranet-events.Event_nr_already_exists {Event Nr already exists}]" 
     }
 }
@@ -574,7 +587,6 @@ if {[im_permission $current_user_id "view_events_all"]} {
 	{event_status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-events.Status Status]"} {custom {category_type "Intranet Event Status" translate_p 1 package_key "intranet-events"}} }
 	{event_type_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-events.Type Type]"} {custom {category_type "Intranet Event Type" translate_p 1 package_key "intranet-events"} } }
     }
-
     template::element::set_value $form_id event_status_id [im_opt_val event_status_id]
     template::element::set_value $form_id event_type_id [im_opt_val event_type_id]
 }

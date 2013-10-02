@@ -1,4 +1,4 @@
-# /packages/intranet-events/www/order-item-add.tcl
+# /packages/intranet-events/www/order-item-update.tcl
 #
 # Copyright (c) 1998-2008 ]project-open[
 # All rights reserved
@@ -11,8 +11,8 @@ ad_page_contract {
     @author frank.bergmann@event-open.com
 } {
     event_id:integer
-    order_item_id:integer,multiple
     return_url
+    { order_item_units:array,integer,optional }
 }
 
 # ---------------------------------------------------------------
@@ -26,15 +26,15 @@ if {!$write} {
     ad_script_abort
 }
 
-foreach oi $order_item_id {
-    set exists_p [db_string rel_exists "select count(*) from im_event_order_item_rels where event_id = :event_id and order_item_id = :oi"]
-    if {!$exists_p} {
-	db_dml create_rel "
-	insert into im_event_order_item_rels
-	(event_id, order_item_id, order_item_amount) values 
-	(:event_id, :oi, 1)
-        "
-    }
+foreach invoice_item_id [array names order_item_units] {
+    set amount $order_item_units($invoice_item_id)
+    db_dml update_order_amount "
+		update im_event_order_item_rels
+		set order_item_amount = :amount
+		where	event_id = :event_id and
+			order_item_id = :invoice_item_id
+    "
 }
+
 
 ad_returnredirect $return_url

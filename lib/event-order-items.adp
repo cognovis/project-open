@@ -1,4 +1,19 @@
+
+<form action="/intranet-events/order-item-update" method=GET>
+<%= [export_form_vars event_id return_url] %>
+<table>
+<tr>
+<td>
 <listtemplate name="order_item_list"></listtemplate>
+</td>
+</tr>
+<tr>
+<td>
+<input type=submit value="<%= [lang::message::lookup "" intranet-events.Update_Order_Items "Update Order Items"] %>">
+</td>
+</tr>
+</table>
+</form>
 
 <form action=order-item-add method=POST>
 <%= [export_form_vars event_id return_url] %>
