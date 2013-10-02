@@ -45,6 +45,18 @@ insert into im_biz_object_urls (object_type, url_type, url) values (
 'im_event','edit','/intranet-events/events/new?event_id=');
 
 
+-- Insert a design page
+insert into im_dynfield_layout_pages (
+        page_url,
+        object_type,
+        layout_type
+) values (
+        '/intranet-events/index',
+        'im_event',
+        'table'
+);
+
+
 -- Add a status field in order to track user's assignment
 alter table im_biz_object_members 
 add column member_status_id integer default 82210
