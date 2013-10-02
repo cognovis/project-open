@@ -21,5 +21,3 @@ SELECT im_menu__new (
 	null							-- p_visible_tcl
 );
 
-
-
