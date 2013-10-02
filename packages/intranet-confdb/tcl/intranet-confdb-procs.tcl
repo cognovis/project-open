@@ -489,9 +489,8 @@ ad_proc -public im_conf_item_list_component {
 
     if {![info exists current_page_url]} { set current_page_url [ad_conn url] }
     if {![exists_and_not_null return_url]} { set return_url $current_url }
-
     # Get the "view" (=list of columns to show)
-    set view_id [util_memoize [list db_string get_view_id "select view_id from im_views where view_name = '$view_name'" -default 0]]
+    set view_id [db_string get_view_id "select view_id from im_views where view_name = :view_name" -default 0]
 
     if {0 == $view_id} {
 	ns_log Error "im_conf_item_list_component: we didn't find view_name=$view_name"
@@ -926,7 +925,7 @@ ad_proc -public im_conf_item_list_component {
 	<table width='100%'>
 	<tr>
 	<td align=left>
-		<a href=\"/intranet-confdb/new?[export_url_vars conf_item_id return_url]\"
+		<a href=\"/intranet-confdb/new?[export_url_vars return_url]\"
 		>[lang::message::lookup "" intranet-confdb.New_Conf_Item "New Conf Item"]</a>
 	</td>
 	<td align=right>
