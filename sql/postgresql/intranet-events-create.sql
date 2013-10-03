@@ -33,6 +33,9 @@ update acs_object_types set
 where object_type = 'im_event';
 
 -- Create "Trainer" role for tickets
+SELECT im_category_new (1307, 'Consultant', 'Intranet Biz Object Role');
+SELECT im_category_new (1308, 'Trainer', 'Intranet Biz Object Role');
+
 insert into im_biz_object_role_map values ('im_event',null,1307);
 insert into im_biz_object_role_map values ('im_event',null,1308);
 
@@ -74,7 +77,7 @@ create table im_events (
 					constraint im_events_pk
 					primary key
 					constraint im_events_id_fk
-					references im_user_absences,
+					references acs_objects,
 
 	event_name			text
 					constraint im_events_name_nn not null,
@@ -318,7 +321,7 @@ end;$body$ language 'plpgsql';
 
 -- ------------------------------------------------------------
 -- Event - Order Item Relationship
--- ------------------------------------------------------------
+ -- ------------------------------------------------------------
 
 create table im_event_order_item_rels (
     	event_id		integer
