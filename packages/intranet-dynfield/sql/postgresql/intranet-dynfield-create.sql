@@ -1644,8 +1644,9 @@ BEGIN
 	select table_name into v_table_name
 	from acs_object_types where object_type = p_object_type;
 
-	RETURN im_dynfield_attribute_new($1,$2,$3,$4,$5,$6,null,''f'',v_table_name);
+	RETURN im_dynfield_attribute_new($1,$2,$3,$4,$5,$6,null,$8,v_table_name);
 END;' language 'plpgsql';
+
 
 -- Shortcut function
 CREATE OR REPLACE FUNCTION im_dynfield_attribute_new (
