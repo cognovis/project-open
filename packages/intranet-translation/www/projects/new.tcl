@@ -1,4 +1,4 @@
-# /packages/intranet-cogonovis/www/projects/project-ae.tcl
+# /packages/intranet-translation/projects/new.tcl
 #
 # Copyright (c) 2011, cognovís GmbH, Hamburg, Germany
 # This program is free software: you can redistribute it and/or modify

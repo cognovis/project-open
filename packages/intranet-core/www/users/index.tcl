@@ -245,9 +245,8 @@ if {"" == $view_name} {
     set view_name "user_list"
 }
 
-
 if { [empty_string_p $how_many] || $how_many < 1 } {
-    set how_many [ad_parameter -package_id [im_package_core_id] NumberResultsPerPage intranet 50]
+    set how_many [parameter::get -package_id [apm_package_id_from_key intranet-core] -parameter "NumberResultsPerPage" -default 50]
 }
 set end_idx [expr $start_idx + $how_many - 1]
 
@@ -261,6 +260,7 @@ if {[im_permission $user_id "add_users"]} {
 	<li><a href=/intranet/users/new>[_ intranet-core.Add_a_new_User]</a></li>
         <li><a href=\"/intranet/users/index?filter_advanced_p=1\">[_ intranet-core.Advanced_Filtering]</a></li>
 	<li><a href=/intranet/users/upload-contacts?[export_url_vars return_url]>[_ intranet-core.Import_User_CSV]</a></li>
+        <!--<li><a href=/intranet/users/upload-users>[lang::message::lookup "" intranet-core.BulkUpdateUsers "CSV Bulk Update Users"]</a></li>-->
     "
 }
 
@@ -311,17 +311,19 @@ set column_sql "
 	order by sort_order
 "
 
+
 db_foreach column_list_sql $column_sql {
     ns_log Notice "/intranet/users/index: visible_for=$visible_for"
 
     set visible_p 0
     if {"" == $visible_for} { set visible_p 1 }
     if {"" != $visible_for} {
-	if {[catch {
-	    set visible_p [eval $visible_for]
-	} err_msg]} {
-	    append debug_html "<li>Error evaluating column visible_for field:<br><pre>$err_msg</pre></li>\n"
-	}
+		if {[catch {
+			set visible_p [eval $visible_for]
+		} err_msg]} {
+			append debug_html "<li>Error evaluating column visible_for field:<br><pre>$err_msg</pre></li>\n"
+			util_user_message -replace -message "Configuration Error DynViews - Error evaluating 'visible_for': $err_msg. Please notify your System Administrator"
+		}
     }
 
     if {$visible_p} {
@@ -645,7 +647,8 @@ db_foreach users $query -bind $form_vars {
         if [catch {
             eval "$cmd"
         } errmsg] {
-            ns_log Error "/intranet/users/index - Dynfield: $column_var not found"
+            ns_log Error "/intranet/users/index: No value for '$column_var' found"
+			util_user_message -replace -message "Configuration Error in DynViews - No value for '$column_var' found, please notify your System Administrator"
         }
 	append table_body_html "</td>\n"
     }

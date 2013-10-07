@@ -69,6 +69,7 @@ SELECT im_category_new (910,'po.es.adp','Intranet Cost Template');
 -- Creating category Cost Type
 SELECT im_category_new (3700,'Customer Invoice','Intranet Cost Type');
 SELECT im_category_new (3702,'Quote','Intranet Cost Type');
+-- SELECT im_category_new (3703,'Order','Intranet Cost Type');
 SELECT im_category_new (3704,'Provider Bill','Intranet Cost Type');
 SELECT im_category_new (3706,'Purchase Order','Intranet Cost Type');
 SELECT im_category_new (3708,'Customer Documents','Intranet Cost Type');

@@ -264,8 +264,8 @@ if {!$import_exists_p} { set import_html "" }
 # ---------------------------------------------------------
 
 set new_risk_url [export_vars -base "/intranet-riskmanagement/new" {return_url {risk_project_id $project_id}}]
-set new_risk_msg [lang::message::lookup "" intranet-rismanagement.New_Risk "New Risk"]
-set delete_risk_msg [lang::message::lookup "" intranet-rismanagement.Delete_Risks "Delete Risks"]
+set new_risk_msg [lang::message::lookup "" intranet-riskmanagement.New_Risk "New Risk"]
+set delete_risk_msg [lang::message::lookup "" intranet-riskmanagement.Delete_Risks "Delete Risks"]
 set table_footer_html "
 <tr>
 <td colspan=99>

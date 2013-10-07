@@ -52,7 +52,7 @@ set elements_list {
     }
     note_type {
 	label "[lang::message::lookup {} intranet-notes.Note_Type Type]"
-	link_url_eval $object_url
+	link_url_eval $note_url
     }
     note_formatted {
 	display_template {
@@ -97,7 +97,7 @@ set where_clause ""
 if {0 != $object_id && "" != $object_id} { append where_clause "\tand o.object_id = :object_id\n" }
 if {0 != $note_type_id && "" != $note_type_id} { append where_clause "\tand n.note_type_id = :note_type_id\n" }
 
-db_multirow -extend {note_chk return_url object_url note_formatted} note_lines notes_lines "
+db_multirow -extend {note_chk return_url object_url note_url note_formatted} note_lines notes_lines "
   select
         n.*,
         n.object_id as note_object_id,
@@ -108,7 +108,7 @@ db_multirow -extend {note_chk return_url object_url note_formatted} note_lines n
         to_char(o.creation_date, :date_format) as creation_date,
         im_name_from_user_id(o.creation_user) as user_name,
         im_category_from_id(n.note_type_id) as note_type,
-        bou.url as object_url
+        bou.url as object_type_url
   from
         im_notes n,
         acs_objects o,
@@ -124,10 +124,14 @@ db_multirow -extend {note_chk return_url object_url note_formatted} note_lines n
 	o.creation_date > :start_date and
 	o.creation_date <= :end_date
         $where_clause
+  order by o.creation_date desc
 " {
     set note_chk "<input type=\"checkbox\" name=\"note_id\" value=\"$note_id\" id=\"notes_list,$note_id\">"
     set return_url [im_url_with_query]
     set object_url [export_vars -base "/intranet-notes/new" {note_id}]
+    set note_url [export_vars -base "/intranet-notes/new" {note_id}]
+    set object_url "${object_type_url}$note_object_id"
+    set note [template::util::richtext::get_property html_value $note]
     set note_formatted [im_note_format -note_type_id $note_type_id -note $note]
 }
 

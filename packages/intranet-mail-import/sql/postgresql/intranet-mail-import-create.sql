@@ -203,6 +203,58 @@ SELECT im_component_plugin__new (
 --	 );
 
 
+
+create or replace function im_mail_import__new_content (integer,timestamptz,integer,varchar,varchar,varchar,varchar,integer)
+returns integer as '
+declare
+        context_id    alias for $1;      -- acs_objects.context_id%TYPE
+        creation_date alias for $2;      -- acs_objects.creation_date%TYPE default sysdate
+        creation_user alias for $3;      -- acs_objects.creation_user%TYPE default null
+        creation_ip   alias for $4;      -- acs_objects.creation_ip%TYPE default null
+        object_type   alias for $5;      -- acs_objects.object_type%TYPE default content_item
+	mime_type     alias for $6;      -- acs_contents.mime_type%TYPE default text/plain
+
+	p_text	      alias for $7;	-- default null
+
+        -- TilmannS: the body_id of the spam message that this content 
+        -- item will be associated with. Added to provide unique name 
+        -- for the cr
+        p_body_id     alias for $8;     
+
+	v_id          integer;
+        v_rev_id      integer;
+
+begin
+
+	select content_item__new (
+		(''spam_message body_id-'' || p_body_id || '' '' || mime_type)::varchar, -- name
+                null,                   -- item_id
+                null,                   -- parent_id
+                null,                   -- new_locale
+		creation_date,          -- creation_date,
+		creation_user,          -- creation_user,
+                null,                   -- context_id
+		creation_ip,            -- creation_ip
+                ''content_item'', --  new__item_subtype     default ''content_item''
+                ''content_revision'', -- new__content_type default ''content_revision''
+                null, --   new__title                  default null
+                null, --   new__description            default null
+		mime_type,               -- mime_type
+                null,                   -- nls_language
+                p_text,                 -- text 
+                ''text''::varchar       -- storage_type
+	) into v_id;
+
+        -- set the new revision live
+        select content_item__get_latest_revision(v_id) into v_rev_id;
+        perform content_item__set_live_revision(v_rev_id);
+
+	return v_id;
+end;
+' language 'plpgsql';
+
+
+
 create or replace function im_mail_import_new_message (integer,varchar,timestamptz,text,varchar,text,varchar,varchar,integer,timestamptz,integer,varchar,varchar,boolean,timestamptz,varchar,varchar)
 returns integer as '
 declare
@@ -249,7 +301,7 @@ begin
 	) into v_body_id;
 
 	if plain_text is not null then
-		 select spam__new_content(
+		 select im_mail_import__new_content(
 			context_id, 	-- context_id
 			creation_date,  -- creation_date
 			creation_user,  -- creation_user
@@ -262,7 +314,7 @@ begin
 	end if;
 
 	if html_text is not null then
-		select spam__new_content(
+		select im_mail_import__new_content(
 			context_id, 	-- context_id
 			creation_date,  -- creation_date
 			creation_user,  -- creation_user

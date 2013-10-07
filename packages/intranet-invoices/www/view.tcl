@@ -120,11 +120,17 @@ set show_qty_rate_p [ad_parameter -package_id [im_package_invoices_id] "InvoiceQ
 set show_our_project_nr [ad_parameter -package_id [im_package_invoices_id] "ShowInvoiceOurProjectNr" "" 1]
 set show_our_project_nr_first_column_p [ad_parameter -package_id [im_package_invoices_id] "ShowInvoiceOurProjectNrFirstColumnP" "" 1]
 set show_leading_invoice_item_nr [ad_parameter -package_id [im_package_invoices_id] "ShowLeadingInvoiceItemNr" "" 0]
+set material_enabled_p [ad_parameter -package_id [im_package_invoices_id] "ShowInvoiceItemMaterialFieldP" "" 0]
 
 # Should we show the customer's PO number in the document?
 # This makes only sense in "customer documents", i.e. quotes, invoices and delivery notes
 set show_company_project_nr [ad_parameter -package_id [im_package_invoices_id] "ShowInvoiceCustomerProjectNr" "" 1]
-if {![im_category_is_a $cost_type_id [im_cost_type_customer_doc]]} { set show_company_project_nr 0 }
+if {![im_category_is_a $cost_type_id [im_cost_type_customer_doc]]} { 
+    set show_company_project_nr 0 
+    set invoice_or_quote_p 0
+} else {
+    set invoice_or_quote_p 1
+}
 
 
 # Show or not "our" and the "company" project nrs.
@@ -845,6 +851,11 @@ append invoice_item_html "
           <td class=rowtitle $decoration_description>[lang::message::lookup $locale intranet-invoices.Description]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 "
 
+# Display the material if we have materials enabled for invoice line items
+if {$material_enabled_p} {
+    append invoice_item_html "<td class=rowtitle>[lang::message::lookup "" intranet-invoices.Material "Material"]</td>"
+}
+
 if {$show_qty_rate_p} {
     append invoice_item_html "
           <td class=rowtitle $decoration_quantity>[lang::message::lookup $locale intranet-invoices.Qty]</td>
@@ -872,8 +883,7 @@ append invoice_item_html "
 "
 
 set ctr 1
-	set colspan [expr 2 + 3*$show_qty_rate_p + 1*$show_company_project_nr + $show_our_project_nr]
-
+set colspan [expr 2 + 1*$material_enabled_p + 3*$show_qty_rate_p + 1*$show_company_project_nr + $show_our_project_nr]
 set oo_table_xml ""
 
 set source_invoice_ids [list]
@@ -913,6 +923,19 @@ if { 0 == $item_list_type } {
 	          <td $bgcolor([expr $ctr % 2])>$item_name</td>
 	    "
 	}
+
+	# Display the material if we have materials enabled for invoice line items
+	if {$material_enabled_p} {
+	    if {"" != $item_material_id && 12812 != $item_material_id} {
+		set item_material [db_string material_name "select material_name from im_materials where material_id = :item_material_id" -default ""]
+	    } else {
+		set item_material ""
+	    }
+	    append invoice_item_html "
+	          <td $bgcolor([expr $ctr % 2])>$item_material</td>
+	    "
+	}	    
+
 	if {$show_qty_rate_p} {
 	    append invoice_item_html "
 	          <td $bgcolor([expr $ctr % 2]) align=right>$item_units_pretty</td>
@@ -966,6 +989,7 @@ if { 0 == $item_list_type } {
                                 item_type_id,
                                 item_uom_id,
                                 item_source_invoice_id,
+                                item_material_id,
                                 price_per_unit,
 				trunc((price_per_unit * item_units) :: numeric, 2) as line_total,
 				(select category from im_categories where category_id = item_uom_id) as item_uom
@@ -1006,6 +1030,18 @@ if { 0 == $item_list_type } {
                 set price_per_unit_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $price_per_unit+0] $rounding_precision] "" $locale]
                 append invoice_item_html "<tr>"
                 append invoice_item_html "<td class='invoiceroweven'>$parent_name</td>"
+	    # Display the material if we have materials enabled for invoice line items
+	    if {$material_enabled_p} {
+		if {"" != $item_material_id && 12812 != $item_material_id} {
+		    set item_material [db_string material_name "select material_name from im_materials where material_id = :item_material_id" -default ""]
+		} else {
+		    set item_material ""
+		}
+		append invoice_item_html "
+	          <td $bgcolor([expr $ctr % 2])>$item_material</td>
+	    "
+	    }	    
+
                 if {$show_qty_rate_p} {
                 	append invoice_item_html "
                         	<td $bgcolor([expr $ctr % 2]) align=right>$item_units_pretty</td>
@@ -1352,6 +1388,11 @@ if { 0 == $item_list_type } {
 		    		set price_per_unit_pretty [lc_numeric [im_numeric_add_trailing_zeros [expr $price_per_unit+0] $rounding_precision] "" $locale]
 				append invoice_item_html "<tr>" 
 				append invoice_item_html "<td class='invoiceroweven'>$indent$parent_name</td>" 
+				    # Display the material if we have materials enabled for invoice line items
+				    if {$material_enabled_p} {
+					append invoice_item_html "<td $bgcolor([expr $ctr % 2])>&nbps;</td>"
+				    }	    
+
 				if {$show_qty_rate_p} {
 					append invoice_item_html "
 					<td $bgcolor([expr $ctr % 2]) align=right>$item_units_pretty</td>
@@ -1379,6 +1420,64 @@ if { 0 == $item_list_type } {
 	append invoice_item_html "<tr><td class='invoiceroweven' colspan ='100' align='right'>[lc_numeric [im_numeric_add_trailing_zeros [expr $amount_sub_total+0] $rounding_precision] "" $locale]&nbsp;$currency</td></tr>"
 }
 
+
+# ---------------------------------------------------------------
+# Source Invoices list
+# ---------------------------------------------------------------
+
+set linked_list_html ""
+set linked_invoice_nr ""
+set linked_invoice_ids [relation::get_objects -object_id_two $invoice_id -rel_type "im_invoice_invoice_rel"]
+set linked_invoice_ids [concat [relation::get_objects -object_id_one $invoice_id -rel_type "im_invoice_invoice_rel"] $linked_invoice_ids]
+if {$linked_invoice_ids eq ""} {
+    # this might be a parent, try it again for children
+    set linked_invoice_ids [relation::get_objects -object_id_one $invoice_id -rel_type "im_invoice_invoice_rel"]
+}
+if {$linked_invoice_ids ne ""} {
+
+    set linked_list_html "
+	<table border=0 cellPadding=1 cellspacing=1>
+        <tr>
+          <td align=middle class=rowtitle colspan=3>
+	    [lang::message::lookup $locale intranet-invoices.Linked_Invoices]
+	  </td>
+        </tr>"
+
+    set linked_list_sql "
+select
+	invoice_id as linked_invoice_id,
+        invoice_nr as linked_invoice_nr,
+        effective_date as linked_effective_date
+from
+	im_invoices, im_costs
+where
+	invoice_id in ([template::util::tcl_to_sql_list $linked_invoice_ids])
+        and cost_id = invoice_id
+"
+
+    set linked_ctr 0
+    db_foreach linked_list $linked_list_sql {
+	append linked_list_html "
+        <tr $bgcolor([expr $linked_ctr % 2])>
+          <td>
+	    <A href=/intranet-invoices/view?invoice_id=$linked_invoice_id>
+	      $linked_invoice_nr
+ 	    </A>
+	  </td></tr>\n"
+	incr linked_ctr
+    }
+
+    if {!$linked_ctr} {
+	append linked_list_html "<tr class=roweven><td align=center><i>[lang::message::lookup $locale intranet-invoices.No_linkeds_found]</i></td></tr>\n"
+    }
+
+    append linked_list_html "
+	</table>
+        </form>\n"
+    set linked_effective_date_pretty [lc_time_fmt $linked_effective_date "%x" $locale]
+}
+
+
 # ---------------------------------------------------------------
 # Add subtotal + VAT + TAX = Grand Total
 # ---------------------------------------------------------------
@@ -1400,6 +1499,15 @@ set payment_terms [im_category_from_id -locale $locale $payment_term_id]
 set payment_terms_note [im_category_string1 -category_id $payment_term_id -locale $locale]
 eval [template::adp_compile -string $payment_terms_note]
 set payment_terms_note $__adp_output
+
+# -------------------------
+# Deal with payment method and variables in them
+# -------------------------
+
+set payment_method [im_category_from_id -locale $locale $payment_method_id]
+set payment_method_note [im_category_string1 -category_id $payment_method_id -locale $locale]
+eval [template::adp_compile -string $payment_method_note]
+set payment_method_note $__adp_output
 
 # -------------------------------
 # Support for cost center text
@@ -1891,59 +1999,5 @@ db_foreach column_list_sql $column_sql {
 
 
 append project_base_data_html "</table>"
-
-# ---------------------------------------------------------------
-# Source Invoices list
-# ---------------------------------------------------------------
-
-set linked_list_html ""
-set linked_invoice_ids [relation::get_objects -object_id_two $invoice_id -rel_type "im_invoice_invoice_rel"]
-set linked_invoice_ids [concat [relation::get_objects -object_id_one $invoice_id -rel_type "im_invoice_invoice_rel"] $linked_invoice_ids]
-if {$linked_invoice_ids eq ""} {
-    # this might be a parent, try it again for children
-    set linked_invoice_ids [relation::get_objects -object_id_one $invoice_id -rel_type "im_invoice_invoice_rel"]
-}
-if {$linked_invoice_ids ne ""} {
-
-    set linked_list_html "
-	<table border=0 cellPadding=1 cellspacing=1>
-        <tr>
-          <td align=middle class=rowtitle colspan=3>
-	    [lang::message::lookup $locale intranet-invoices.Linked_Invoices]
-	  </td>
-        </tr>"
-
-    set linked_list_sql "
-select
-	invoice_id as linked_invoice_id,
-        invoice_nr as linked_invoice_nr,
-        effective_date as linked_effective_date
-from
-	im_invoices
-where
-	invoice_id in ([template::util::tcl_to_sql_list $linked_invoice_ids])
-"
-
-    set linked_ctr 0
-    db_foreach linked_list $linked_list_sql {
-	append linked_list_html "
-        <tr $bgcolor([expr $linked_ctr % 2])>
-          <td>
-	    <A href=/intranet-invoices/view?invoice_id=$linked_invoice_id>
-	      $linked_invoice_nr
- 	    </A>
-	  </td></tr>\n"
-	incr linked_ctr
-    }
-
-    if {!$linked_ctr} {
-	append linked_list_html "<tr class=roweven><td align=center><i>[lang::message::lookup $locale intranet-invoices.No_linkeds_found]</i></td></tr>\n"
-    }
-
-    append linked_list_html "
-	</table>
-        </form>\n"
-    set linked_effective_date_pretty [lc_time_fmt $linked_effective_date "%x" $locale]
-}
 
 #set admin_p 1

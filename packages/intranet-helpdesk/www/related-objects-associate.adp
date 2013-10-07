@@ -2,28 +2,30 @@
 <property name="title">@page_title@</property>
 <property name="context">#intranet-core.context#</property>
 <property name="main_navbar_label">helpdesk</property>
-
+<br>
 <h1>@page_title@</h1>
 
 <p>
 <%= [lang::message::lookup "" intranet-helpdesk.Associate_Tickets_Msg "This page allows you to associated your tickets with other objects."] %>
 </p>
 <br>
-
 <form action=related-objects-associate-2 method=GET>
 <%= [export_form_vars tid return_url] %>
-<table>
-	<tr>
+<table class="list">
+
+       <thead>
+	<tr class="list-header">
 	<th colspan=2><%= [lang::message::lookup "" intranet-helpdesk.Associate_With "Associate With"] %></th>
 	<th>	<%= [lang::message::lookup "" intranet-helpdesk.Object Object] %></th>
 	<th>	<%= [lang::message::lookup "" intranet-helpdesk.Comment Comment] %></th>
 	</tr>
+       </thead>
 
+       <tbody>
 	<tr>
 	<td>	<input type=radio name=target_object_type value=user></td>
 	<td>	<%= [lang::message::lookup "" intranet-helpdesk.Object_Type_User "User"] %></td>
-	<td>	<%= [im_user_select user_id ""] %><br>
-		<%= [lang::message::lookup "" intranet-helpdesk.Associate_As "as"] %>&nbsp;
+	<td>	<%= [im_user_select user_id ""] %> <%= [lang::message::lookup "" intranet-helpdesk.Associate_As "as"] %>&nbsp;
 		<%= [im_biz_object_roles_select role_id $first_ticket_id [im_biz_object_role_full_member]] %>
 	</td>
 	<td>	<%= [lang::message::lookup "" intranet-helpdesk.Associate_Msg_User "
@@ -67,6 +69,6 @@
 	<td><input type=submit name=submit value="<%= [lang::message::lookup "" intranet-helpdesk.Associate_Assoc_Action Associate] %>"></td>
 	<td>&nbsp;</td>
 	</tr>
-
+       <tbody>
 </table>
 </form>

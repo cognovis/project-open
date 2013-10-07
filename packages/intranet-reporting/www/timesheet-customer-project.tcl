@@ -61,6 +61,12 @@ set view_hours_all_p [im_permission $current_user_id "view_hours_all"]
 
 if {!$view_hours_all_p} { set user_id $current_user_id }
 
+
+# If project_id and task_id are set and equal, exclude task_id from sql   
+if {0 != $task_id && "" != $task_id && 0 != $project_id && "" != $project_id && $project_id == $task_id} {
+    set task_id 0
+}
+
 # ------------------------------------------------------------
 # Constants
 

@@ -542,6 +542,14 @@ set left_navbar_html "
       <hr/>
 "
 
+set program_table_inner_html "
+	<table class='table_list_page'>
+       $table_header_html
+       $table_body_html 
+       $table_continuation_html
+	</table>
+"
+set program_table_html [im_table_with_title [lang::message::lookup "" intranet-portfolio-management.Programs "Programs"] $program_table_inner_html]
 
 # append left_navbar_html "
 #      	<div class='filter-block'>

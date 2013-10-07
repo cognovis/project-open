@@ -369,6 +369,7 @@ ad_proc -public intranet_collmex::invoice_payment_get {
     # Now get the lines from Collmex
     set lines [split [intranet_collmex::http_post -csv_data $csv_line] "\n"]
 
+    ns_log Notice "Returned payments from Collmex: $lines"
     set return_html ""
     foreach line $lines {
 	# Find out if it actually is a payment line

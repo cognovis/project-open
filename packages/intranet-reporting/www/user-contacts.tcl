@@ -11,10 +11,12 @@ ad_page_contract {
 } {
     { level_of_detail:integer 3 }
     { company_id 0 }
-    { company_type_id 0 }
+    { filter_company_type_id 0 }
     { profile_id ""}
     { output_format "html" }
     { redirect_p "1" }
+    { page 0}
+    { limit 1000 }
 }
 
 # set current_user_id [ad_maybe_redirect_for_registration]
@@ -35,6 +37,13 @@ if {![string equal "t" $read_p]} {
 # Maxlevel is 3. 
 if {$level_of_detail > 3} { set level_of_detail 3 }
 
+
+set return_url [im_url_with_query]
+set role_id 1300
+set object_id 0
+set notify_asignee 1
+
+set offset [expr $page * $limit]
 
 # ------------------------------------------------------------
 # Page Title, Bread Crums and Help
@@ -60,77 +69,83 @@ set class "roweven"
 set currency_format [im_l10n_sql_currency_format]
 set date_format [im_l10n_sql_date_format]
 set levels {3 "All Details"} 
+set limits {1 1 10 10 100 100 1000 1000 10000 10000 100000 100000}
 
 set company_url "/intranet/companies/view?company_id="
 set user_url "/intranet/users/view?user_id="
 set this_url "/intranet-reporting/user-contacts?"
 
+set pages [list]
+for {set i 0} {$i < 100} {incr i} { 
+    lappend pages $i
+    lappend pages $i
+}
 
 # ------------------------------------------------------------
 # Report SQL
 
-set company_sql ""
+set filter_sql ""
 if {"" != $company_id && 0 != $company_id} {
-    set company_sql "and c.company_id = :company_id\n"
+    set filter_sql "and c.company_id = :company_id\n"
 }
 
-if {"" != $company_type_id && 0 != $company_type_id} {
-    append company_sql "and c.company_type_id = :company_type_id\n"
+if {"" != $filter_company_type_id && 0 != $filter_company_type_id} {
+    append filter_sql "and c.company_type_id = :filter_company_type_id\n"
 }
 
 if {"" != $profile_id && 0 != $profile_id} {
-    append company_sql "and u.user_id in (select member_id from group_distinct_member_map where group_id = :profile_id)\n"
+    append filter_sql "and u.user_id in (select member_id from group_distinct_member_map where group_id = :profile_id)\n"
+}
+
+set nospam_sql ""
+if {[im_column_exists persons spam_frequency_id]} {
+    set nospam_sql "and pe.spam_frequency_id != 11130"
 }
 
 set report_sql "
-	select	
-		emp.member_p as employee_p,
-		cust.member_p as customer_p,
-		free.member_p as freelancer_p,
-		c.*,
-		im_category_from_id(c.company_status_id) as company_status,
-		im_category_from_id(c.company_type_id) as company_type,
-		p.*,
-		u.*,
-		'unknown' as member_state,
-		im_name_from_user_id(u.user_id) as user_name,
+select	t.*,
+	c.*,
+	im_category_from_id(c.company_status_id) as company_status,
+	im_category_from_id(c.company_type_id) as company_type
+from	(select	
+		p.email,
+		pe.*,
 		uc.*,
+		u.*,
+		(	select	min(company_id) 
+			from	im_companies c, 
+				acs_rels r 
+			where	u.user_id = r.object_id_two and 
+				r.object_id_one = c.company_id and
+				c.company_type_id not in (select * from im_sub_categories([im_company_type_provider]))
+		) as company_id,
+		im_name_from_user_id(u.user_id) as user_name,
 		im_country_from_code(uc.ha_country_code) as ha_country,
-		im_country_from_code(uc.wa_country_code) as wa_country
+		im_country_from_code(uc.wa_country_code) as wa_country,
+		(select 'e' from group_distinct_member_map gdmm where gdmm.group_id = 463 and gdmm.member_id = u.user_id) as employee_p,
+		(select 'c' from group_distinct_member_map gdmm where gdmm.group_id = 461 and gdmm.member_id = u.user_id) as customer_p,
+		(select 'f' from group_distinct_member_map gdmm where gdmm.group_id = 465 and gdmm.member_id = u.user_id) as freelancer_p
 	from
 		parties p,
+		persons pe,
 		users u
 		LEFT OUTER JOIN users_contact uc ON (u.user_id = uc.user_id)
-		LEFT OUTER JOIN (
-			select	r.object_id_two as user_id,
-				c.*
-			from	acs_rels r,
-				im_companies c
-			where	r.object_id_one = c.company_id
-		) c ON (u.user_id = c.user_id)
-		LEFT OUTER JOIN (
-			select	member_id, 'e' as member_p
-			from	group_distinct_member_map
-			where	group_id = 463	
-		) emp ON (u.user_id = emp.member_id)
-		LEFT OUTER JOIN (
-			select	member_id, 'c' as member_p
-			from	group_distinct_member_map
-			where	group_id = 461	
-		) cust ON (u.user_id = cust.member_id)
-		LEFT OUTER JOIN (
-			select	member_id, 'f' as member_p
-			from	group_distinct_member_map
-			where	group_id = 465
-		) free ON (u.user_id = free.member_id)
 	where
-		u.user_id = p.party_id
-		$company_sql
-	order by
-		c.company_type_id,
-		c.company_name,
-		user_name
+		u.user_id = p.party_id and
+		u.user_id = pe.person_id
+		$nospam_sql
+		$filter_sql
+	) t
+	LEFT OUTER JOIN im_companies c ON (t.company_id = c.company_id)
+where   1=1
+order by
+	company_type_id,
+	company_name,
+	user_name
+LIMIT	:limit
+OFFSET	:offset
 "
+
 
 # ------------------------------------------------------------
 # Report Definition
@@ -138,26 +153,28 @@ set report_sql "
 
 
 # Global Header Line
-set header0 {
-	"Type" 
-	"Comp" 
-	"C"
-	"E"
-	"F"
-	"Email"
-	"Name"
-	"Home"
-	"Work"
-	"Cell"
-	"Pager"
-	"Fax"
-	"AIM"
-	"MSN"
-	"ICQ"
-	"Home"
-	"Work"
-	"Note"
-}
+set header0 [list \
+	"<input type=checkbox name=_dummy onclick=\\\"acs_ListCheckAll('user',this.checked)\\\">" \
+	"Comp"  \
+	"C" \
+	"E" \
+	"F" \
+	"Email" \
+	"Name" \
+	"Home" \
+	"Work" \
+	"Cell" \
+	"Pager" \
+	"Fax" \
+	"AIM" \
+	"MSN" \
+	"ICQ" \
+	"Home" \
+	"Work" \
+	"Note" \
+]
+
+
 
 # The entries in this list include <a HREF=...> tags
 # in order to link the entries to the rest of the system (New!)
@@ -177,8 +194,8 @@ set report_def [list \
 	    } \
 	    content [list \
 		    header {
+			"<input type=checkbox name=user_id_from_search value=$user_id id=user,$user_id>"
 			""
-			"$company_path"
 			"$customer_p"
 			"$employee_p"
 			"$freelancer_p"
@@ -239,7 +256,7 @@ set counters [list]
 # Start Formatting the HTML Page Contents
 
 # Write out HTTP header, considering CSV/MS-Excel formatting
-im_report_write_http_headers -output_format $output_format
+im_report_write_http_headers -report_name $menu_label -output_format $output_format
 
 switch $output_format {
     html {
@@ -263,21 +280,34 @@ switch $output_format {
 		<tr>
 		  <td class=form-label>Company<br>Type</td>
 		  <td class=form-widget>
-		    [im_category_select -include_empty_p 1 "Intranet Company Type" company_type_id $company_type_id]
+		    [im_category_select -include_empty_p 1 "Intranet Company Type" filter_company_type_id $filter_company_type_id]
 		  </td>
 		</tr>
 		<tr>
 		  <td class=form-label>User Profile</td>
 		  <td class=form-widget>
-		    [im_select -ad_form_option_list_style_p 1 profile_id [im_profile::profile_options_all] $profile_id]
+		    [im_select -ad_form_option_list_style_p 1 profile_id [im_profile::profile_options_all -include_empty_p 1 -include_empty_name "All"] $profile_id]
 		  </td>
 		</tr>
+
+		<tr>
+		  <td class=form-label>Pagination</td>
+		  <td class=form-widget>
+		    Entries per Page:
+		    [im_select -translate_p 0 limit $limits $limit]
+		    Page:
+		    [im_select -translate_p 0 page $pages $page]
+		  </td>
+		</tr>
+
+
 		<tr>
 		  <td class=form-label>Format</td>
 		  <td class=form-widget>
 		    [im_report_output_format_select output_format "" $output_format]
 		  </td>
 		</tr>
+
 		<tr>
 		  <td class=form-label></td>
 		  <td class=form-widget><input type=submit value='Submit'></td>
@@ -296,11 +326,14 @@ switch $output_format {
 	</table>
 	
 	<!-- Here starts the main report table -->
+	<form action='/intranet/member-add-2' method=POST>
+	[export_form_vars return_url role_id object_id notify_asignee]
 	<table border=0 cellspacing=1 cellpadding=1>
         "
     }
     default { }
 }
+
 
 
 # ------------------------------------------------------
@@ -317,6 +350,9 @@ im_report_render_row \
 
 set counter 0
 db_foreach sql $report_sql {
+
+    set company_type [im_category_from_id $company_type_id]
+    set company_status [im_category_from_id $company_status_id]
 
 	set ha_list [list]
 	if {"" != $ha_line1} { lappend ha_list $ha_line1 }
@@ -396,5 +432,14 @@ im_report_render_row \
 # and write out the page footer.
 #
 switch $output_format {
-    html { ns_write "</table>\n[im_footer]\n"}
+    html { 
+        ns_write "
+	</table>
+	<tr><td colspan=99>
+	<input type=submit>
+	</td></tr>
+	</form>
+	[im_footer]
+	"
+    }
 }

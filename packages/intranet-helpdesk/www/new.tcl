@@ -66,7 +66,7 @@ if {![info exists task]} {
 
     set render_template_id 0
     set escalate_from_ticket_id 0
-42728    set format "html"
+    set format "html"
 
     # Don't show this page in WF panel.
     # Instead, redirect to this same page, but in TaskViewPage mode.
@@ -262,7 +262,7 @@ if {$edit_p} { lappend actions [list [lang::message::lookup {} intranet-helpdesk
 ns_log Notice "new: ad_form: Setup fields"
 ad_form \
     -name helpdesk_ticket \
-    -cancel_url $return_url \
+    -cancel_url "/intranet-helpdesk" \
     -action $action_url \
     -actions $actions \
     -has_edit 1 \
@@ -706,9 +706,6 @@ ad_form -extend -name helpdesk_ticket -on_request {
 
     # Write Audit Trail
     im_project_audit -project_id $ticket_id -action after_create
-
-    # Callback
-    callback im_ticket_after_create -object_id $ticket_id
 
     # fraber 100928: Disabling return_url.
     # For a new ticket it makes sense to be sent to the new ticket page...
