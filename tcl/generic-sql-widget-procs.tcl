@@ -20,9 +20,6 @@ ad_proc -public template::widget::generic_sql { element_reference tag_attributes
 } {
     upvar $element_reference element
 
-#   Show all availabe variables in the variable frame
-#   ad_return_complaint 1 "<pre>\n'$element(custom)'\n[array names element]\n</pre>"
-
     if { [info exists element(custom)] } {
     	set params $element(custom)
     } else {
@@ -58,8 +55,24 @@ ad_proc -public template::widget::generic_sql { element_reference tag_attributes
         set include_empty_name [lindex $params [expr $include_empty_name_pos + 1]]
     }
 
-    array set attributes $tag_attributes
 
+    # ---------------------------------------------------------------
+    # Perform variable substitution with URL variables
+    #
+    set substitution_list [list user_id [ad_get_user_id]]
+    set form_vars [ns_conn form]
+    foreach form_var [ad_ns_set_keys $form_vars] {
+	set form_val [ns_set get $form_vars $form_var]
+	lappend substitution_list $form_var
+	lappend substitution_list $form_val
+    }
+    set sql_statement [lang::message::format $sql_statement $substitution_list]
+ 
+
+    # ---------------------------------------------------------------
+    # Evaluate the SQL
+    #
+    array set attributes $tag_attributes
     set key_value_list [list]
     if {[catch {
 	# evaluate TCL commands embedded into the SQL, such as [ad_get_user_id] etc.
