@@ -94,18 +94,16 @@ if {$ticket_count <= 1} {
     set subject "$action_verb_l10n tickets: [join $ticket_nr_list ", "]"
 }
 
-
-
 set ticket_urls [join $ticket_url_list "\n"]
 
 set message [lang::message::lookup "" intranet-helpdesk.${action_verb}_ticket_msg "
-Dear %first_names%,
+Dear {first_names},
 
 We have $action_verb_lower the following ticket(s):
 %ticket_urls%
 
 Best regards
-%sender_first_names%
+{sender_first_names}
 "]
 
 
