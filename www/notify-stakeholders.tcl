@@ -58,13 +58,16 @@ set ticket_sql "
 set ticket_nr_list {}
 set ticket_count 0
 set ticket_name ""
+set ticket_nr ""
 set ticket_url_list {}
 db_foreach tickets $ticket_sql {
     lappend ticket_nr_list "#$project_nr"
-    set ticket_name $project_nr
+    set ticket_nr $project_nr
+    set ticket_name $project_name
     lappend ticket_url_list "- [export_vars -base "$system_url/intranet-helpdesk/new" {{form_mode display} ticket_id}]"
     incr ticket_count
 }
+
 
 set subject "undefined"
 switch $action_id {
@@ -89,18 +92,23 @@ set action_verb_l10n [lang::message::lookup "" intranet-helpdesk.Action_verb_$ac
 set action_verb_lower [string tolower $action_verb]
 
 if {$ticket_count <= 1} {
-    set subject "$action_verb_l10n ticket: $ticket_name"
+    set subject "$action_verb_l10n ticket #$ticket_nr: $ticket_name"
 } else {
     set subject "$action_verb_l10n tickets: [join $ticket_nr_list ", "]"
 }
 
+# Remove single quotes, because they are used in the .adp page
+set subject [regsub -all {'} $subject {}]
+
+
 set ticket_urls [join $ticket_url_list "\n"]
+set ticket_urls [ns_urldecode $ticket_urls]
 
 set message [lang::message::lookup "" intranet-helpdesk.${action_verb}_ticket_msg "
 Dear {first_names},
 
 We have $action_verb_lower the following ticket(s):
-%ticket_urls%
+$ticket_urls
 
 Best regards
 {sender_first_names}
