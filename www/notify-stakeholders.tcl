@@ -99,29 +99,22 @@ if {$ticket_count <= 1} {
 set ticket_urls [join $ticket_url_list "\n"]
 
 set message [lang::message::lookup "" intranet-helpdesk.${action_verb}_ticket_msg "
-Dear {first_names},
+Dear %first_names%,
 
 We have $action_verb_lower the following ticket(s):
 %ticket_urls%
 
 Best regards
-{sender_first_names}
+%sender_first_names%
 "]
-
 
 
 # --------------------------------------------------------
 # Determine Stakeholders
 # --------------------------------------------------------
 
-
 set bulk_action_list {}
-# lappend bulk_actions_list "[lang::message::lookup "" intranet-helpdesk.Delete "Delete"]" "associate-delete" "[lang::message::lookup "" intranet-helpdesk.Remove_checked_items "Remove Checked Items"]"
-
 set actions [list]
-# set assoc_msg [lang::message::lookup {} intranet-helpdesk.New_Association {Associated with new Object}]
-# lappend actions $assoc_msg [export_vars -base "/intranet-helpdesk/associate" {return_url {tid $ticket_id}}] ""
-
 set stakeholder_inner_sql "
 		-- customer contacts of the tickets
 		select	ticket_customer_contact_id as user_id
