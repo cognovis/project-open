@@ -132,8 +132,8 @@ set stakeholder_inner_sql "
 		from	acs_rels r,
 			im_tickets t,
 			users u
-		where	r.object_id_one = u.user_id and
-			r.object_id_two = t.ticket_id and
+		where	r.object_id_two = u.user_id and
+			r.object_id_one = t.ticket_id and
 			t.ticket_id in ([join $tid ","])
 		UNION
 		-- authors of the forum topics related to the tickets
