@@ -523,10 +523,28 @@ insert into im_dynfield_layout_pages (
 	'table'
 );
 
+
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'event_type', 'Event Type', 'Event Type',
+	10007, 'integer', 'im_category_tree', 'integer',
+	'{custom {category_type "Intranet Event Type"}}'
+);
+
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'event_status', 'Event Status', 'Event Status',
+	10007, 'integer', 'im_category_tree', 'integer',
+	'{custom {category_type "Intranet Event Status"}}'
+);
+
+
+SELECT im_dynfield_attribute_new ('im_event', 'event_type_id', 'Type', 'event_type', 'integer', 'f', 30, 't');
+SELECT im_dynfield_attribute_new ('im_event', 'event_status_id', 'Status', 'event_status', 'integer', 'f', 40, 't');
+-- SELECT im_dynfield_attribute_new ('im_event', 'event_location_id', 'Location', 'event_location', 'integer', 'f', 50, 't');
+SELECT im_dynfield_attribute_new ('im_event', 'event_material_id', 'Material', 'materials', 'integer', 'f', 100, 't');
 SELECT im_dynfield_attribute_new ('im_event', 'num_laptops', 'Num Laptops', 'integer', 'integer', 'f');
 SELECT im_dynfield_attribute_new ('im_event', 'num_beamers', 'Num Laptops', 'integer', 'integer', 'f');
-
-
 
 
 

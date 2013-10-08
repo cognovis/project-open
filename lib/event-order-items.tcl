@@ -34,7 +34,8 @@ set order_item_options [db_list_of_lists order_items "
 		ecr.object_id_one = e.event_id and
 		ecr.object_id_two = cust.company_id and
 		c.customer_id = cust.company_id and
-		ii.invoice_id = c.cost_id
+		ii.invoice_id = c.cost_id and
+		c.cost_type_id = 3703
 	order by
 		cust.company_name,
 		c.cost_name,

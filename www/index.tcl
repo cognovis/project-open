@@ -17,11 +17,10 @@ ad_page_contract {
     { event_name "" }
     { event_status_id:integer "" } 
     { event_type_id:integer 0 } 
-    { event_sla_id:integer 0 } 
+    { event_material_id:integer 0 } 
     { event_creator_id:integer 0 } 
     { customer_id:integer 0 } 
     { customer_contact_id:integer 0 } 
-    { assignee_id:integer 0 } 
     { letter:trim "" }
     { start_idx:integer 0 }
     { how_many "" }
@@ -39,6 +38,10 @@ set page_focus "im_header_form.keywords"
 set letter [string toupper $letter]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set return_url [im_url_with_query]
+
+
+# Run sweeper
+im_event::task_sweeper
 
 # Unprivileged users can only see their own events
 set view_events_all_p [im_permission $current_user_id "view_events_all"]
@@ -109,8 +112,7 @@ db_foreach column_list_sql $column_sql {
 	set col_txt [lang::message::lookup "" intranet-events.$col_txt $column_name]
 	set col_url [export_vars -base "index" {{order_by $column_name}}]
 
-	append col_url "&event_sla_id=$event_sla_id"
-	append col_url "&assignee_id=$assignee_id"
+	append col_url "&event_material_id=$event_material_id"
 
 	# Append the DynField values from the Filter as pass-through variables
 	# so that sorting won't alter the selected events
@@ -267,17 +269,14 @@ if { ![empty_string_p $event_type_id] && $event_type_id != 0 } {
     lappend criteria "t.event_type_id in ([join [im_sub_categories $event_type_id] ","])"
 }
 
-if { [empty_string_p $event_sla_id] == 0 && $event_sla_id != 0 } {
-    lappend criteria "p.parent_id = :event_sla_id"
+if { [empty_string_p $event_material_id] == 0 && $event_material_id != 0 } {
+    lappend criteria "e.event_material_id = :event_material_id"
 }
 
 if { [empty_string_p $event_creator_id] == 0 && $event_creator_id != 0 } {
     lappend criteria "t.event_id in (select object_id from acs_objects where creation_user = :event_creator_id)"
 }
 
-if {0 != $assignee_id && "" != $assignee_id} {
-    lappend criteria "t.event_assignee_id = :assignee_id"
-}
 if { ![empty_string_p $customer_id] && $customer_id != 0 } {
     lappend criteria "p.company_id = :customer_id"
 }
@@ -310,67 +309,10 @@ if { ![empty_string_p $letter] && [string compare $letter "ALL"] != 0 && [string
 
 switch $mine_p {
     "all" { }
-    "queue" {
-	lappend criteria "(
-		t.event_assignee_id = :current_user_id 
-		OR t.event_customer_contact_id = :current_user_id
-		OR t.event_assignee_id in (
-			select	group_id 
-			from	acs_rels r, groups g
-			where	r.object_id_one = g.group_id and 
-				object_id_two = :current_user_id
-		) OR p.project_id in (
-			-- cases with user as task_assignee
-			select distinct wfc.object_id
-			from	wf_task_assignments wfta,
-				wf_tasks wft,
-				wf_cases wfc
-			where	wft.state in ('enabled', 'started') and
-				wft.case_id = wfc.case_id and
-				wfta.task_id = wft.task_id and
-				wfta.party_id in (
-					select	group_id
-					from	group_distinct_member_map
-					where	member_id = :current_user_id
-				    UNION
-					select	:current_user_id
-				)
-		) OR p.project_id in (	
-			-- cases with user as task holding_user
-			select distinct wfc.object_id
-			from	wf_tasks wft,
-				wf_cases wfc
-			where	wft.holding_user = :current_user_id and
-				wft.state in ('enabled', 'started') and
-				wft.case_id = wfc.case_id
-		) 
-	)"
-    }
+    "queue" { }
     "mine" {
 	lappend criteria "(
-		t.event_assignee_id = :current_user_id 
-		OR t.event_customer_contact_id = :current_user_id
-		OR t.event_assignee_id in (
-			select	group_id 
-			from	acs_rels r, groups g
-			where	r.object_id_one = g.group_id and 
-				object_id_two = :current_user_id
-		)
-		OR p.project_id in (	
-			-- cases with user as task holding_user
-			select distinct wfc.object_id
-			from	wf_tasks wft,
-				wf_cases wfc
-			where	wft.state in ('enabled', 'started') and
-				wft.case_id = wfc.case_id and
-				wft.holding_user = :current_user_id
-		)
-    		OR :current_user_id in (
-                        select  object_id_two
-                        from    acs_rels r
-                        where   r.object_id_one = t.event_id and 
-			r.rel_type = 'im_biz_object_member'
-                )
+		o.creation_user = :current_user_id 
 	)"
     }
     "default" { 
@@ -384,7 +326,6 @@ switch $mine_p {
 	lappend criteria "t.event_id in ($selector_sql)"
     }
 }
-
 
 set order_by_clause "order by t.event_id DESC"
 switch [string tolower $order_by] {
@@ -685,6 +626,22 @@ set table_submit_html "
 "
 
 if {!$view_events_all_p} { set table_submit_html "" }
+
+
+
+# ---------------------------------------------------------------
+# Calendar display for vacation days
+# ---------------------------------------------------------------
+
+set event_cube_html [im_event_cube \
+			 -report_user_selection $mine_p \
+			 -event_status_id $event_status_id \
+			 -event_type_id $event_type_id \
+			 -event_material_id $event_material_id \
+			 -event_start_date $start_date \
+			 -event_end_date $end_date \
+			]
+
 
 # ---------------------------------------------------------------
 # Dashboard column
