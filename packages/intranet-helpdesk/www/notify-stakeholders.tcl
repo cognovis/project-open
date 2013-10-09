@@ -58,13 +58,16 @@ set ticket_sql "
 set ticket_nr_list {}
 set ticket_count 0
 set ticket_name ""
+set ticket_nr ""
 set ticket_url_list {}
 db_foreach tickets $ticket_sql {
     lappend ticket_nr_list "#$project_nr"
-    set ticket_name $project_nr
+    set ticket_nr $project_nr
+    set ticket_name $project_name
     lappend ticket_url_list "- [export_vars -base "$system_url/intranet-helpdesk/new" {{form_mode display} ticket_id}]"
     incr ticket_count
 }
+
 
 set subject "undefined"
 switch $action_id {
@@ -89,39 +92,35 @@ set action_verb_l10n [lang::message::lookup "" intranet-helpdesk.Action_verb_$ac
 set action_verb_lower [string tolower $action_verb]
 
 if {$ticket_count <= 1} {
-    set subject "$action_verb_l10n ticket: $ticket_name"
+    set subject "$action_verb_l10n ticket #$ticket_nr: $ticket_name"
 } else {
     set subject "$action_verb_l10n tickets: [join $ticket_nr_list ", "]"
 }
 
+# Remove single quotes, because they are used in the .adp page
+set subject [regsub -all {'} $subject {}]
 
 
 set ticket_urls [join $ticket_url_list "\n"]
+set ticket_urls [ns_urldecode $ticket_urls]
 
 set message [lang::message::lookup "" intranet-helpdesk.${action_verb}_ticket_msg "
 Dear {first_names},
 
 We have $action_verb_lower the following ticket(s):
-%ticket_urls%
+$ticket_urls
 
 Best regards
 {sender_first_names}
 "]
 
 
-
 # --------------------------------------------------------
 # Determine Stakeholders
 # --------------------------------------------------------
 
-
 set bulk_action_list {}
-# lappend bulk_actions_list "[lang::message::lookup "" intranet-helpdesk.Delete "Delete"]" "associate-delete" "[lang::message::lookup "" intranet-helpdesk.Remove_checked_items "Remove Checked Items"]"
-
 set actions [list]
-# set assoc_msg [lang::message::lookup {} intranet-helpdesk.New_Association {Associated with new Object}]
-# lappend actions $assoc_msg [export_vars -base "/intranet-helpdesk/associate" {return_url {tid $ticket_id}}] ""
-
 set stakeholder_inner_sql "
 		-- customer contacts of the tickets
 		select	ticket_customer_contact_id as user_id
@@ -133,8 +132,8 @@ set stakeholder_inner_sql "
 		from	acs_rels r,
 			im_tickets t,
 			users u
-		where	r.object_id_one = u.user_id and
-			r.object_id_two = t.ticket_id and
+		where	r.object_id_two = u.user_id and
+			r.object_id_one = t.ticket_id and
 			t.ticket_id in ([join $tid ","])
 		UNION
 		-- authors of the forum topics related to the tickets
