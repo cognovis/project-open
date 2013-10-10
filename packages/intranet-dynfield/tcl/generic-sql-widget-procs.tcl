@@ -57,32 +57,79 @@ ad_proc -public template::widget::generic_sql { element_reference tag_attributes
 
 
     # ---------------------------------------------------------------
+    # Initialize substitution variables from SQL statement
+    #
+
+    # "%varname%" expressions
+    set var_list [regexp -all -inline {%[a-zA-Z0-9_]+%} $sql_statement]
+    set var_list [lsort -unique $var_list]
+    foreach var $var_list {
+	if {[regexp {%([a-zA-Z0-9_]+)%} $var match var_name]} {
+	    set substitution_hash($var_name) ""
+	}
+    }
+
+    # ":varname" expressions
+    set var_list [regexp -all -inline {\:[a-zA-Z0-9_]+} $sql_statement]
+    set var_list [lsort -unique $var_list]
+    foreach var $var_list {
+	if {[regexp {\:([a-zA-Z0-9_]+)} $var match var_name]} {
+	    set substitution_hash($var_name) ""
+	}
+    }
+
+    # ---------------------------------------------------------------
     # Perform variable substitution with URL variables
     #
-    set substitution_list [list user_id [ad_get_user_id]]
+    set substitution_hash(user_id) [ad_get_user_id]
     set form_vars [ns_conn form]
     foreach form_var [ad_ns_set_keys $form_vars] {
 	set form_val [ns_set get $form_vars $form_var]
-	lappend substitution_list $form_var
-	lappend substitution_list $form_val
+	set substitution_hash($form_var) $form_val
     }
-    set sql_statement [lang::message::format $sql_statement $substitution_list]
- 
 
+    set substitution_list [array get substitution_hash]
+ 
     # ---------------------------------------------------------------
     # Evaluate the SQL
     #
-    array set attributes $tag_attributes
     set key_value_list [list]
     if {[catch {
+
 	# evaluate TCL commands embedded into the SQL, such as [ad_get_user_id] etc.
+	set sql_statement [lang::message::format $sql_statement $substitution_list]
 	eval "set sql_statement \"$sql_statement\""
-	# Execute the SQL and cache the result
-	set key_value_list [util_memoize [list db_list_of_lists sql_statement $sql_statement] $memoize_max_age]
+
+	# Use db_exec in order to handle $bind vars.
+	# apart from that, these following block is equivalent 
+	# with db_list_of_lists...
+	#
+	set bind [array get substitution_hash]
+	set col_names ""
+	set key_value_list [list]
+	db_with_handle db {
+	    set selection [db_exec select $db query $sql_statement 1]
+	    while { [db_getrow $db $selection] } {
+		set col_names [ad_ns_set_keys $selection]
+		set this_result [list]
+		set row_vals [list]
+		for { set i 0 } { $i < [ns_set size $selection] } { incr i } {
+		    set var [lindex $col_names $i]
+		    set val [ns_set value $selection $i]
+		    lappend row_vals $val
+		}
+		lappend key_value_list $row_vals
+	    }
+	}
+    
     } errmsg]} {
 	return "Generic SQL Widget: Error executing SQL statment <pre>'$sql_statement'</pre>: <br>
 	<pre>$errmsg</pre>"
     }
+
+
+    array set attributes $tag_attributes
+
     set sql_html ""
     set default_value ""
     if {[info exists element(value)]} { set default_value $element(value) }
