@@ -35,6 +35,13 @@ ad_page_contract {
     { pdf_p 0 }
 }
 
+# Note: 
+# output_format = "pdf" used to work with im_html2pdf, an option that probably hadn't been used a lot
+# When we started experimenting using OO headless to create pdfs, parameter pdf_p had been added 
+# As of 10/2013 many clients use OO/LibreOffice for PDF creation successfully 
+# It's up to Frank to decide if we keep the im_html2pdf option. 
+# Based on his decision the code should be cleaned up
+
 # ---------------------------------------------------------------
 # Defaults & Security
 # ---------------------------------------------------------------
@@ -1571,6 +1578,13 @@ if {0 != $render_template_id || "" != $send_to_user_as} {
 
         eval [template::adp_compile -string $odt_template_content]
         set content $__adp_output
+
+	# Escape '&'. 
+	# Please note:  
+	# Other chars that would need to be escaped in XML are: <, >, ', "
+	# This needs to be done for all vars obtained from the db and that could be used as placeholder in a form
+	# ACS Template might provide a way of doing it.   
+	regsub -all {&} $content {&amp;} content
 
 	# Save the content to a file.
 	set file [open $odt_content w]
