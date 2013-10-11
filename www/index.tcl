@@ -25,6 +25,8 @@ ad_page_contract {
     { start_idx:integer 0 }
     { how_many "" }
     { view_name "event_list" }
+    { cube_start_date "" }
+    { cube_days 21}
 }
 
 # ---------------------------------------------------------------
@@ -38,6 +40,14 @@ set page_focus "im_header_form.keywords"
 set letter [string toupper $letter]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set return_url [im_url_with_query]
+
+
+
+# Default start and end of cube
+if {"" == $cube_start_date || "2000-01-01" == $cube_start_date} {
+    set cube_start_date [db_string start_date "select now()::date from dual"]
+}
+
 
 
 # Run sweeper
@@ -212,6 +222,8 @@ ad_form \
     -method GET \
     -form {
     	{mine_p:text(select),optional {label "$mine_all_l10n"} {options $mine_p_options }}
+	{cube_start_date:text(hidden),optional}
+	{cube_days:text(hidden),optional}
 	{start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {value "$start_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
 	{end_date:text(text) {label "[_ intranet-timesheet2.End_Date]"} {value "$end_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('end_date', 'y-m-d');" >}}}
 	{event_name:text(text),optional {label "[_ intranet-core.Name]"} {html {size 12}}}
@@ -229,6 +241,8 @@ if {$view_events_all_p} {
 }
 
 template::element::set_value $form_id mine_p $mine_p
+template::element::set_value $form_id cube_start_date $cube_start_date
+template::element::set_value $form_id cube_days $cube_days
 
 im_dynfield::append_attributes_to_form \
     -object_type $object_type \
@@ -640,6 +654,8 @@ set event_cube_html [im_event_cube \
 			 -event_material_id $event_material_id \
 			 -event_start_date $start_date \
 			 -event_end_date $end_date \
+			 -report_start_date $cube_start_date \
+			 -report_days $cube_days \
 			]
 
 

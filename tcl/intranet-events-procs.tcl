@@ -481,38 +481,47 @@ ad_proc im_event_cube {
 	-- Individual Events per user
 	select	e.*,
 		u.user_id,
-		d.d,
-		date_trunc('day',e.event_start_date) as start_d,
-		(e.event_end_date::date - e.event_start_date::date) as event_duration
+		e.event_start_date::date as start_d,
+		e.event_end_date::date as end_d,
+		(e.event_end_date::date - e.event_start_date::date + 1) as event_duration,
+		im_biz_object_member__list(e.event_id) as event_members
 	from	im_events e,
 		acs_rels r,
-		users u,
-		(select im_day_enumerator as d from im_day_enumerator(:report_start_date, :report_end_date)) d
+		users u
 	where	r.object_id_one = e.event_id and
 		r.object_id_two = u.user_id and
 		e.event_start_date <= :report_end_date::date and
-		e.event_end_date >= :report_start_date::date and
-                date_trunc('day',d.d) between date_trunc('day',e.event_start_date) and date_trunc('day',e.event_end_date) 
+		e.event_end_date >= :report_start_date::date
 		$where_clause
     "
     array set event_hash {}
     db_foreach events $event_sql {
-	set key "$user_id-$d"
+	set key "$user_id-$start_d"
 	set value ""
 	if {[info exists event_hash($key)]} { set value $event_hash($key) }
-	set event_hash($key) [append value [lsearch $category_list $event_type_id]]
+	lappend value $event_id
+	set event_hash($key) $value
 
-	if {$d == $start_d} {
-	    set event_start_hash($key) $event_id
-	    set event_info_hash($event_id) [list \
-						event_id $event_id \
-						event_name $event_name \
-						event_nr $event_nr \
-						event_type_id $event_type_id \
-						event_status_id $event_status_id \
-						event_duration $event_duration \
-					       ]
+	set members_pretty [list]
+	foreach tuple $event_members {
+	    set member_id [lindex $tuple 0]
+	    lappend event_members_pretty [im_name_from_user_id $member_id]
 	}
+
+	set event_start_hash($key) $event_id
+	set event_info_hash($event_id) [list \
+					    event_id $event_id \
+					    event_name $event_name \
+					    event_nr $event_nr \
+					    event_start_date $start_d \
+					    event_end_date $end_d \
+					    event_type_id $event_type_id \
+					    event_status_id $event_status_id \
+					    event_duration $event_duration \
+					    event_members $event_members \
+					    event_members_pretty $event_members_pretty \
+					   ]
+
     }
 
     # ---------------------------------------------------------------
@@ -593,11 +602,34 @@ ad_proc im_event_cube {
     }
 
     # ---------------------------------------------------------------
+    # Moving on time axis
+    # ---------------------------------------------------------------
+
+    set form_vars [ns_conn form]
+    set export_vars_list [list]
+    foreach form_var [ad_ns_set_keys $form_vars] {
+	if {"cube_start_date" == $form_var} { continue }
+	if {"cube_days" == $form_var} { continue }
+        set form_val [ns_set get $form_vars $form_var]
+	lappend export_vars_list [list $form_var $form_val]
+    }
+      
+    # Arrows to move time axis
+    set arrow_days $report_days
+    set arrow_left_cube_start_date [db_string left_date "select :report_start_date::date - $arrow_days from dual"]
+    set arrow_right_cube_start_date [db_string left_date "select :report_start_date::date + $arrow_days from dual"]
+    set arrow_left_url [export_vars -base "/intranet-events/index" [linsert $export_vars_list end [list cube_start_date $arrow_left_cube_start_date]]]
+    set arrow_right_url [export_vars -base "/intranet-events/index" [linsert $export_vars_list end [list cube_start_date $arrow_right_cube_start_date]]]
+    set arrow_left "<a href=$arrow_left_url>[im_gif arrow_comp_left]</a>"
+    set arrow_right "<a href=$arrow_right_url>[im_gif arrow_comp_right]</a>"
+
+
+    # ---------------------------------------------------------------
     # Render the table
     # ---------------------------------------------------------------
     
     set table_header "<tr class=rowtitle>\n"
-    append table_header "<td class=rowtitle>[_ intranet-core.User]</td>\n"
+    append table_header "<td class=rowtitle>$arrow_left [_ intranet-core.User]</td>\n"
     foreach day $day_list {
 	set date_date [lindex $day 0]
 	set date_day_of_month [lindex $day 1]
@@ -605,6 +637,8 @@ ad_proc im_event_cube {
 	set date_year [lindex $day 3]
 	append table_header "<td class=rowtitle>$date_month_of_year<br>$date_day_of_month</td>\n"
     }
+    append table_header "<td class=rowtitle>$arrow_right</td>\n"
+    
 
     set overlay_html "
       <div style='position: relative'>
@@ -624,13 +658,19 @@ ad_proc im_event_cube {
 	    set date_date [lindex $day 0]
 	    set key "$user_id-$date_date"
 	    set value ""
-	    if {[info exists event_hash($key)]} { set value $event_hash($key) }
-	    if {[info exists absence_hash($key)]} { set value $absence_hash($key) }
+	    if {[info exists absence_hash($key)]} { append value $absence_hash($key) }
 	    if {[info exists holiday_hash($date_date)]} { append value $holiday_hash($date_date) }
 
-#!!!
+	    set event_html ""
+	    if {[info exists event_hash($key)]} { 
+		set events $event_hash($key)
+		foreach eid $events {
+		    set event_values $event_info_hash($eid)
+		    append event_html [im_event_cube_render_event -event_values $event_values]
+		}
+	    }
 	    
-	    append table_body [im_event_cube_render_cell $value]
+	    append table_body [im_event_cube_render_cell -value $value -event_html $event_html]
 	    ns_log NOTICE "intranet-events-procs::im_event_cube_render_cell: $value"
 	}
 	append table_body "</tr>\n"
@@ -645,7 +685,79 @@ ad_proc im_event_cube {
     "
 }
 
-ad_proc im_event_cube_render_cell { value } {
+
+ad_proc im_event_cube_render_event { 
+    -event_values:required
+} {
+    Renders a single event as HTML DIV on top of a table.
+    The HTML needs to be inserted into the table cell 
+    representing the day when the event starts.
+} {
+    # event_id, event_name, event_nr, event_type_id, event_status_id, event_duration
+    # event_members, event_members_pretty
+    array set event_local_info $event_values
+    set event_id $event_local_info(event_id)
+    set event_name $event_local_info(event_name)
+    set event_nr $event_local_info(event_nr)
+
+    set event_start_date $event_local_info(event_start_date)
+    set event_end_date $event_local_info(event_end_date)
+
+    set event_status_id $event_local_info(event_status_id)
+    set event_duration $event_local_info(event_duration)
+    set event_members $event_local_info(event_members)
+    set event_members_pretty $event_local_info(event_members_pretty)
+    set event_url [export_vars -base "/intranet-events/new" {{form_mode display} event_id}]
+
+    # Width: Multiples of the cell width
+    set event_width [expr $event_duration * 27]
+
+    # Determine the color of the event
+    # 82000 unplanned
+    # 82002 planned
+    # 82004 reserved
+    # 82006 booked
+    switch $event_status_id {
+	82000 { set bgcolor "#yellow" }
+	82000 { set bgcolor "#00A000" }
+	82000 { set bgcolor "#00C000" }
+	82000 { set bgcolor "#00FF00" }
+	default { set bgcolor "white" }
+    }
+
+    # What to show on a mouse-over
+    set event_title "[lang::message::lookup "" intranet-events.Name Name]: $event_name
+[lang::message::lookup "" intranet-events.Nr Nr]: $event_nr
+[lang::message::lookup "" intranet-events.Start Start]: $event_start_date
+[lang::message::lookup "" intranet-events.End End]: $event_end_date
+[lang::message::lookup "" intranet-events.Duration Duration]: $event_duration [lang::message::lookup "" intranet-events.Days Days]
+[lang::message::lookup "" intranet-events.Status Status]: [im_category_from_id $event_status_id]
+[lang::message::lookup "" intranet-events.Consultants Consultants]:
+	[join $event_members_pretty "\n\t"]
+"
+
+    set bordercolor "yellow"
+    set result "
+      <div style='position: relative'>
+      <div style='position: absolute; top: -12; left: -1; width: $event_width; z-index:10; background: yellow;'>
+<table cellspacing=0 cellpadding=0 border=2 bgcolor=$bgcolor bordercolor=$bordercolor width='100%'>
+<tr>
+<td bgcolor=red>
+<nobr><a href=$event_url title='$event_title' target='_'>$event_nr</a></nobr>
+</td>
+</tr>
+</table>
+</div>
+</div>
+"
+    return $result
+}
+
+
+ad_proc im_event_cube_render_cell { 
+    -value:required
+    { -event_html "&nbsp;" }
+} {
     Renders a single report cell, depending on value.
     Takes the color from events color lookup.
 } {
@@ -656,9 +768,9 @@ ad_proc im_event_cube_render_cell { value } {
     }   
 
     if {"" != $color} {
-        return "<td bgcolor=\#$color>&nbsp;</td>\n"
+        return "<td bgcolor=\#$color>$event_html</td>\n"
     } else {
-        return "<td>&nbsp;</td>\n"
+        return "<td>$event_html</td>\n"
     }
 }
 

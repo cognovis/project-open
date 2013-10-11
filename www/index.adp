@@ -17,43 +17,6 @@
 }
 </style>
 
-<p>Something before the table</p>
-<!-- <div id="target">I'm on top of the table</div> -->
-
-
-<table border=1 cellpadding=10>
-  <tbody>
-    <tr>
-      <td>
-      <div style="position: relative">
-      <div style="position: absolute; top: 0; left: 0; width: 150px; z-index:10; background: green;">I am on TOP</div>
-      Text in the table
-      </div>
-      </td>
-      <td>
-      <div style="position: relative">
-      <div style="position: absolute; top: 0; left: 0; width: 100px; z-index: 0; background: red;">I am on TOP</div>
-      </div>
-      Text in the table
-      </td>
-    </tr>
-    <tr>
-      <td>Text in the table</td>
-      <td>Text in the table</td>
-    </tr>
-    <tr>
-      <td>Text in the table</td>
-      <td>Text in the table</td>
-    </tr>
-    <tr>
-      <td>Text in the table</td>
-      <td>Text in the table</td>
-    </tr>
-  </tbody>
-</table>
-
-
-
 <if "" ne @event_cube_html@>
 <%= [im_box_header $page_title] %>
 @event_cube_html;noquote@
