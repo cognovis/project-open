@@ -310,11 +310,11 @@ SELECT im_category_new(9014, 'Translation', 'Intranet Material Type');
 
 
 create or replace view im_material_types as 
-select 
-	category_id as material_type_id, 
+select	category_id as material_type_id, 
 	category as material_type
-from im_categories 
-where category_type = 'Intranet Material Type';
+from	im_categories 
+where	category_type = 'Intranet Material Type' and
+	(enabled_p is null or enabled_p = 't');
 
 
 

@@ -55,9 +55,7 @@ if {[string equal $view_name "material_list_tasks"]} {
 # Material Topic Types come from a category list, but we need
 # some manual extensions...
 #
-set material_types [im_memoize_list select_material_types \
-   "select * from im_material_types order by material_type_id"]
-set material_types [linsert $material_types 0 1 "Tasks / Incidents]"]
+set material_types [im_memoize_list select_material_types "select * from im_material_types order by material_type_id"]
 set material_types [linsert $material_types 0 0 "All"]
 
 
