@@ -25,7 +25,7 @@ ad_page_contract {
     { start_idx:integer 0 }
     { how_many "" }
     { view_name "event_list" }
-    { cube_start_date "" }
+    { report_start_date "" }
     { cube_days 21}
 }
 
@@ -42,10 +42,13 @@ set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set return_url [im_url_with_query]
 
 
+set event_type_id_org $event_type_id
+set event_status_id_org $event_status_id
+
 
 # Default start and end of cube
-if {"" == $cube_start_date || "2000-01-01" == $cube_start_date} {
-    set cube_start_date [db_string start_date "select now()::date from dual"]
+if {"" == $report_start_date || "2000-01-01" == $report_start_date} {
+    set report_start_date [db_string start_date "select now()::date from dual"]
 }
 
 
@@ -222,7 +225,7 @@ ad_form \
     -method GET \
     -form {
     	{mine_p:text(select),optional {label "$mine_all_l10n"} {options $mine_p_options }}
-	{cube_start_date:text(hidden),optional}
+	{report_start_date:text(hidden),optional}
 	{cube_days:text(hidden),optional}
 	{start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {value "$start_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
 	{end_date:text(text) {label "[_ intranet-timesheet2.End_Date]"} {value "$end_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('end_date', 'y-m-d');" >}}}
@@ -241,7 +244,7 @@ if {$view_events_all_p} {
 }
 
 template::element::set_value $form_id mine_p $mine_p
-template::element::set_value $form_id cube_start_date $cube_start_date
+template::element::set_value $form_id report_start_date $report_start_date
 template::element::set_value $form_id cube_days $cube_days
 
 im_dynfield::append_attributes_to_form \
@@ -276,11 +279,11 @@ array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
 # ---------------------------------------------------------------
 
 set criteria [list]
-if { ![empty_string_p $event_status_id] && $event_status_id > 0 } {
-    lappend criteria "t.event_status_id in ([join [im_sub_categories $event_status_id] ","])"
+if { ![empty_string_p $event_status_id_org] && $event_status_id_org > 0 } {
+    lappend criteria "t.event_status_id in ([join [im_sub_categories $event_status_id_org] ","])"
 }
-if { ![empty_string_p $event_type_id] && $event_type_id != 0 } {
-    lappend criteria "t.event_type_id in ([join [im_sub_categories $event_type_id] ","])"
+if { ![empty_string_p $event_type_id_org] && $event_type_id_org != 0 } {
+    lappend criteria "t.event_type_id in ([join [im_sub_categories $event_type_id_org] ","])"
 }
 
 if { [empty_string_p $event_material_id] == 0 && $event_material_id != 0 } {
@@ -649,12 +652,12 @@ if {!$view_events_all_p} { set table_submit_html "" }
 
 set event_cube_html [im_event_cube \
 			 -report_user_selection $mine_p \
-			 -event_status_id $event_status_id \
-			 -event_type_id $event_type_id \
+			 -event_status_id $event_status_id_org \
+			 -event_type_id $event_type_id_org \
 			 -event_material_id $event_material_id \
 			 -event_start_date $start_date \
 			 -event_end_date $end_date \
-			 -report_start_date $cube_start_date \
+			 -report_start_date $report_start_date \
 			 -report_days $cube_days \
 			]
 

@@ -376,6 +376,7 @@ ad_proc im_event_cube {
     {-report_user_selection "all" }
     {-report_start_date "" }
     {-report_days 21}
+    {-report_user_group_id "" }
 } {
     Returns a rendered cube with a graphical event display.
 } {
@@ -393,6 +394,7 @@ ad_proc im_event_cube {
     set report_end_date [db_string end_date "select :report_start_date::date + :report_days::integer"]
 
     if {-1 == $event_type_id} { set event_type_id "" }
+    set report_start_date_julian [db_string start_date_julian "select to_char(:report_start_date::date, 'J') from dual"]
 
     # ---------------------------------------------------------------
     # Limit the number of users and days
@@ -426,7 +428,6 @@ ad_proc im_event_cube {
     # Initialize the hash for holidays.
     array set holiday_hash {}
     set day_list [list]
-    
     for {set i 0} {$i < $report_days} {incr i} {
 	db_1row date_info "
 	    select 
@@ -448,17 +449,42 @@ ad_proc im_event_cube {
     # Determine Left Dimension
     # ---------------------------------------------------------------
 
+    set group_sql ""
+    if {"" != $report_user_group_id && 0 != $report_user_group_id} {
+	set group_sql "and u.user_id in (select member_id from group_distinct_member_map where group_id = :report_user_group_id"
+    }
+
+    # Select any user who has ever been member of an event
     set user_list [db_list_of_lists user_list "
-	select	u.user_id as user_id,
+	select distinct
+		u.user_id as user_id,
 		im_name_from_user_id(u.user_id, $name_order) as user_name
 	from	users u,
 		acs_rels r,
+		im_events e
+	where	r.object_id_one = e.event_id and
+		r.object_id_two = u.user_id
+		$group_sql
+	order by user_name
+    "]
+
+    set ttt {
+    set location_list [db_list_of_lists location_list "
+	select	u.location_id as location_id,
+		im_name_from_location_id(u.location_id, $name_order) as location_name
+	from	locations u,
+		acs_rels r,
 		membership_rels mr
-	where	r.object_id_two = u.user_id and
+	where	r.object_id_two = u.location_id and
 		r.object_id_one = [im_profile_senior_managers] and
 		r.rel_id = mr.rel_id and
 		mr.member_state = 'approved'
     "]
+    }
+
+    # ---------------------------------------------------------------
+    # 
+    # ---------------------------------------------------------------
 
     # Get list of categeory_ids to determine index 
     # needed for color codes
@@ -482,9 +508,11 @@ ad_proc im_event_cube {
 	select	e.*,
 		u.user_id,
 		e.event_start_date::date as start_d,
+		to_char(e.event_start_date, 'J') as start_j,
 		e.event_end_date::date as end_d,
 		(e.event_end_date::date - e.event_start_date::date + 1) as event_duration,
-		im_biz_object_member__list(e.event_id) as event_members
+		im_biz_object_member__list(e.event_id) as event_members,
+		CASE WHEN e.event_start_date < :report_start_date THEN 1 ELSE 0 END as event_starts_before_report_p
 	from	im_events e,
 		acs_rels r,
 		users u
@@ -502,7 +530,7 @@ ad_proc im_event_cube {
 	lappend value $event_id
 	set event_hash($key) $value
 
-	set members_pretty [list]
+	set event_members_pretty [list]
 	foreach tuple $event_members {
 	    set member_id [lindex $tuple 0]
 	    lappend event_members_pretty [im_name_from_user_id $member_id]
@@ -514,6 +542,7 @@ ad_proc im_event_cube {
 					    event_name $event_name \
 					    event_nr $event_nr \
 					    event_start_date $start_d \
+					    event_start_date_julian $start_j \
 					    event_end_date $end_d \
 					    event_type_id $event_type_id \
 					    event_status_id $event_status_id \
@@ -522,7 +551,17 @@ ad_proc im_event_cube {
 					    event_members_pretty $event_members_pretty \
 					   ]
 
+	# Remember the events that starting before the report interval
+	if {$event_starts_before_report_p} {
+	    set events [list]
+	    if {[info exists event_before_reporting_interval_hash($user_id)]} { 
+		set events $event_before_reporting_interval_hash($user_id)
+	    }
+	    lappend events $event_id
+	    set event_before_reporting_interval_hash($user_id) $events
+	}
     }
+
 
     # ---------------------------------------------------------------
     # Tasks per user
@@ -654,6 +693,18 @@ ad_proc im_event_cube {
 	set user_id [lindex $user_tuple 0]
 	set user_name [lindex $user_tuple 1]
 	append table_body "<td><nobr><a href='[export_vars -base $user_url {user_id}]'>$user_name</a></td></nobr>\n"
+
+	# Deal with the events starting before the actual reporting interval
+	set events [list]
+	if {[info exists event_before_reporting_interval_hash($user_id)]} {
+	    set events $event_before_reporting_interval_hash($user_id)
+	}
+	set before_events_html ""
+	foreach eid $events {
+	    set event_values $event_info_hash($eid)
+	    append before_events_html [im_event_cube_render_event -event_values $event_values -report_start_date_julian $report_start_date_julian]
+	}
+
 	foreach day $day_list {
 	    set date_date [lindex $day 0]
 	    set key "$user_id-$date_date"
@@ -662,6 +713,9 @@ ad_proc im_event_cube {
 	    if {[info exists holiday_hash($date_date)]} { append value $holiday_hash($date_date) }
 
 	    set event_html ""
+	    append event_html $before_events_html
+	    set before_events_html ""
+
 	    if {[info exists event_hash($key)]} { 
 		set events $event_hash($key)
 		foreach eid $events {
@@ -687,6 +741,7 @@ ad_proc im_event_cube {
 
 
 ad_proc im_event_cube_render_event { 
+    {-report_start_date_julian ""}
     -event_values:required
 } {
     Renders a single event as HTML DIV on top of a table.
@@ -699,18 +754,24 @@ ad_proc im_event_cube_render_event {
     set event_id $event_local_info(event_id)
     set event_name $event_local_info(event_name)
     set event_nr $event_local_info(event_nr)
-
     set event_start_date $event_local_info(event_start_date)
+    set event_start_date_julian $event_local_info(event_start_date_julian)
     set event_end_date $event_local_info(event_end_date)
-
     set event_status_id $event_local_info(event_status_id)
     set event_duration $event_local_info(event_duration)
     set event_members $event_local_info(event_members)
     set event_members_pretty $event_local_info(event_members_pretty)
     set event_url [export_vars -base "/intranet-events/new" {{form_mode display} event_id}]
 
+    # Deal with "broken" events, that start before the first 
+    # column of the report
+    set event_width_days $event_duration
+    if {"" != $report_start_date_julian} {
+	set event_width_days [expr $event_duration - ($report_start_date_julian - $event_start_date_julian)]
+    }
+
     # Width: Multiples of the cell width
-    set event_width [expr $event_duration * 27]
+    set event_width [expr $event_width_days * 25]
 
     # Determine the color of the event
     # 82000 unplanned
@@ -739,7 +800,7 @@ ad_proc im_event_cube_render_event {
     set bordercolor "yellow"
     set result "
       <div style='position: relative'>
-      <div style='position: absolute; top: -12; left: -1; width: $event_width; z-index:10; background: yellow;'>
+      <div style='position: absolute; top: -12; left: -2; width: $event_width; z-index:10; background: yellow;'>
 <table cellspacing=0 cellpadding=0 border=2 bgcolor=$bgcolor bordercolor=$bordercolor width='100%'>
 <tr>
 <td bgcolor=red>

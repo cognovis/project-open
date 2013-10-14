@@ -117,7 +117,7 @@ set copy_from_event_name ""
 # message_html allows us to add a warning popup etc.
 set message_html ""
 
-if {![info exists event_id]} {
+if {[info exists event_id]} {
     im_event_permissions $current_user_id $event_id view_p read_p write_p admin_p
     if {!$read_p} {
         ad_return_complaint 1 "<li>You don't have the permissions to see this event."
