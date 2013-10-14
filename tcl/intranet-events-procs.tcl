@@ -381,6 +381,7 @@ ad_proc im_event_cube {
     Returns a rendered cube with a graphical event display.
 } {
     set user_url "/intranet/users/view"
+    set location_url "/intranet-confdb/new"
     set date_format "YYYY-MM-DD"
     set current_user_id [ad_get_user_id]
     set bgcolor(0) " class=roweven "
@@ -468,19 +469,16 @@ ad_proc im_event_cube {
 	order by user_name
     "]
 
-    set ttt {
     set location_list [db_list_of_lists location_list "
-	select	u.location_id as location_id,
-		im_name_from_location_id(u.location_id, $name_order) as location_name
-	from	locations u,
-		acs_rels r,
-		membership_rels mr
-	where	r.object_id_two = u.location_id and
-		r.object_id_one = [im_profile_senior_managers] and
-		r.rel_id = mr.rel_id and
-		mr.member_state = 'approved'
+	select distinct
+		ci.conf_item_id as location_id,
+		ci.conf_item_name as location_name
+	from	im_events e
+		LEFT OUTER JOIN im_conf_items ci ON (e.event_location_id = ci.conf_item_id)
+	where	e.event_location_id = ci.conf_item_id and
+		ci.conf_item_name is not null
+	order by ci.conf_item_name
     "]
-    }
 
     # ---------------------------------------------------------------
     # 
@@ -506,6 +504,7 @@ ad_proc im_event_cube {
     set event_sql "
 	-- Individual Events per user
 	select	e.*,
+		acs_object__name(e.event_location_id) as event_location_name,
 		u.user_id,
 		e.event_start_date::date as start_d,
 		to_char(e.event_start_date, 'J') as start_j,
@@ -522,13 +521,25 @@ ad_proc im_event_cube {
 		e.event_end_date >= :report_start_date::date
 		$where_clause
     "
-    array set event_hash {}
+    array set user_event_hash {}
+    array set location_event_hash {}
     db_foreach events $event_sql {
+
+	# User Event Hash
 	set key "$user_id-$start_d"
 	set value ""
-	if {[info exists event_hash($key)]} { set value $event_hash($key) }
+	if {[info exists user_event_hash($key)]} { set value $user_event_hash($key) }
 	lappend value $event_id
-	set event_hash($key) $value
+	set user_event_hash($key) $value
+
+	# Location Event Hash
+	set key "$event_location_id-$start_d"
+	set value ""
+	if {[info exists location_event_hash($key)]} { set value $location_event_hash($key) }
+	lappend value $event_id
+	set location_event_hash($key) $value
+
+
 
 	set event_members_pretty [list]
 	foreach tuple $event_members {
@@ -547,18 +558,31 @@ ad_proc im_event_cube {
 					    event_type_id $event_type_id \
 					    event_status_id $event_status_id \
 					    event_duration $event_duration \
+					    event_location_id $event_location_id \
+					    event_location_name $event_location_name \
 					    event_members $event_members \
 					    event_members_pretty $event_members_pretty \
 					   ]
 
 	# Remember the events that starting before the report interval
 	if {$event_starts_before_report_p} {
+	    # Events by user
 	    set events [list]
-	    if {[info exists event_before_reporting_interval_hash($user_id)]} { 
-		set events $event_before_reporting_interval_hash($user_id)
+	    if {[info exists user_event_before_reporting_interval_hash($user_id)]} { 
+		set events $user_event_before_reporting_interval_hash($user_id)
 	    }
 	    lappend events $event_id
-	    set event_before_reporting_interval_hash($user_id) $events
+	    set user_event_before_reporting_interval_hash($user_id) $events
+
+
+	    # Events by location
+	    set events [list]
+	    if {[info exists location_event_before_reporting_interval_hash($event_location_id)]} { 
+		set events $location_event_before_reporting_interval_hash($event_location_id)
+	    }
+	    lappend events $event_id
+	    set location_event_before_reporting_interval_hash($event_location_id) $events
+
 	}
     }
 
@@ -664,8 +688,10 @@ ad_proc im_event_cube {
 
 
     # ---------------------------------------------------------------
-    # Render the table
+    # Users Table
     # ---------------------------------------------------------------
+    
+    set table_html "<table>\n"
     
     set table_header "<tr class=rowtitle>\n"
     append table_header "<td class=rowtitle>$arrow_left [_ intranet-core.User]</td>\n"
@@ -677,15 +703,10 @@ ad_proc im_event_cube {
 	append table_header "<td class=rowtitle>$date_month_of_year<br>$date_day_of_month</td>\n"
     }
     append table_header "<td class=rowtitle>$arrow_right</td>\n"
-    
-
-    set overlay_html "
-      <div style='position: relative'>
-      <div style='position: absolute; top: 0; left: 0; width: 100px; z-index: 20; background: red;'>I am on TOP</div>
-      </div>
-    "
-    
     append table_header "</tr>\n"
+    append table_html $table_header
+
+    
     set row_ctr 0
     set table_body ""
     foreach user_tuple $user_list {
@@ -696,8 +717,8 @@ ad_proc im_event_cube {
 
 	# Deal with the events starting before the actual reporting interval
 	set events [list]
-	if {[info exists event_before_reporting_interval_hash($user_id)]} {
-	    set events $event_before_reporting_interval_hash($user_id)
+	if {[info exists user_event_before_reporting_interval_hash($user_id)]} {
+	    set events $user_event_before_reporting_interval_hash($user_id)
 	}
 	set before_events_html ""
 	foreach eid $events {
@@ -716,8 +737,8 @@ ad_proc im_event_cube {
 	    append event_html $before_events_html
 	    set before_events_html ""
 
-	    if {[info exists event_hash($key)]} { 
-		set events $event_hash($key)
+	    if {[info exists user_event_hash($key)]} { 
+		set events $user_event_hash($key)
 		foreach eid $events {
 		    set event_values $event_info_hash($eid)
 		    append event_html [im_event_cube_render_event -event_values $event_values]
@@ -730,13 +751,73 @@ ad_proc im_event_cube {
 	append table_body "</tr>\n"
 	incr row_ctr
     }
+    append table_html $table_body
 
-    return "
-	<table>
-	$table_header
-	$table_body
-	</table>
-    "
+
+    # ---------------------------------------------------------------
+    # Locations
+    # ---------------------------------------------------------------
+
+    set table_header "<tr class=rowtitle>\n"
+    append table_header "<td class=rowtitle>$arrow_left [lang::message::lookup "" intranet-events.Locations Locations]</td>\n"
+    foreach day $day_list {
+	set date_date [lindex $day 0]
+	set date_day_of_month [lindex $day 1]
+	set date_month_of_year [lindex $day 2]
+	set date_year [lindex $day 3]
+	append table_header "<td class=rowtitle>$date_month_of_year<br>$date_day_of_month</td>\n"
+    }
+    append table_header "<td class=rowtitle>$arrow_right</td>\n"
+    append table_header "</tr>\n"
+    append table_html $table_header
+
+    
+    set row_ctr 0
+    set table_body ""
+    foreach location_tuple $location_list {
+	append table_body "<tr $bgcolor([expr $row_ctr % 2])>\n"
+	set location_id [lindex $location_tuple 0]
+	set location_name [lindex $location_tuple 1]
+	append table_body "<td><nobr><a href='[export_vars -base $location_url {location_id}]'>$location_name</a></td></nobr>\n"
+
+	# Deal with the events starting before the actual reporting interval
+	set events [list]
+	if {[info exists location_event_before_reporting_interval_hash($location_id)]} {
+	    set events $location_event_before_reporting_interval_hash($location_id)
+	}
+	set before_events_html ""
+	foreach eid $events {
+	    set event_values $event_info_hash($eid)
+	    append before_events_html [im_event_cube_render_event -event_values $event_values -report_start_date_julian $report_start_date_julian]
+	}
+
+	foreach day $day_list {
+	    set date_date [lindex $day 0]
+	    set key "$location_id-$date_date"
+	    set value ""
+	    if {[info exists holiday_hash($date_date)]} { append value $holiday_hash($date_date) }
+
+	    set event_html ""
+	    append event_html $before_events_html
+	    set before_events_html ""
+
+	    if {[info exists location_event_hash($key)]} { 
+		set events $location_event_hash($key)
+		foreach eid $events {
+		    set event_values $event_info_hash($eid)
+		    append event_html [im_event_cube_render_event -event_values $event_values]
+		}
+	    }
+	    
+	    append table_body [im_event_cube_render_cell -value $value -event_html $event_html]
+	}
+	append table_body "</tr>\n"
+	incr row_ctr
+    }
+    append table_html $table_body
+
+
+    append table_html "</table>\n"
 }
 
 
@@ -759,9 +840,27 @@ ad_proc im_event_cube_render_event {
     set event_end_date $event_local_info(event_end_date)
     set event_status_id $event_local_info(event_status_id)
     set event_duration $event_local_info(event_duration)
+    set event_location_id $event_local_info(event_location_id)
+    set event_location_name $event_local_info(event_location_name)
     set event_members $event_local_info(event_members)
     set event_members_pretty $event_local_info(event_members_pretty)
     set event_url [export_vars -base "/intranet-events/new" {{form_mode display} event_id}]
+
+    set consultants [list]
+    set customers [list]
+    for {set i 0} {$i < [llength $event_members]} {incr i} {
+	set rel_tuple_id [lindex $event_members $i]
+	set user_id [lindex $rel_tuple_id 0]
+	set role_id [lindex $rel_tuple_id 1]
+	set user_name [lindex $event_members_pretty $i]
+
+	switch $role_id {
+	    1300 { lappend customers $user_name }
+	    1307 { lappend consultants $user_name }
+	    default { ad_return_complaint 1 "im_event_cube_render_event: unknown role: $role_id" }
+	}
+    }
+
 
     # Deal with "broken" events, that start before the first 
     # column of the report
@@ -789,12 +888,15 @@ ad_proc im_event_cube_render_event {
     # What to show on a mouse-over
     set event_title "[lang::message::lookup "" intranet-events.Name Name]: $event_name
 [lang::message::lookup "" intranet-events.Nr Nr]: $event_nr
+[lang::message::lookup "" intranet-events.Location Location]: $event_location_name
 [lang::message::lookup "" intranet-events.Start Start]: $event_start_date
 [lang::message::lookup "" intranet-events.End End]: $event_end_date
 [lang::message::lookup "" intranet-events.Duration Duration]: $event_duration [lang::message::lookup "" intranet-events.Days Days]
 [lang::message::lookup "" intranet-events.Status Status]: [im_category_from_id $event_status_id]
 [lang::message::lookup "" intranet-events.Consultants Consultants]:
-	[join $event_members_pretty "\n\t"]
+	[join $consultants "\n\t"]
+[lang::message::lookup "" intranet-events.Customers Customers]:
+	[join $customers "\n\t"]
 "
 
     set bordercolor "yellow"
