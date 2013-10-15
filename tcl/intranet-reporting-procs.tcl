@@ -989,4 +989,3 @@ ad_proc -public im_reporting_form_update_ajax {
 
     template::head::add_javascript -src "/intranet-reporting/js/ajax_update_select_box.js?$par_str" -order "999"
 }
-
