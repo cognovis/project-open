@@ -96,7 +96,10 @@ if {[lsearch im_document $type] >= 0} {
     return
 }
 
+# Normalize query - lowercase and without double quotes
 set q [string tolower $q]
+regsub -all {["']} $q {} q
+
 
 # Remove accents and other special characters from
 # search query. Also remove "@", "-" and "." and 
@@ -299,12 +302,11 @@ if {[im_permission $user_id "view_conf_items_all"]} {
 }
 
 
-# --------------------- Invoices -----------------------------------
-# Let a user see the invoice if he can read/admin either the 
-# customer or the provider of the invoice
+# --------------------- Financial Documents -----------------------------------
+# Let a user see the financial document if he can read/admin either the 
+# customer or the provider of the financial document
 # Include the join with "im_invoices", because it is actually
 # very selective (few cost items are financial documents)
-
 
 set customer_sql "
 	select distinct
