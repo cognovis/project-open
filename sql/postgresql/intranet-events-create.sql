@@ -377,16 +377,20 @@ SELECT im_priv_create('edit_events_all', 'Accounting');
 
 
 SELECT im_category_new (82000, 'Unplanned', 'Intranet Event Status');
+update im_categories set aux_string1 = 'FF0000' where category_id = 82000;
 SELECT im_category_new (82002, 'Planned', 'Intranet Event Status');
+update im_categories set aux_string1 = 'FFAA00' where category_id = 82002;
 SELECT im_category_new (82004, 'Reserved', 'Intranet Event Status');
+update im_categories set aux_string1 = 'FFFF00' where category_id = 82004;
 SELECT im_category_new (82006, 'Booked', 'Intranet Event Status');
+update im_categories set aux_string1 = '00FF00' where category_id = 82006;
 
 SELECT im_category_new (82100, 'Default', 'Intranet Event Type');
-
 
 SELECT im_category_new (82200, 'Confirmed', 'Intranet Event Participant Status');
 SELECT im_category_new (82210, 'Reserved', 'Intranet Event Participant Status');
 SELECT im_category_new (82290, 'Deleted', 'Intranet Event Participant Status');
+
 
 
 -----------------------------------------------------------
