@@ -43,20 +43,25 @@ ad_proc -public im_note_format {
     set first_note [lindex $note_pieces 0]
     set rest_note [join [lrange $note_pieces 1 end] " "]
 
+    set note_url $first_note
+
     set notes_edit_url [export_vars -base "/intranet-notes/new" {note_id return_url}]
 
     switch $note_type_id {
 	11502 {
 	    # Email
+	    if {![regexp {^http:} $note_url match]} { set note_url "http://$note_url" }
 	    set note_formatted "<a href=\"mailto:$first_note\">$first_note</a> $rest_note"
 	}
 	11504 {
 	    # Http
-	    set note_formatted "<a href=\"$first_note\" target=\"_\">$first_note</a> $rest_note"
+	    if {![regexp {^http:} $note_url match]} { set note_url "http://$note_url" }
+	    set note_formatted "<a href=\"$note_url\" target=\"_\">$first_note</a> $rest_note"
 	}
 	11506 {
 	    # FTP
-	    set note_formatted "<a href=\"$first_note\" target=\"_\">$first_note</a> $rest_note"
+	    if {![regexp {^ftp:} $note_url match]} { set note_url "ftp://$note_url" }
+	    set note_formatted "<a href=\"$note_url\" target=\"_\">$first_note</a> $rest_note"
 	}
 	default {
 	    set note_formatted "$first_note $rest_note"
