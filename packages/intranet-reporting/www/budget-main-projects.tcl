@@ -107,11 +107,10 @@ set help_text "
 	    to finish the project at the current pace. Brown color indicates that the project 
 	    will exceed the budget.
 
-	</ul>
-	The interval defaults to 2000-01-01 - 2100-01-01.<br>
+	</ul><br/>
 	<strong>Please Note:</strong><br>
 	<ul>
-	<li>	This report is not designed to show budgets on sub-projects and below.
+	<li>This report is not designed to show budgets on sub-projects and below.
 		Instead, the report assumes that budgets are assigned only to main projects and that
 		the progress of sub-projects and tasks is tracked based on the 'estimated hours' vs. 
 		'logged hours' in each project.</li>
@@ -394,7 +393,7 @@ switch $output_format {
 	</table>
 	
 	<!-- Here starts the main report table -->
-	<table border=0 cellspacing=1 cellpadding=1>
+	<table border=0 class='table_list_simple'>
         "
     }
     printer {
