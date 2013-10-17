@@ -41,7 +41,7 @@
 	</td>
 	<td>
 	<ul>
-		<li>Report tracks actual hours worked per task against planned hours per task (Planned Value)</li>
+		<li>Tracks actual hours worked per task against planned units per task</li>
 		<li>List of projects can be filetered by start/end date and customer</li>
 		<li>Hours for project members are only shown when logged btw. start and end date</li>
 	</ul>
