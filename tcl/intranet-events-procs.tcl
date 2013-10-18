@@ -387,6 +387,7 @@ ad_proc im_event_cube {
     set bgcolor(0) " class=roweven "
     set bgcolor(1) " class=rowodd "
     set name_order [parameter::get -package_id [apm_package_id_from_key intranet-core] -parameter "NameOrder" -default 1]
+    set cell_width [parameter::get -package_id [apm_package_id_from_key intranet-events] -parameter "EventCubeCellWidth" -default 25]
 
     if {"" == $report_start_date || "2000-01-01" == $report_start_date} {
 	set report_start_date [db_string start_date "select now()::date from dual"]
@@ -427,6 +428,7 @@ ad_proc im_event_cube {
     # ---------------------------------------------------------------
     
     # Initialize the hash for holidays.
+    set bank_holiday_color [util_memoize [list db_string holiday_color "select aux_string2 from im_categories where category_id = [im_absence_type_bank_holiday]"]]
     array set holiday_hash {}
     set day_list [list]
     for {set i 0} {$i < $report_days} {incr i} {
@@ -442,7 +444,7 @@ ad_proc im_event_cube {
 
 	set date_month [lang::message::lookup "" intranet-events.$date_month $date_month]
 
-	if {$date_weekday == "Sat" || $date_weekday == "Sun"} { set holiday_hash($date_date) 5 }
+	if {$date_weekday == "Sat" || $date_weekday == "Sun"} { set holiday_hash($date_date) $bank_holiday_color }
 	lappend day_list [list $date_date $date_day_of_month $date_month $date_year]
     }
 
@@ -452,21 +454,23 @@ ad_proc im_event_cube {
 
     set group_sql ""
     if {"" != $report_user_group_id && 0 != $report_user_group_id} {
-	set group_sql "and u.user_id in (select member_id from group_distinct_member_map where group_id = :report_user_group_id"
+	set group_sql "and u.user_id in (select member_id from group_distinct_member_map where group_id = :report_user_group_id)"
     }
 
     # Select any user who has ever been member of an event
     set user_list [db_list_of_lists user_list "
 	select distinct
 		u.user_id as user_id,
-		im_name_from_user_id(u.user_id, $name_order) as user_name
-	from	users u,
+		im_name_from_user_id(u.user_id, $name_order) as user_name,
+		acs_object__name(emp.department_id) as department
+	from	users u
+		LEFT OUTER JOIN im_employees emp ON u.user_id = emp.employee_id,
 		acs_rels r,
 		im_events e
 	where	r.object_id_one = e.event_id and
 		r.object_id_two = u.user_id
 		$group_sql
-	order by user_name
+	order by department, user_name
     "]
 
     set location_list [db_list_of_lists location_list "
@@ -481,23 +485,6 @@ ad_proc im_event_cube {
     "]
 
     # ---------------------------------------------------------------
-    # 
-    # ---------------------------------------------------------------
-
-    # Get list of categeory_ids to determine index 
-    # needed for color codes
-    set sql "
-        select  category_id
-        from    im_categories
-        where   category_type = 'Intranet Event Type'
-        order by category_id
-    "
-    set category_list [list]
-    db_foreach category_id $sql {
-	lappend category_list [list $category_id]
-    }
-
-    # ---------------------------------------------------------------
     # Events per user
     # ---------------------------------------------------------------
     
@@ -505,6 +492,7 @@ ad_proc im_event_cube {
 	-- Individual Events per user
 	select	e.*,
 		acs_object__name(e.event_location_id) as event_location_name,
+		(select conf_item_nr from im_conf_items where conf_item_id = e.event_location_id) as event_location_nr,
 		u.user_id,
 		e.event_start_date::date as start_d,
 		to_char(e.event_start_date, 'J') as start_j,
@@ -542,9 +530,19 @@ ad_proc im_event_cube {
 
 
 	set event_members_pretty [list]
+	set event_members_customers [list]
 	foreach tuple $event_members {
 	    set member_id [lindex $tuple 0]
-	    lappend event_members_pretty [im_name_from_user_id $member_id]
+	    lappend event_members_pretty [util_memoize [list im_name_from_user_id $member_id]]
+
+	    set customer [util_memoize [list db_string cust "
+		select	min(company_name)
+		from	acs_rels r,
+			im_companies c
+		where	r.object_id_one = c.company_id and
+			r.object_id_two = $member_id
+	    " -default ""]]
+	    lappend event_members_customers $customer
 	}
 
 	set event_start_hash($key) $event_id
@@ -558,10 +556,11 @@ ad_proc im_event_cube {
 					    event_type_id $event_type_id \
 					    event_status_id $event_status_id \
 					    event_duration $event_duration \
-					    event_location_id $event_location_id \
+					    event_location_nr $event_location_nr \
 					    event_location_name $event_location_name \
 					    event_members $event_members \
 					    event_members_pretty $event_members_pretty \
+					    event_members_customers $event_members_customers \
 					   ]
 
 	# Remember the events that starting before the report interval
@@ -617,7 +616,7 @@ ad_proc im_event_cube {
 	set value 0.0
 	if {[info exists task_hash($key)]} { set value $task_hash($key) }
 	set value [expr $value + $percentage]
-	set task_hash($key) [append value [lsearch $category_list $project_type_id]]
+	set task_hash($key) $value
     }
 
     # ---------------------------------------------------------------
@@ -661,8 +660,12 @@ ad_proc im_event_cube {
 	set key "$owner_id-$d"
 	set value ""
 	if {[info exists absence_hash($key)]} { set value $absence_hash($key) }
-	set absence_hash($key) [append value [lsearch $category_list $absence_type_id]]
+	set absence_type_color [util_memoize [list db_string color "select aux_string2 from im_categories where category_id = $absence_type_id"]]
+	lappend value $absence_type_color
+	set absence_hash($key) $value
     }
+
+    # ad_return_complaint 1 "[array get absence_hash]"
 
     # ---------------------------------------------------------------
     # Moving on time axis
@@ -671,18 +674,18 @@ ad_proc im_event_cube {
     set form_vars [ns_conn form]
     set export_vars_list [list]
     foreach form_var [ad_ns_set_keys $form_vars] {
-	if {"cube_start_date" == $form_var} { continue }
-	if {"cube_days" == $form_var} { continue }
+	if {"report_start_date" == $form_var} { continue }
+	if {"report_days" == $form_var} { continue }
         set form_val [ns_set get $form_vars $form_var]
 	lappend export_vars_list [list $form_var $form_val]
     }
       
     # Arrows to move time axis
     set arrow_days $report_days
-    set arrow_left_cube_start_date [db_string left_date "select :report_start_date::date - $arrow_days from dual"]
-    set arrow_right_cube_start_date [db_string left_date "select :report_start_date::date + $arrow_days from dual"]
-    set arrow_left_url [export_vars -base "/intranet-events/index" [linsert $export_vars_list end [list cube_start_date $arrow_left_cube_start_date]]]
-    set arrow_right_url [export_vars -base "/intranet-events/index" [linsert $export_vars_list end [list cube_start_date $arrow_right_cube_start_date]]]
+    set arrow_left_report_start_date [db_string left_date "select :report_start_date::date - $arrow_days from dual"]
+    set arrow_right_report_start_date [db_string left_date "select :report_start_date::date + $arrow_days from dual"]
+    set arrow_left_url [export_vars -base "/intranet-events/index" [linsert $export_vars_list end [list report_start_date $arrow_left_report_start_date]]]
+    set arrow_right_url [export_vars -base "/intranet-events/index" [linsert $export_vars_list end [list report_start_date $arrow_right_report_start_date]]]
     set arrow_left "<a href=$arrow_left_url>[im_gif arrow_comp_left]</a>"
     set arrow_right "<a href=$arrow_right_url>[im_gif arrow_comp_right]</a>"
 
@@ -694,13 +697,13 @@ ad_proc im_event_cube {
     set table_html "<table>\n"
     
     set table_header "<tr class=rowtitle>\n"
-    append table_header "<td class=rowtitle>$arrow_left [_ intranet-core.User]</td>\n"
+    append table_header "<td class=rowtitle colspan=2>$arrow_left [_ intranet-core.User]</td>\n"
     foreach day $day_list {
 	set date_date [lindex $day 0]
 	set date_day_of_month [lindex $day 1]
 	set date_month_of_year [lindex $day 2]
 	set date_year [lindex $day 3]
-	append table_header "<td class=rowtitle>$date_month_of_year<br>$date_day_of_month</td>\n"
+	append table_header "<td class=rowtitle><div style=\"width: ${cell_width}px\">$date_month_of_year<br>$date_day_of_month</div></td>\n"
     }
     append table_header "<td class=rowtitle>$arrow_right</td>\n"
     append table_header "</tr>\n"
@@ -713,7 +716,9 @@ ad_proc im_event_cube {
 	append table_body "<tr $bgcolor([expr $row_ctr % 2])>\n"
 	set user_id [lindex $user_tuple 0]
 	set user_name [lindex $user_tuple 1]
-	append table_body "<td><nobr><a href='[export_vars -base $user_url {user_id}]'>$user_name</a></td></nobr>\n"
+	set user_dept [lindex $user_tuple 2]
+	append table_body "<td><nobr>$user_dept</nobr></td>\n"
+	append table_body "<td><nobr><a href='[export_vars -base $user_url {user_id}]'>$user_name</a></nobr></td>\n"
 
 	# Deal with the events starting before the actual reporting interval
 	set events [list]
@@ -729,14 +734,16 @@ ad_proc im_event_cube {
 	foreach day $day_list {
 	    set date_date [lindex $day 0]
 	    set key "$user_id-$date_date"
-	    set value ""
-	    if {[info exists absence_hash($key)]} { append value $absence_hash($key) }
-	    if {[info exists holiday_hash($date_date)]} { append value $holiday_hash($date_date) }
+	    set value [list]
+	    if {[info exists absence_hash($key)]} { set value [concat $value $absence_hash($key)] }
+	    if {[info exists holiday_hash($date_date)]} { set value [concat $value $holiday_hash($date_date)] }
 
+	    if {"" != $value} { ns_log Notice "xxx: $value" }
+
+	    # Determine if there is an event to show
 	    set event_html ""
 	    append event_html $before_events_html
 	    set before_events_html ""
-
 	    if {[info exists user_event_hash($key)]} { 
 		set events $user_event_hash($key)
 		foreach eid $events {
@@ -759,7 +766,7 @@ ad_proc im_event_cube {
     # ---------------------------------------------------------------
 
     set table_header "<tr class=rowtitle>\n"
-    append table_header "<td class=rowtitle>$arrow_left [lang::message::lookup "" intranet-events.Locations Locations]</td>\n"
+    append table_header "<td class=rowtitle colspan=2>$arrow_left [lang::message::lookup "" intranet-events.Locations Locations]</td>\n"
     foreach day $day_list {
 	set date_date [lindex $day 0]
 	set date_day_of_month [lindex $day 1]
@@ -778,7 +785,7 @@ ad_proc im_event_cube {
 	append table_body "<tr $bgcolor([expr $row_ctr % 2])>\n"
 	set location_id [lindex $location_tuple 0]
 	set location_name [lindex $location_tuple 1]
-	append table_body "<td><nobr><a href='[export_vars -base $location_url {location_id}]'>$location_name</a></td></nobr>\n"
+	append table_body "<td colspan=2><nobr><a href='[export_vars -base $location_url {location_id}]'>$location_name</a></nobr></td>\n"
 
 	# Deal with the events starting before the actual reporting interval
 	set events [list]
@@ -840,11 +847,14 @@ ad_proc im_event_cube_render_event {
     set event_end_date $event_local_info(event_end_date)
     set event_status_id $event_local_info(event_status_id)
     set event_duration $event_local_info(event_duration)
-    set event_location_id $event_local_info(event_location_id)
+    set event_location_nr $event_local_info(event_location_nr)
     set event_location_name $event_local_info(event_location_name)
     set event_members $event_local_info(event_members)
     set event_members_pretty $event_local_info(event_members_pretty)
+    set event_members_customers $event_local_info(event_members_customers)
     set event_url [export_vars -base "/intranet-events/new" {{form_mode display} event_id}]
+
+    set cell_width [parameter::get -package_id [apm_package_id_from_key intranet-events] -parameter "EventCubeCellWidth" -default 25]
 
     set consultants [list]
     set customers [list]
@@ -853,12 +863,20 @@ ad_proc im_event_cube_render_event {
 	set user_id [lindex $rel_tuple_id 0]
 	set role_id [lindex $rel_tuple_id 1]
 	set user_name [lindex $event_members_pretty $i]
+	set customer [lindex $event_members_customers $i]
 
 	switch $role_id {
-	    1300 { lappend customers $user_name }
-	    1307 { lappend consultants $user_name }
+	    1300 { lappend customers "$customer - $user_name" }
+	    1307 - 1308 { lappend consultants $user_name }
 	    default { ad_return_complaint 1 "im_event_cube_render_event: unknown role: $role_id" }
 	}
+    }
+
+    set kuerzel "$event_location_nr"
+    foreach p $consultants {
+	set initials ""
+	foreach n $p { append initials [string range $n 0 0] }
+	append kuerzel ";$initials"
     }
 
 
@@ -870,20 +888,11 @@ ad_proc im_event_cube_render_event {
     }
 
     # Width: Multiples of the cell width
-    set event_width [expr $event_width_days * 25]
+    set event_width [expr $event_width_days * [expr $cell_width + 6]]
 
     # Determine the color of the event
-    # 82000 unplanned
-    # 82002 planned
-    # 82004 reserved
-    # 82006 booked
-    switch $event_status_id {
-	82000 { set bgcolor "#yellow" }
-	82000 { set bgcolor "#00A000" }
-	82000 { set bgcolor "#00C000" }
-	82000 { set bgcolor "#00FF00" }
-	default { set bgcolor "white" }
-    }
+    set bgcolor [util_memoize [list db_string bgcolor "select aux_string2 from im_categories where category_id = '$event_status_id'" -default ""]]
+    if {"" == $bgcolor} { set bgcolor "FFFFFF" }
 
     # What to show on a mouse-over
     set event_title "[lang::message::lookup "" intranet-events.Name Name]: $event_name
@@ -903,10 +912,10 @@ ad_proc im_event_cube_render_event {
     set result "
       <div style='position: relative'>
       <div style='position: absolute; top: -12; left: -2; width: $event_width; z-index:10; background: yellow;'>
-<table cellspacing=0 cellpadding=0 border=2 bgcolor=$bgcolor bordercolor=$bordercolor width='100%'>
+<table cellspacing=0 cellpadding=0 border=2 bgcolor=#$bgcolor bordercolor=$bordercolor width='100%'>
 <tr>
-<td bgcolor=red>
-<nobr><a href=$event_url title='$event_title' target='_'>$event_nr</a></nobr>
+<td bgcolor=#$bgcolor>
+<nobr><a href=$event_url title='$event_title' target='_'>$kuerzel</a></nobr>
 </td>
 </tr>
 </table>
@@ -925,7 +934,7 @@ ad_proc im_event_cube_render_cell {
     Takes the color from events color lookup.
 } {
     if {[catch {
-	set color [im_event_mix_colors $value]
+	set color [im_util_mix_colors $value]
     } err_msg]} {
 	ad_return_complaint 1 "im_absence_mix_colors $value<br><pre>$err_msg</pre>"
     }   
@@ -939,48 +948,26 @@ ad_proc im_event_cube_render_cell {
 
 
 
-ad_proc im_event_mix_colors {
-    value
+ad_proc im_util_mix_colors {
+    colors
 } {
-    Renders a single report cell, depending on value.
-    Value consists of a string of 0..5 representing the last digit
-    of the event_type:
-            5000 | Vacation	- Red
-            5001 | Personal	- Orange
-            5002 | Sick		- Blue
-            5003 | Travel	- Purple
-            5004 | Training	- Yellow
-            5005 | Bank Holiday	- Grey
-    " " indentifies an "empty vacation", which is represented with
-    color white. This is necessary to represent weekly events,
-    where less then 5 days are taken as event.
-    Value contains a string of last digits of the event types.
-    Multiple values are possible for example "05", meaning that
-    a Vacation and a holiday meet. 
+    Mixes a number of colors.
+    Colors are expected in HEX format like "FFCC99".
+    @param colors contains a list of colors to be mixed
 } {
     # Show empty cells according to even/odd row formatting
-    if {"" == $value} { return "" }
-    if {[string is integer $value] && [expr $value < 0]} { return "red" }
-
-    set value [string toupper $value]
-
-    # Define a list of colours to pick from
-    set color_list [im_event_cube_color_list]
+    if {"" == $colors} { return "" }
+    if {[string is integer $colors] && [expr $colors < 0]} { return "red" }
+    set colors [string toupper $colors]
 
     set hex_list {0 1 2 3 4 5 6 7 8 9 A B C D E F}
-
-    set len [string length $value]
+    set len [llength $colors]
     set r 0
     set g 0
     set b 0
     
-    # Mix the colors for each of the characters in "value"
-    for {set i 0} {$i < $len} {incr i} {
-	set v [string range $value $i $i]
-
-	set col "FFFFFF"
-	if {" " != $v} { set col [lindex $color_list $v] }
-
+    # Mix the colors for each of the characters in "colors"
+    foreach col $colors {
 	set r [expr $r + [lsearch $hex_list [string range $col 0 0]] * 16]
 	set r [expr $r + [lsearch $hex_list [string range $col 1 1]]]
 	

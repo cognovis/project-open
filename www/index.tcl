@@ -26,7 +26,7 @@ ad_page_contract {
     { how_many "" }
     { view_name "event_list" }
     { report_start_date "" }
-    { cube_days 21}
+    { report_days 21}
 }
 
 # ---------------------------------------------------------------
@@ -226,7 +226,7 @@ ad_form \
     -form {
     	{mine_p:text(select),optional {label "$mine_all_l10n"} {options $mine_p_options }}
 	{report_start_date:text(hidden),optional}
-	{cube_days:text(hidden),optional}
+	{report_days:text(hidden),optional}
 	{start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {value "$start_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
 	{end_date:text(text) {label "[_ intranet-timesheet2.End_Date]"} {value "$end_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('end_date', 'y-m-d');" >}}}
 	{event_name:text(text),optional {label "[_ intranet-core.Name]"} {html {size 12}}}
@@ -245,7 +245,7 @@ if {$view_events_all_p} {
 
 template::element::set_value $form_id mine_p $mine_p
 template::element::set_value $form_id report_start_date $report_start_date
-template::element::set_value $form_id cube_days $cube_days
+template::element::set_value $form_id report_days $report_days
 
 im_dynfield::append_attributes_to_form \
     -object_type $object_type \
@@ -497,6 +497,76 @@ append admin_html [im_menu_ul_list -no_uls 1 "events_admin" {}]
 append admin_html "</ul>"
 
 
+
+
+# ----------------------------------------------------------
+# Set color scheme 
+# ----------------------------------------------------------
+
+set color_list [im_event_cube_color_list]
+set color_sql "
+	select	category_id,
+		category,
+		category_type,
+		aux_string2
+	from	im_categories
+	where	(enabled_p = 't' or enabled_p is null) and
+		category_type in ('Intranet Event Status', 'Intranet Absence Type')
+	order by 
+		category_type DESC,
+		category_id
+"
+append admin_html "<div class=filter-title>[lang::message::lookup "" intranet-timesheet2.Color_codes "Color Codes"]</div>\n"
+append admin_html "<table cellpadding='5' cellspacing='5'>\n"
+
+
+set index 0
+set last_category_type ""
+db_foreach event_color_codes $color_sql {
+    # Create intermediate headers for each category tye
+    if {$category_type != $last_category_type} {
+	set last_category_type $category_type
+	append admin_html "<tr><td class=rowwhite style='font-weight:bold'>$category_type</td></tr>\n"
+    }
+
+    # !!!
+    set col $aux_string2
+    if {"" == $aux_string2 } {
+	set col [lindex $color_list $index]
+	incr index
+    }
+
+    regsub -all " " $category "_" category_key
+    set category_l10n [lang::message::lookup "" intranet-core.$category_key $category]
+    if { [string length $col] == 6} {
+	# Transform RGB Hex-Values (e.g. #a3b2c4) into Dec-Values
+	set r_bg [expr 0x[string range $col 0 1]]
+	set g_bg [expr 0x[string range $col 2 3]]
+	set b_bg [expr 0x[string range $col 4 5]]
+    } elseif { [string length $col] == 3 } {
+	# Transform RGB Hex-Values (e.g. #a3b) into Dec-Values
+	set r_bg [expr 0x[string range $col 0 0]]
+	set g_bg [expr 0x[string range $col 1 1]]
+	set b_bg [expr 0x[string range $col 2 2]]
+    } else {
+	# color codes can't be parsed -> set a middle value
+	set r_bg 127
+	set g_bg 127
+	set b_bg 127
+    }
+
+    # calculate a brightness-value for the color
+    # if brightness > 127 the foreground color is black, if < 127 the foreground color is white
+    set brightness [expr $r_bg * 0.2126 + $g_bg * 0.7152 + $b_bg * 0.0722]
+    set col_fg "fff"
+    if {$brightness >= 127} {set col_fg "000"}
+    set category_l10n [lang::message::lookup "" intranet-core.$category_key $category]
+    append admin_html "<tr><td style='padding:3px; background-color:\#$col; color:\#$col_fg'>$category_l10n</td></tr>\n"
+}
+
+append admin_html "</table>\n"
+
+
 # ---------------------------------------------------------------
 # Format the Result Data
 # ---------------------------------------------------------------
@@ -658,7 +728,8 @@ set event_cube_html [im_event_cube \
 			 -event_start_date $start_date \
 			 -event_end_date $end_date \
 			 -report_start_date $report_start_date \
-			 -report_days $cube_days \
+			 -report_days $report_days \
+			 -report_user_group_id [im_profile_employees] \
 			]
 
 

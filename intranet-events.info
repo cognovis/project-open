@@ -22,7 +22,7 @@
         <callbacks>
         </callbacks>
         <parameters>
-        <!-- No version parameters -->
+            <parameter scope="instance" datatype="number"  min_n_values="1"  max_n_values="1"  name="EventCubeCellWidth"  default="25" description="Width of cube cells. Default is 25."/>
         </parameters>
 
     </version>
