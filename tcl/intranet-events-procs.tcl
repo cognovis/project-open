@@ -468,7 +468,17 @@ ad_proc im_event_cube {
 		acs_rels r,
 		im_events e
 	where	r.object_id_one = e.event_id and
-		r.object_id_two = u.user_id
+		r.object_id_two = u.user_id and
+		u.user_id not in (
+			select	u.user_id
+			from	users u,
+				acs_rels r,
+				membership_rels mr
+			where	r.rel_id = mr.rel_id and
+				r.object_id_two = u.user_id and
+				r.object_id_one = -2 and
+				mr.member_state != 'approved'
+		)
 		$group_sql
 	order by department, user_name
     "]
@@ -480,7 +490,8 @@ ad_proc im_event_cube {
 	from	im_events e
 		LEFT OUTER JOIN im_conf_items ci ON (e.event_location_id = ci.conf_item_id)
 	where	e.event_location_id = ci.conf_item_id and
-		ci.conf_item_name is not null
+		ci.conf_item_name is not null and
+		ci.conf_item_status_id not in ([im_conf_item_status_deleted])
 	order by ci.conf_item_name
     "]
 
