@@ -17,6 +17,7 @@ ad_library {
 ad_proc -private im_rest_version {} {
     Returns the current server version of the REST interface.
     Please see www.project-open.org/en/rest_version_history
+    <li>2.2	(2013-10-18):	Added "deref_p=1" parameter for dereferencing
     <li>2.1	(2012-03-18):	Added new report and now deprecating single object calls
     <li>2.0	(2011-05-12):	Added support for JSOn and Sencha format variants
 				ToDo: Always return "id" instead of "object_id"
@@ -390,7 +391,14 @@ ad_proc -private im_rest_get_object {
     ns_log Notice "im_rest_get_object: format=$format, user_id=$user_id, rest_otype=$rest_otype, rest_oid=$rest_oid, query_hash=$query_hash_pairs"
 
     # Check that rest_oid is an integer
-    im_security_alert_check_integer -location "im_rest_get_object" -value $rest_oid
+    im_security_alert_check_integer -location "im_rest_get_object: rest_oid" -value $rest_oid
+
+    # Check if the deref_p parameter was set
+    array set query_hash $query_hash_pairs
+    set deref_p 0
+    if {[info exists query_hash(deref_p)]} { set deref_p $query_hash(deref_p) }
+    im_security_alert_check_integer -location "im_rest_get_object: deref_p" -value $deref_p
+
 
     # Permissions for the object type
     set current_user_id $user_id
@@ -440,7 +448,7 @@ ad_proc -private im_rest_get_object {
     # -------------------------------------------------------
     # Get the SQL to extract all values from the object
 #    set sql [util_memoize [list im_rest_object_type_select_sql -rest_otype $rest_otype]]
-    set sql [im_rest_object_type_select_sql -rest_otype $rest_otype]
+    set sql [im_rest_object_type_select_sql -deref_p $deref_p -rest_otype $rest_otype]
 
     # Get the list of index columns of the object's various tables.
     set index_columns [im_rest_object_type_index_columns -rest_otype $rest_otype]
@@ -840,6 +848,13 @@ ad_proc -private im_rest_get_object_type {
     set rest_columns [im_rest_get_rest_columns $query_hash_pairs]
     foreach col $rest_columns { set rest_columns_hash($col) 1 }
 
+    # Check if the deref_p parameter was set
+    array set query_hash $query_hash_pairs
+    set deref_p 0
+    if {[info exists query_hash(deref_p)]} { set deref_p $query_hash(deref_p) }
+    im_security_alert_check_integer -location "im_rest_get_object: deref_p" -value $deref_p
+
+
     # -------------------------------------------------------
     # Get some more information about the current object type
     db_1row rest_otype_info "
@@ -848,7 +863,6 @@ ad_proc -private im_rest_get_object_type {
 	where	object_type = :rest_otype
     "
 
-# !!!
     if {"" == $table_name} {
 	im_rest_error -format $format -http_status 500 -message "Invalid DynField configuration: Object type '$rest_otype' doesn't have a table_name specified in table acs_object_types."
     }
@@ -903,7 +917,7 @@ ad_proc -private im_rest_get_object_type {
     # -------------------------------------------------------
     # Check if there are "valid_vars" specified in the HTTP header
     # and add these vars to the SQL clause
-    set valid_vars [util_memoize [list im_rest_object_type_columns -rest_otype $rest_otype]]
+    set valid_vars [util_memoize [list im_rest_object_type_columns -deref_p $deref_p -rest_otype $rest_otype]]
     foreach v $valid_vars {
 	if {[info exists query_hash($v)]} { lappend where_clause_list "$v=$query_hash($v)" }
     }
@@ -963,7 +977,7 @@ ad_proc -private im_rest_get_object_type {
     # Select SQL: Pull out objects where the acs_objects.object_type 
     # is correct AND the object exists in the object type's primary table.
     # This way we avoid "dangling objects" in acs_objects and sub-types.
-    set sql [im_rest_object_type_select_sql -rest_otype $rest_otype -no_where_clause_p 1]
+    set sql [im_rest_object_type_select_sql -deref_p $deref_p -rest_otype $rest_otype -no_where_clause_p 1]
     append sql "
 	where	o.object_type = :rest_otype and
 		o.object_id in (
@@ -980,7 +994,7 @@ ad_proc -private im_rest_get_object_type {
     set unlimited_sql $sql
     append sql [im_rest_object_type_pagination_sql -query_hash_pairs $query_hash_pairs]
 
-#    ad_return_complaint 1 "<pre>$sql</pre>"
+    # ad_return_complaint 1 "!!!<pre>$sql</pre>"
 
 
     # -------------------------------------------------------

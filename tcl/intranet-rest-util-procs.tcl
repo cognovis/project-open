@@ -426,8 +426,71 @@ ad_proc -public im_rest_object_type_order_sql {
     }
 }
 
+# ---------------------------------------------------------------
+# Get meta-informatoin information about columns
+#
+# The deref_plpgsql_function is able to transform an attribute
+# reference (i.e. an object_id or a category_id) into the name
+# of the object.
+# ---------------------------------------------------------------
+
+ad_proc -public im_rest_hard_coded_deref_plpgsql_functions { 
+    -rest_otype:required
+} {
+    Returns a key-value list of hard coded attribues per object type.
+    These values are only necessary in order to work around missing
+    dynfield metadata information for certain object types
+} {
+    set list {
+	"im_projects-parent_id" im_name_from_id
+	"im_projects-company_id" im_name_from_id
+	"im_projects-project_type_id" im_category_from_id 
+	"im_projects-project_status_id" im_category_from_id 
+	"im_projects-billing_type_id" im_category_from_id 
+	"im_projects-on_track_status_id" im_category_from_id 
+	"im_projects-project_priority_id" im_category_from_id 
+	"im_projects-project_lead_id" im_name_from_id 
+	"im_projects-supervisor_id" im_name_from_id 
+	"im_projects-company_contact_id" im_name_from_id 
+	"im_projects-project_cost_center_id" im_name_from_id 
+
+	"im_conf_items-conf_item_parent_id" im_name_from_id
+	"im_conf_items-conf_item_cost_center_id" im_name_from_id
+	"im_conf_items-conf_item_owner_id" im_name_from_id
+	"im_conf_items-conf_item_type_id" im_name_from_id
+	"im_conf_items-conf_item_status_id" im_name_from_id
+    }
+    return $list
+}
+
+ad_proc -public im_rest_deref_plpgsql_functions { 
+    -rest_otype:required
+} {
+    Returns a key-value list of dereference functions per table-column.
+} {
+    set dynfield_sql "
+    	select	*
+	from	acs_attributes aa,
+		im_dynfield_attributes da,
+		im_dynfield_widgets dw
+	where	aa.attribute_id = da.acs_attribute_id and
+		da.widget_name = dw.widget_name and
+		aa.object_type = :rest_otype
+    "
+    # Get a list of hard-coded attributes
+    array set dynfield_hash [im_rest_hard_coded_deref_plpgsql_functions -rest_otype $rest_otype]
+    # Overwrite/add with list of meta information from DynFields
+    db_foreach dynfields $dynfield_sql {
+	set key "$table_name-$attribute_name"
+	set dynfield_hash($key) $deref_plpgsql_function
+    }
+
+    return [array get dynfield_hash]
+}
+
 
 ad_proc -public im_rest_object_type_select_sql { 
+    {-deref_p 0}
     {-no_where_clause_p 0}
     -rest_otype:required
 } {
@@ -446,6 +509,11 @@ ad_proc -public im_rest_object_type_select_sql {
     }
     set super_types $s
 
+    # Get a list of dereferencing functions
+    if {$deref_p} {
+	array set dynfield_hash [im_rest_deref_plpgsql_functions -rest_otype $rest_otype]
+    }
+
     # ---------------------------------------------------------------
     # Construct a SQL that pulls out all information about one object
     # Start with the core object tables, so that all important fields
@@ -459,7 +527,8 @@ ad_proc -public im_rest_object_type_select_sql {
     set selected_tables {}
 
     set tables_sql "
-	select	*
+	select	table_name,
+		id_column
 	from	(
 		select	table_name,
 			id_column,
@@ -475,24 +544,29 @@ ad_proc -public im_rest_object_type_select_sql {
 		) t
 	order by t.sort_order
     "
-
-    set columns_sql "
-	select	lower(column_name) as column_name
-	from	user_tab_columns
-	where	lower(table_name) = lower(:table_name)
-    "
+    set table_list [db_list_of_lists tables $tables_sql]
 
     set cnt 0
-    db_foreach tables $tables_sql {
+    foreach table_tuple $table_list {
+	set table_name [lindex $table_tuple 0]
+	set id_column [lindex $table_tuple 1]
 
+	# Make sure not to include a table twice!
 	if {[lsearch $selected_tables $table_name] >= 0} { 
 	    ns_log Notice "im_rest_object_type_select_sql: found duplicate table: $table_name"
 	    continue 
 	}
 
+	# Define an abbreviation for each table
 	set letter [lindex $letters $cnt]
 	lappend froms "LEFT OUTER JOIN $table_name $letter ON (o.object_id = $letter.$id_column)"
 
+	# Iterate through table columns
+	set columns_sql "
+		select	lower(column_name) as column_name
+		from	user_tab_columns
+		where	lower(table_name) = lower(:table_name)
+	"
 	db_foreach columns $columns_sql {
 	    if {[lsearch $selected_columns $column_name] >= 0} { 
 		ns_log Notice "im_rest_object_type_select_sql: found ambiguous field: $table_name.$column_name"
@@ -500,6 +574,14 @@ ad_proc -public im_rest_object_type_select_sql {
 	    }
 	    lappend selects "$letter.$column_name"
 	    lappend selected_columns $column_name
+
+	    # Check for dereferencing function
+	    set key [string tolower "$table_name-$column_name"]
+	    if {[info exists dynfield_hash($key)]} {
+		set deref_function $dynfield_hash($key)
+		lappend selects "${deref_function}($letter.$column_name) as ${column_name}_deref"
+		lappend selected_columns ${column_name}_deref
+	    }
 	}
 
 	lappend selected_tables $table_name
@@ -523,18 +605,25 @@ ad_proc -public im_rest_object_type_select_sql {
 
 
 ad_proc -public im_rest_object_type_columns { 
+    {-deref_p 0}
     -rest_otype:required
 } {
     Returns a list of all columns for a given object type.
 } {
     set super_types [im_object_super_types -object_type $rest_otype]
 
+    # Get a list of dereferencing functions
+    if {$deref_p} {
+	array set dynfield_hash [im_rest_deref_plpgsql_functions -rest_otype $rest_otype]
+    }
+
     # ---------------------------------------------------------------
     # Construct a SQL that pulls out all tables for an object type,
     # plus all table columns via user_tab_colums.
     set columns_sql "
 	select distinct
-		lower(utc.column_name)
+		lower(utc.column_name) as column_name,
+		lower(utc.table_name) as table_name
 	from
 		user_tab_columns utc
 	where
@@ -552,7 +641,15 @@ ad_proc -public im_rest_object_type_columns {
 		)
     "
 
-    return [db_list columns $columns_sql]
+    set columns [list]
+    db_foreach columns $columns_sql {
+	lappend columns $column_name
+	set key "$table_name-$column_name"
+	if {[info exists dynfield_hash($key)]} {
+	    lappend columns ${column_name}_deref
+	}
+    }
+    return $columns
 }
 
 ad_proc -public im_rest_object_type_index_columns { 
