@@ -442,6 +442,7 @@ ad_proc -public im_rest_hard_coded_deref_plpgsql_functions {
     dynfield metadata information for certain object types
 } {
     set list {
+	"acs_objects-creation_user" im_name_from_id
 	"im_projects-parent_id" im_name_from_id
 	"im_projects-company_id" im_name_from_id
 	"im_projects-project_type_id" im_category_from_id 
@@ -453,7 +454,6 @@ ad_proc -public im_rest_hard_coded_deref_plpgsql_functions {
 	"im_projects-supervisor_id" im_name_from_id 
 	"im_projects-company_contact_id" im_name_from_id 
 	"im_projects-project_cost_center_id" im_name_from_id 
-
 	"im_conf_items-conf_item_parent_id" im_name_from_id
 	"im_conf_items-conf_item_cost_center_id" im_name_from_id
 	"im_conf_items-conf_item_owner_id" im_name_from_id
@@ -588,9 +588,13 @@ ad_proc -public im_rest_object_type_select_sql {
 	incr cnt
     }
 
+    set acs_object_deref_sql "im_name_from_user_id(o.creation_user) as creation_user_deref,"
+    if {!$deref_p} { set acs_object_deref_sql "" }
+
     set sql "
 	select	o.*,
 		o.object_id as rest_oid,
+		$acs_object_deref_sql
 		acs_object__name(o.object_id) as object_name,
 		[join $selects ",\n\t\t"]
 	from	acs_objects o

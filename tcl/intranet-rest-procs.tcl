@@ -987,15 +987,14 @@ ad_proc -private im_rest_get_object_type {
 		$where_clause
     "
 
+#    ad_return_complaint 1 "<pre>$sql</pre>"
+
     # Append sorting "ORDER BY" clause to the sql.
     append sql [im_rest_object_type_order_sql -query_hash_pairs $query_hash_pairs]
 
     # Append pagination "LIMIT $limit OFFSET $start" to the sql.
     set unlimited_sql $sql
     append sql [im_rest_object_type_pagination_sql -query_hash_pairs $query_hash_pairs]
-
-    # ad_return_complaint 1 "!!!<pre>$sql</pre>"
-
 
     # -------------------------------------------------------
     # Loop through all objects of the specified type
