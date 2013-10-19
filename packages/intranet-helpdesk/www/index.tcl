@@ -640,6 +640,7 @@ ad_form \
     -form $ticket_elements
 
 template::element::set_value $form_id ticket_nr [im_ticket::next_ticket_nr]
+template::element::set_value $form_id ticket_sla_id [im_opt_val ticket_sla_id]
 
 if {$edit_ticket_status_p} {
     template::element::set_value $form_id ticket_status_id [im_ticket_status_open]
