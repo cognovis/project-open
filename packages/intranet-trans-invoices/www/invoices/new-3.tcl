@@ -65,7 +65,7 @@ if {[lsearch -exact $allowed_cost_type $target_cost_type_id] == -1} {
     ad_return_complaint "Insufficient Privileges" "
         <li>You can't create documents of type \#$target_cost_type_id."
     ad_script_abort
-}
+s}
 
 # Default for cost-centers - take the user's
 # dept from HR.
@@ -97,9 +97,20 @@ set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-trans-inv
 set invoice_id [im_new_object_id]
 set invoice_nr [im_next_invoice_nr -cost_type_id $target_cost_type_id]
 set invoice_date $todays_date
-set default_payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCompanyInvoicePaymentDays" "" 30] 
+
+# Get the payment days from the company
+set payment_term_id [db_string default_payment_days "select payment_term_id from im_companies where company_id = :company_id" -default ""]
+set payment_days ""
+if {"" != $payment_term_id} {
+    set payment_days [db_string payment_days "select aux_int1 from im_categories where category_id = :payment_term_id" -default ""] 
+} 
+if {$payment_days == ""} {
+    set payment_days [ad_parameter -package_id [im_package_cost_id] "DefaultCompanyInvoicePaymentDays" "" 30] 
+}
+set payment_term_select [im_category_select_plain "Intranet Payment Term" payment_term_id $payment_term_id]
+
 set enable_file_type_p [parameter::get_from_package_key -package_key intranet-trans-invoices -parameter "EnableFileTypeInTranslationPriceList" -default 0]
-set due_date [db_string get_due_date "select to_date(to_char(sysdate,'YYYY-MM-DD'),'YYYY-MM-DD') + $default_payment_days from dual"]
+set due_date [db_string get_due_date "select to_date(to_char(sysdate,'YYYY-MM-DD'),'YYYY-MM-DD') + $payment_days from dual"]
 set provider_id [im_company_internal]
 set customer_id $company_id
 set cost_status_id [im_cost_status_created]

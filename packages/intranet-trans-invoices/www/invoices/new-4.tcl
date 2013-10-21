@@ -25,6 +25,7 @@ ad_page_contract {
     cost_status_id:integer 
     cost_type_id:integer
     { payment_days:integer 0 }
+    { payment_term_id:integer "" }
     { payment_method_id:integer "" }
     template_id:integer
     vat:float
@@ -136,6 +137,7 @@ set
 			    from im_start_months 
 			    where start_block < :invoice_date),
 	payment_days	= :payment_days,
+	payment_term_id	= :payment_term_id,
 	currency	= :invoice_currency,
 	vat		= :vat,
 	tax		= :tax,
