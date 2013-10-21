@@ -263,7 +263,7 @@ ad_form \
     -form {
 	event_id:key
 	{event_name:text(text) {label $event_name_label} {html {size 50}}}
-	{event_nr:text(text) {label $event_nr_label} {html {size 30}} }
+	{event_nr:text(hidden) {label $event_nr_label} {html {size 30}} }
 	{event_material_id:text(select),optional {label "[lang::message::lookup {} intranet-events.Material Material]"} {options $material_options}}
 	{event_location_id:text(select),optional {label "[lang::message::lookup {} intranet-events.Location Location]"} {options $location_options}}
 	{event_start_date:date(date) {label "[_ intranet-timesheet2.Start_Date]"} {format "YYYY-MM-DD"} {after_html {<input type="button" style="height:23px; width:23px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendarWithDateWidget('event_start_date', 'y-m-d');" >}}}

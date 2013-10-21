@@ -889,6 +889,9 @@ ad_proc im_event_cube_render_event {
 	foreach n $p { append initials [string range $n 0 0] }
 	append kuerzel ";$initials"
     }
+    # One cell corresponds to some 3.5 letters...
+    set kuerzel [string range $kuerzel 0 [expr int(($event_duration * 3.5) - 1)]]
+
 
 
     # Deal with "broken" events, that start before the first 

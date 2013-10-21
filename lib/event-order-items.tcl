@@ -20,8 +20,7 @@ set form_mode "display"
 # ******************************************************
 
 set order_item_options [db_list_of_lists order_items "
-	select	
-		cust.company_name || ' / ' || c.cost_name || ' / ' || ii.item_name,
+	select	cust.company_name || ' - ' || c.cost_name || ' / ' || ii.sort_order || ' - ' || ii.item_name || ' (' || round(ii.item_units) || ')',
 		ii.item_id
 	from	im_events e,
 		acs_rels ecr,
@@ -39,12 +38,18 @@ set order_item_options [db_list_of_lists order_items "
 	order by
 		cust.company_name,
 		c.cost_name,
+		ii.sort_order,
 		ii.item_name
 "]
 
 # ******************************************************
 # Create the list of all attributes of the current type
 # ******************************************************
+
+set item_l10n [lang::message::lookup "" intranet-events.Item "Item"]
+set order_l10n [lang::message::lookup "" intranet-events.Order "Order"]
+set customer_l10n [lang::message::lookup "" intranet-events.Customer "Customer"]
+set ordered_units_l10n [lang::message::lookup "" intranet-events.Ordered_Units "Ordered Units"]
 
 list::create \
     -name order_item_list \
@@ -53,19 +58,22 @@ list::create \
     -no_data "No order items associated yet" \
     -elements {
 	company_name { 
-	    label "Customer" 
+	    label $customer_l10n
 	    link_url_col customer_url
 	}
 	cost_name { 
-	    label "Order" 
+	    label $order_l10n 
 	    link_url_col order_item_url
 	}
 	item_name { 
-	    label "Item" 
+	    label $item_l10n
 	    link_url_col order_item_url
 	}
+	item_units_rounded { 
+	    label $ordered_units_l10n
+	}
 	order_item_units { 
-	    label "Units" 
+	    label "Planned Units" 
 	    display_template {
 		<input type=textbox size=5 name=order_item_units.@order_item_list_multirow.item_id@ value="@order_item_list_multirow.order_item_amount@">
 	    }
@@ -89,7 +97,8 @@ list::create \
 
 
 db_multirow -extend {order_item_url customer_url delete_url} order_item_list_multirow get_order_items "
-	select	*
+	select	*,
+		round(item_units) as item_units_rounded
 	from	im_companies cust,
 		im_invoice_items ii,
 		im_costs c,

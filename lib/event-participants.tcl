@@ -95,7 +95,7 @@ list::create \
     }
 
 
-db_multirow -extend {company_url delete_url reserved_enabled confirmed_enabled} participant_list_multirow get_participants "
+db_multirow -extend {participant_url company_url delete_url reserved_enabled confirmed_enabled} participant_list_multirow get_participants "
 	select	*,
 		u.user_id as participant_id,
 		im_category_from_id(bom.member_status_id) as participant_status

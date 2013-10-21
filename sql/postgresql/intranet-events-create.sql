@@ -551,6 +551,10 @@ SELECT im_dynfield_attribute_new ('im_event', 'num_laptops', 'Num Laptops', 'int
 SELECT im_dynfield_attribute_new ('im_event', 'num_beamers', 'Num Laptops', 'integer', 'integer', 'f');
 
 
+alter table im_events add column num_laptops integer;
+alter table im_events add column num_beamers integer;
+
+
 
 
 -- ------------------------------------------------------
