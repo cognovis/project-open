@@ -36,6 +36,9 @@ where object_type = 'im_event';
 SELECT im_category_new (1307, 'Consultant', 'Intranet Biz Object Role');
 SELECT im_category_new (1308, 'Trainer', 'Intranet Biz Object Role');
 
+update im_categories set category_gif = 'c' where category_id = 1307;
+update im_categories set category_gif = 't' where category_id = 1308;
+
 insert into im_biz_object_role_map values ('im_event',null,1307);
 insert into im_biz_object_role_map values ('im_event',null,1308);
 
@@ -359,6 +362,7 @@ SELECT acs_privilege__add_child('admin', 'edit_events_all');
 
 
 -- Set default permissions per group
+-- ToDo: Permission granting does not work
 SELECT im_priv_create('add_events', 'Employees');
 SELECT im_priv_create('view_events_all', 'Employees');
 SELECT im_priv_create('edit_events_all', 'Project Managers');
@@ -390,6 +394,18 @@ SELECT im_category_new (82100, 'Default', 'Intranet Event Type');
 SELECT im_category_new (82200, 'Confirmed', 'Intranet Event Participant Status');
 SELECT im_category_new (82210, 'Reserved', 'Intranet Event Participant Status');
 SELECT im_category_new (82290, 'Deleted', 'Intranet Event Participant Status');
+
+
+
+
+update im_categories set aux_string2 = '99CCFF' where category_id = 5000;
+update im_categories set aux_string2 = 'CCFFCC' where category_id = 5001;
+update im_categories set aux_string2 = 'CC9999' where category_id = 5002;
+update im_categories set aux_string2 = 'CC99FF' where category_id = 5003;
+update im_categories set aux_string2 = 'FFCC99' where category_id = 5004;
+update im_categories set aux_string2 = 'CCCCCC' where category_id = 5005;
+update im_categories set aux_string2 = 'FF99CC' where category_id = 5006;
+update im_categories set aux_string2 = 'FF9999' where category_id = 5007;
 
 
 

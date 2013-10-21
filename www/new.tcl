@@ -419,9 +419,6 @@ ad_form -extend -name event -on_request {
 
     ns_log Notice "new: after_submit"
 
-    # Generate im_timesheet_task entries for each event
-    im_event::task_sweeper
-
     # Reset the lock on the event
     db_dml set_lock "
 	update im_biz_objects set
@@ -452,6 +449,11 @@ ad_form -extend -name event -on_request {
 	"[lang::message::lookup {} intranet-events.Event_nr_already_exists {Event Nr already exists}]" 
     }
 }
+
+
+# Generate im_timesheet_task entries for each event
+im_event::task_sweeper -event_id [im_opt_val event_id]
+
 
 # ---------------------------------------------------------------
 # Event Menu

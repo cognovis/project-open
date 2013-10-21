@@ -371,8 +371,11 @@ ad_proc im_event_cube {
     {-event_status_id "" }
     {-event_type_id "" }
     {-event_material_id "" }
+    {-event_location_id "" }
     {-event_start_date "" }
     {-event_end_date "" }
+    {-event_creator_id "" }
+    {-event_name "" }
     {-report_user_selection "all" }
     {-report_start_date "" }
     {-report_days 21}
@@ -409,13 +412,25 @@ ad_proc im_event_cube {
     if {"" != $event_status_id && 0 != $event_status_id} {
 	lappend criteria "e.event_status_id = '$event_status_id'"
     }
+    if {"" != $event_creator_id && 0 != $event_creator_id} {
+	lappend criteria "o.creation_user = '$event_creator_id'"
+    }
+    if {"" != $event_material_id && 0 != $event_material_id} {
+	lappend criteria "e.event_material_id = '$event_material_id'"
+    }
+    if {"" != $event_location_id && 0 != $event_location_id} {
+	lappend criteria "e.event_location_id = '$event_location_id'"
+    }
+    if {"" != $event_name} {
+	lappend criteria "lower(e.event_name) like lower('%$event_name%')"
+    }
 
     switch $report_user_selection {
 	"all" {
 	    # Nothing
 	}
 	"mine" {
-	    lappend criteria "u.user_id = :current_user_id"
+	    lappend criteria "o.creation_user = :current_user_id"
 	}
     }
     set where_clause [join $criteria " and\n            "]
@@ -500,7 +515,6 @@ ad_proc im_event_cube {
     # ---------------------------------------------------------------
     
     set event_sql "
-	-- Individual Events per user
 	select	e.*,
 		acs_object__name(e.event_location_id) as event_location_name,
 		(select conf_item_nr from im_conf_items where conf_item_id = e.event_location_id) as event_location_nr,
@@ -511,10 +525,12 @@ ad_proc im_event_cube {
 		(e.event_end_date::date - e.event_start_date::date + 1) as event_duration,
 		im_biz_object_member__list(e.event_id) as event_members,
 		CASE WHEN e.event_start_date < :report_start_date THEN 1 ELSE 0 END as event_starts_before_report_p
-	from	im_events e,
+	from	acs_objects o,
+		im_events e,
 		acs_rels r,
 		users u
-	where	r.object_id_one = e.event_id and
+	where	o.object_id = e.event_id and
+		r.object_id_one = e.event_id and
 		r.object_id_two = u.user_id and
 		e.event_start_date <= :report_end_date::date and
 		e.event_end_date >= :report_start_date::date
@@ -538,7 +554,22 @@ ad_proc im_event_cube {
 	lappend value $event_id
 	set location_event_hash($key) $value
 
+	# Duplicate hash
+	for {set event_j $start_j} {$event_j < [expr $start_j + $event_duration]} { incr event_j } {
+	    set event_ansi [im_date_julian_to_ansi $event_j]
 
+	    set events {}
+	    set key "$user_id-$event_ansi"
+	    if {[info exists collision_checker_hash($key)]} { set events $collision_checker_hash($key) }
+	    lappend events $event_id
+	    set collision_checker_hash($key) $events
+
+	    set events {}
+	    set key "$event_location_id-$event_ansi"
+	    if {[info exists collision_checker_hash($key)]} { set events $collision_checker_hash($key) }
+	    lappend events $event_id
+	    set collision_checker_hash($key) $events
+	}
 
 	set event_members_pretty [list]
 	set event_members_customers [list]
@@ -602,24 +633,24 @@ ad_proc im_event_cube {
     # ---------------------------------------------------------------
     
     set task_sql "
-	-- Tasks per user
-	select	p.project_type_id,
-		u.user_id,
-		bom.percentage,
-		d.d
-	from	im_projects p,
-		im_timesheet_tasks t,
+	select	u.user_id,
+		d.d,
+		sum(coalesce(bom.percentage, 0.0)) as percentage
+	from	im_projects p
+		LEFT OUTER JOIN im_timesheet_tasks t ON (p.project_id = t.task_id),
 		acs_rels r,
 		im_biz_object_members bom,
 		users u,
 		(select im_day_enumerator as d from im_day_enumerator(:report_start_date, :report_end_date)) d
-	where	p.project_id = t.task_id and
+	where	
 		r.object_id_one = p.project_id and
 		r.object_id_two = u.user_id and
 		r.rel_id = bom.rel_id and
 		p.start_date <= :report_end_date::date and
 		p.end_date >= :report_start_date::date and
                 date_trunc('day',d.d) between date_trunc('day',p.start_date) and date_trunc('day',p.end_date)
+		and not exists (select event_id from im_events where event_timesheet_task_id = p.project_id)
+	group by u.user_id, d.d
     "
     array set task_hash {}
     db_foreach tasks $task_sql {
@@ -627,7 +658,7 @@ ad_proc im_event_cube {
 	set value 0.0
 	if {[info exists task_hash($key)]} { set value $task_hash($key) }
 	set value [expr $value + $percentage]
-	set task_hash($key) $value
+	if {$value > 0.0} { set task_hash($key) $value }
     }
 
     # ---------------------------------------------------------------
@@ -676,7 +707,83 @@ ad_proc im_event_cube {
 	set absence_hash($key) $value
     }
 
-    # ad_return_complaint 1 "[array get absence_hash]"
+
+    # ---------------------------------------------------------------
+    # Conflict Checker
+    # ---------------------------------------------------------------
+
+    # Users
+    foreach user_tuple $user_list {
+	set user_id [lindex $user_tuple 0]
+	set user_name [lindex $user_tuple 1]
+	set user_dept [lindex $user_tuple 2]
+
+	foreach day $day_list {
+	    set date_date [lindex $day 0]
+
+	    # Conflict Checker for Users
+	    set key "$user_id-$date_date"
+	    set absence_p [info exists absence_hash($key)]
+	    set event_ids {}
+	    if {[info exists collision_checker_hash($key)]} { set event_ids $collision_checker_hash($key) }
+	    set percentage 0.0
+	    if {[info exists task_hash($key)]} { set percentage $task_hash($key) }
+	    set busy_p [expr $absence_p || $percentage > 0]
+
+	    # ns_log Notice "conflict checker: key=$key, absence_p=$absence_p, event_ids=$event_ids, busy_p=$busy_p"
+
+	    # Busy (absence or project assignment) + one event => conflict
+	    set user_event_key "$user_id-$event_id"
+	    if {$busy_p && [llength $event_ids] > 0} { 
+		set user_event_key "$user_id-$event_id"
+		set conflict_hash($user_event_key) 1
+	    }
+	    # Two events => conflict
+	    if {[llength $event_ids] > 1} { 
+		foreach eid $event_ids {
+		    set user_event_key "$user_id-$eid"
+		    set conflict_hash($user_event_key) 1
+		}
+
+	    }
+	}
+    }
+
+    # Locations
+    foreach location_tuple $location_list {
+	set location_id [lindex $location_tuple 0]
+	set location_name [lindex $location_tuple 1]
+	set location_dept [lindex $location_tuple 2]
+
+	foreach day $day_list {
+	    set date_date [lindex $day 0]
+
+	    # Conflict Checker for Locations
+	    set key "$location_id-$date_date"
+	    set absence_p [info exists absence_hash($key)]
+	    set event_ids {}
+	    if {[info exists collision_checker_hash($key)]} { set event_ids $collision_checker_hash($key) }
+	    set percentage 0.0
+	    if {[info exists task_hash($key)]} { set percentage $task_hash($key) }
+	    set busy_p [expr $absence_p || $percentage > 0]
+
+	    # Busy (absence or project assignment) + one event => conflict
+	    set location_event_key "$location_id-$event_id"
+	    if {$busy_p && [llength $event_ids] > 0} { 
+		set location_event_key "$location_id-$event_id"
+		set conflict_hash($location_event_key) 1
+	    }
+	    # Two events => conflict
+	    if {[llength $event_ids] > 1} { 
+		foreach eid $event_ids {
+		    set location_event_key "$location_id-$eid"
+		    set conflict_hash($location_event_key) 1
+		}
+
+	    }
+	}
+    }
+
 
     # ---------------------------------------------------------------
     # Moving on time axis
@@ -739,17 +846,25 @@ ad_proc im_event_cube {
 	set before_events_html ""
 	foreach eid $events {
 	    set event_values $event_info_hash($eid)
-	    append before_events_html [im_event_cube_render_event -event_values $event_values -report_start_date_julian $report_start_date_julian]
+	    set conflict_key "$user_id-$eid"
+	    set conflict_p [info exists conflict_hash($conflict_key)]
+	    append before_events_html [im_event_cube_render_event -event_values $event_values -report_start_date_julian $report_start_date_julian -conflict_p $conflict_p]
 	}
 
 	foreach day $day_list {
 	    set date_date [lindex $day 0]
 	    set key "$user_id-$date_date"
 	    set value [list]
+
 	    if {[info exists absence_hash($key)]} { set value [concat $value $absence_hash($key)] }
 	    if {[info exists holiday_hash($date_date)]} { set value [concat $value $holiday_hash($date_date)] }
 
-	    if {"" != $value} { ns_log Notice "xxx: $value" }
+	    set percentage 0.0
+	    if {[info exists task_hash($key)]} { set percentage $task_hash($key) }
+	    if {$percentage > 0.0} { 
+		set color [im_event_color_for_assignation -percentage $percentage]
+		if {"" != $color} { set value [concat $value $color] }
+	    }
 
 	    # Determine if there is an event to show
 	    set event_html ""
@@ -759,7 +874,9 @@ ad_proc im_event_cube {
 		set events $user_event_hash($key)
 		foreach eid $events {
 		    set event_values $event_info_hash($eid)
-		    append event_html [im_event_cube_render_event -event_values $event_values]
+		    set conflict_key "$user_id-$eid"
+		    set conflict_p [info exists conflict_hash($conflict_key)]
+		    append event_html [im_event_cube_render_event -event_values $event_values -conflict_p $conflict_p]
 		}
 	    }
 	    
@@ -806,7 +923,10 @@ ad_proc im_event_cube {
 	set before_events_html ""
 	foreach eid $events {
 	    set event_values $event_info_hash($eid)
-	    append before_events_html [im_event_cube_render_event -event_values $event_values -report_start_date_julian $report_start_date_julian]
+
+	    set conflict_key "$location-$eid"
+	    set conflict_p [info exists conflict_hash($conflict_key)]
+	    append before_events_html [im_event_cube_render_event -event_values $event_values -report_start_date_julian $report_start_date_julian -conflict_p $conflict_p]
 	}
 
 	foreach day $day_list {
@@ -823,7 +943,9 @@ ad_proc im_event_cube {
 		set events $location_event_hash($key)
 		foreach eid $events {
 		    set event_values $event_info_hash($eid)
-		    append event_html [im_event_cube_render_event -event_values $event_values]
+		    set conflict_key "$location_id-$eid"
+		    set conflict_p [info exists conflict_hash($conflict_key)]
+		    append event_html [im_event_cube_render_event -event_values $event_values -conflict_p $conflict_p]
 		}
 	    }
 	    
@@ -841,6 +963,7 @@ ad_proc im_event_cube {
 
 ad_proc im_event_cube_render_event { 
     {-report_start_date_julian ""}
+    {-conflict_p 0}
     -event_values:required
 } {
     Renders a single event as HTML DIV on top of a table.
@@ -883,6 +1006,7 @@ ad_proc im_event_cube_render_event {
 	}
     }
 
+    # Calculate the event code
     set kuerzel "$event_location_nr"
     foreach p $consultants {
 	set initials ""
@@ -923,9 +1047,10 @@ ad_proc im_event_cube_render_event {
 "
 
     set bordercolor "yellow"
+    if {$conflict_p} { set bordercolor "red" }
     set result "
       <div style='position: relative'>
-      <div style='position: absolute; top: -12; left: -2; width: $event_width; z-index:10; background: yellow;'>
+<div style='position: absolute; top: -12; left: -2; width: $event_width; z-index:10; background: yellow; opacity: 0.8;'>
 <table cellspacing=0 cellpadding=0 border=2 bgcolor=#$bgcolor bordercolor=$bordercolor width='100%'>
 <tr>
 <td bgcolor=#$bgcolor>
@@ -958,6 +1083,38 @@ ad_proc im_event_cube_render_cell {
     } else {
         return "<td>$event_html</td>\n"
     }
+}
+
+
+ad_proc im_event_color_for_assignation { 
+    -percentage:required
+} {
+    Returns a color representing 0% - 100% assignation
+    of a user to a project
+} {
+    # Bad integer
+    if {![string is double $percentage]} { 
+	return "FF0000" 
+    }
+    if {$percentage < 0} { set percentage 0.0 }
+    if {$percentage > 100} { set percentage 100.0 }
+    set value [expr int($percentage / 10.0)]
+
+    switch $value {
+	0 { return "" }
+	1 { return "00002F" }
+	2 { return "00004F" }
+	3 { return "00006F" }
+	4 { return "00008F" }
+	5 { return "00009F" }
+	6 { return "0000AF" }
+	7 { return "0000DF" }
+	8 { return "0000EF" }
+	9 { return "0000FF" }
+	10 { return "0000FF" }
+    }
+
+    return "FF0000"
 }
 
 

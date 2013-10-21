@@ -18,6 +18,7 @@ ad_page_contract {
     { event_status_id:integer "" } 
     { event_type_id:integer 0 } 
     { event_material_id:integer 0 } 
+    { event_location_id:integer 0 } 
     { event_creator_id:integer 0 } 
     { customer_id:integer 0 } 
     { customer_contact_id:integer 0 } 
@@ -41,10 +42,11 @@ set letter [string toupper $letter]
 set user_is_admin_p [im_is_user_site_wide_or_intranet_admin $current_user_id]
 set return_url [im_url_with_query]
 
-
+set event_name_org $event_name
 set event_type_id_org $event_type_id
 set event_status_id_org $event_status_id
-
+set event_material_id_org $event_material_id
+set event_location_id_org $event_location_id
 
 # Default start and end of cube
 if {"" == $report_start_date || "2000-01-01" == $report_start_date} {
@@ -59,7 +61,7 @@ im_event::task_sweeper
 # Unprivileged users can only see their own events
 set view_events_all_p [im_permission $current_user_id "view_events_all"]
 if {"all" == $mine_p && !$view_events_all_p} {
-    set mine_p "queue"
+    set mine_p "mine"
 }
 
 if { [empty_string_p $how_many] || $how_many < 1 } {
@@ -179,8 +181,6 @@ set mine_p_options {}
 if {$view_events_all_p} { 
     lappend mine_p_options [list $all_l10n "all" ] 
 }
-
-lappend mine_p_options [list [lang::message::lookup "" intranet-events.My_queues "My Queues"] "queue"]
 lappend mine_p_options [list [lang::message::lookup "" intranet-events.Mine "Mine"] "mine"]
 
 # Add custom searches to drop-down
@@ -272,18 +272,16 @@ array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
 			       -object_type $object_type
 ]
 
-# ad_return_complaint 1 [array get extra_sql_array]
-
 # ---------------------------------------------------------------
 # Generate SQL Query
 # ---------------------------------------------------------------
 
 set criteria [list]
 if { ![empty_string_p $event_status_id_org] && $event_status_id_org > 0 } {
-    lappend criteria "t.event_status_id in ([join [im_sub_categories $event_status_id_org] ","])"
+    lappend criteria "e.event_status_id in ([join [im_sub_categories $event_status_id_org] ","])"
 }
 if { ![empty_string_p $event_type_id_org] && $event_type_id_org != 0 } {
-    lappend criteria "t.event_type_id in ([join [im_sub_categories $event_type_id_org] ","])"
+    lappend criteria "e.event_type_id in ([join [im_sub_categories $event_type_id_org] ","])"
 }
 
 if { [empty_string_p $event_material_id] == 0 && $event_material_id != 0 } {
@@ -291,14 +289,14 @@ if { [empty_string_p $event_material_id] == 0 && $event_material_id != 0 } {
 }
 
 if { [empty_string_p $event_creator_id] == 0 && $event_creator_id != 0 } {
-    lappend criteria "t.event_id in (select object_id from acs_objects where creation_user = :event_creator_id)"
+    lappend criteria "e.event_id in (select object_id from acs_objects where creation_user = :event_creator_id)"
 }
 
 if { ![empty_string_p $customer_id] && $customer_id != 0 } {
     lappend criteria "p.company_id = :customer_id"
 }
 if { ![empty_string_p $customer_contact_id] && $customer_contact_id != 0 } {
-    lappend criteria "t.event_customer_contact_id = :customer_contact_id"
+    lappend criteria "e.event_customer_contact_id = :customer_contact_id"
 }
 
 if { ![empty_string_p $start_date] && $start_date != "" } {
@@ -314,7 +312,7 @@ if { ![empty_string_p $event_name] && $event_name != "" } {
 	"]
 	ad_script_abort
     }
-    lappend criteria "p.project_name like '%$event_name%'"
+    lappend criteria "lower(e.event_name) like lower('%$event_name%')"
 }
 
 
@@ -340,11 +338,11 @@ switch $mine_p {
 	    ad_script_abort
 	}
 
-	lappend criteria "t.event_id in ($selector_sql)"
+	lappend criteria "e.event_id in ($selector_sql)"
     }
 }
 
-set order_by_clause "order by t.event_id DESC"
+set order_by_clause "order by e.event_id DESC"
 switch [string tolower $order_by] {
     "date" { set order_by_clause "order by e.event_start_date DESC" }
     "name" { set order_by_clause "order by lower(e.event_name), e.event_start_date" }
@@ -441,8 +439,6 @@ set sql "
 # The SQL can contain commands [..] that need to be
 # evaluated in the context of this page.
 eval "set sql \"$sql\""
-
-# ad_return_complaint 1 "<pre>$sql</pre>"
 
 if {[string equal $letter "ALL"]} {
     # Set these limits to negative values to deactivate them
@@ -724,9 +720,12 @@ set event_cube_html [im_event_cube \
 			 -report_user_selection $mine_p \
 			 -event_status_id $event_status_id_org \
 			 -event_type_id $event_type_id_org \
-			 -event_material_id $event_material_id \
+			 -event_material_id $event_material_id_org \
+			 -event_location_id $event_location_id_org \
 			 -event_start_date $start_date \
 			 -event_end_date $end_date \
+			 -event_creator_id $event_creator_id \
+			 -event_name $event_name_org \
 			 -report_start_date $report_start_date \
 			 -report_days $report_days \
 			 -report_user_group_id [im_profile_employees] \
