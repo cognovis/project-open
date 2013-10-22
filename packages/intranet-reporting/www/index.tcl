@@ -129,9 +129,16 @@ if {$reports_exist_p && $user_admin_p} {
 
     db_foreach group_list $group_list_sql {
 	lappend group_list $group_id
+
+	if { $user_admin_p } {
+	    set label_group_header "<div><span>$group_name</span></div><br>[im_gif $profile_gif $group_name]"
+	} else {
+            set label_group_header "[im_gif $profile_gif $group_name]"
+	}
+
 	lappend elements_list \
 	    p${group_id}_read_p [list \
-				     label "[im_gif $profile_gif $group_name]" \
+				     label $label_group_header \
 				     display_template "@reports.p${group_id}_read_p;noquote@" \
 				    ]
 	
@@ -157,14 +164,27 @@ set top_menu_sortkey [db_string top_menu_sortkey "
 	where label = 'reporting'
 " -default ""]
 
-list::create \
+if { $user_admin_p } {
+    list::create \
+        -name report_list \
+        -multirow reports \
+        -key menu_id \
+        -elements $elements_list \
+        -class "table-header-rotated-listbuilder" \
+        -filters {
+        	return_url
+        }
+} else {
+    list::create \
         -name report_list \
         -multirow reports \
         -key menu_id \
         -elements $elements_list \
         -filters {
-        	return_url
+                return_url
         }
+}
+
 
 db_multirow -extend {indent_spaces edit_html} reports get_reports "
 	select
@@ -228,8 +248,6 @@ db_multirow -extend {indent_spaces edit_html} reports get_reports "
 
 # Sort the multirow according to 
 multirow_sort_tree reports menu_id parent_menu_id name
-
-
 
 # ------------------------------------------------------
 # Left Menu
