@@ -389,7 +389,12 @@ update im_categories set aux_string2 = 'FFFF00' where category_id = 82004;
 SELECT im_category_new (82006, 'Booked', 'Intranet Event Status');
 update im_categories set aux_string2 = '00FF00' where category_id = 82006;
 
-SELECT im_category_new (82100, 'Default', 'Intranet Event Type');
+SELECT im_category_new (82100, 'Training Event', 'Intranet Event Type');
+update im_categories set category = 'Training Event' where category_id = 82100;
+SELECT im_category_new (82110, 'Presales Event', 'Intranet Event Type');
+SELECT im_category_new (82120, 'Internal Event', 'Intranet Event Type');
+
+
 
 SELECT im_category_new (82200, 'Confirmed', 'Intranet Event Participant Status');
 SELECT im_category_new (82210, 'Reserved', 'Intranet Event Participant Status');

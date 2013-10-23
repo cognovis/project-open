@@ -13,7 +13,6 @@ ad_page_contract {
     { order_by "date" }
     { mine_p "all" }
     { start_date "" }
-    { end_date "" }
     { event_name "" }
     { event_status_id:integer "" } 
     { event_type_id:integer 0 } 
@@ -26,8 +25,12 @@ ad_page_contract {
     { start_idx:integer 0 }
     { how_many "" }
     { view_name "event_list" }
-    { report_start_date "" }
-    { report_days 21}
+    { timescale "next_3w" }
+    { report_show_users_p ""}
+    { report_show_locations_p ""}
+    { report_show_resources_p ""}
+    { report_show_event_list_p ""}
+    { report_show_all_users_p ""}
 }
 
 # ---------------------------------------------------------------
@@ -48,10 +51,19 @@ set event_status_id_org $event_status_id
 set event_material_id_org $event_material_id
 set event_location_id_org $event_location_id
 
+set next_page_url ""
+set previous_page_url ""
+
 # Default start and end of cube
-if {"" == $report_start_date || "2000-01-01" == $report_start_date} {
-    set report_start_date [db_string start_date "select now()::date from dual"]
+set today [db_string today "select now()::date from dual"]
+if {"" == $start_date} {
+    set start_date $today
 }
+if {[regexp {^(....)-(..)-(.)$} $start_date match y m d]} { set start_date "$y-$m-0$d" }
+if {[regexp {^(....)-(.)-(..)$} $start_date match y m d]} { set start_date "$y-0$m-$d" }
+if {[regexp {^(....)-(.)-(.)$} $start_date match y m d]} { set start_date "$y-0$m-0$d" }
+
+set start_date_julian [im_date_ansi_to_julian $start_date]
 
 
 
@@ -69,12 +81,47 @@ if { [empty_string_p $how_many] || $how_many < 1 } {
 }
 set end_idx [expr $start_idx + $how_many]
 
-if {"" == $start_date} { set start_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultStartDate -default "2000-01-01"] }
-if {"" == $end_date} { set end_date [parameter::get_from_package_key -package_key "intranet-cost" -parameter DefaultEndDate -default "2100-01-01"] }
-
 set mine_all_l10n [lang::message::lookup "" intranet-core.Mine_All "Mine/All"]
 set all_l10n [lang::message::lookup "" intranet-core.All "All"]
+set timescale_l10n [lang::message::lookup "" intranet-events.Timescale "Timescale"]
 
+set show_users_l10n [lang::message::lookup "" intranet-events.Show_Users_P "Show Users?"]
+set show_locations_l10n [lang::message::lookup "" intranet-events.Show_Users_P "Show Locations?"]
+set show_resources_l10n [lang::message::lookup "" intranet-events.Show_Users_P "Show Resources?"]
+set show_event_list_l10n [lang::message::lookup "" intranet-events.Show_Users_P "Show Event List?"]
+set show_all_users_l10n [lang::message::lookup "" intranet-events.Show_All_Users_P "Show All Users?"]
+
+
+# ---------------------------------------------------------------
+# Date Scale
+# ---------------------------------------------------------------
+
+switch $timescale {
+    "next_3w" {
+        set report_start_date $start_date
+        set report_end_date [im_date_julian_to_ansi [expr $start_date_julian + 21]]
+    }
+    "last_3w" {
+        set report_start_date [im_date_julian_to_ansi [expr $start_date_julian - 21]]
+        set report_end_date $start_date
+    }
+    "past" {
+        set report_start_date "2000-01-01"
+        set report_end_date $start_date
+    }
+    "future" {
+        set report_start_date $start_date
+        set report_end_date "2100-01-01"
+    }
+    "next_3m" {
+        set report_start_date $start_date
+        set report_end_date [im_date_julian_to_ansi [expr $start_date_julian + 93]]
+    }
+    "last_3m" {
+        set report_start_date [im_date_julian_to_ansi [expr $start_date_julian - 93]]
+        set report_end_date $start_date
+    }
+}
 
 # ---------------------------------------------------------------
 # Defined Table Fields
@@ -196,6 +243,19 @@ if {[im_table_exists im_sql_selectors]} {
 }
 
 
+set timescale_types [list \
+                         "next_3w" [lang::message::lookup "" intranet-timesheet2.Next_3_Weeks "Next 3 Weeks"] \
+                         "next_3m" [lang::message::lookup "" intranet-timesheet2.Next_3_Month "Next 3 Months"] \
+                         "future" [lang::message::lookup "" intranet-timesheet2.Future "Future"] \
+                         "past" [lang::message::lookup "" intranet-timesheet2.Past "Past"] \
+                         "last_3m" [lang::message::lookup "" intranet-timesheet2.Last_3_Month "Last 3 Months"] \
+                         "last_3w" [lang::message::lookup "" intranet-timesheet2.Last_3_Weeks "Last 3 Weeks"] \
+]
+foreach { value text } $timescale_types {
+    lappend timescale_options [list $text $value]
+}
+
+
 set event_member_options [util_memoize "db_list_of_lists event_members {
 	select  distinct
 		im_name_from_user_id(object_id_two) as user_name,
@@ -225,10 +285,16 @@ ad_form \
     -method GET \
     -form {
     	{mine_p:text(select),optional {label "$mine_all_l10n"} {options $mine_p_options }}
-	{report_start_date:text(hidden),optional}
-	{report_days:text(hidden),optional}
-	{start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {value "$start_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
-	{end_date:text(text) {label "[_ intranet-timesheet2.End_Date]"} {value "$end_date"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('end_date', 'y-m-d');" >}}}
+	{start_date:text(text) {label "[_ intranet-timesheet2.Start_Date]"} {html {size 10}} {after_html {<input type="button" style="height:20px; width:20px; background: url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendar('start_date', 'y-m-d');" >}}}
+
+    	{timescale:text(select),optional {label "$timescale_l10n"} {options $timescale_options }}
+	{report_show_users_p:integer(checkbox),optional {label "$show_users_l10n"} {options {{"" 1}}} }
+	{report_show_locations_p:integer(checkbox),optional {label "$show_locations_l10n"} {options {{"" 1}}} }
+	{report_show_resources_p:integer(checkbox),optional {label "$show_resources_l10n"} {options {{"" 1}}} }
+	{report_show_event_list_p:integer(checkbox),optional {label "$show_event_list_l10n"} {options {{"" 1}}} }
+
+	{report_show_all_users_p:integer(checkbox),optional {label "$show_all_users_l10n"} {options {{"" 1}}} }
+
 	{event_name:text(text),optional {label "[_ intranet-core.Name]"} {html {size 12}}}
 	{event_status_id:text(im_category_tree),optional {label "[lang::message::lookup {} intranet-events.Status Status]"} {custom {category_type "Intranet Event Status" translate_p 1 package_key "intranet-core"}} }
     }
@@ -244,8 +310,15 @@ if {$view_events_all_p} {
 }
 
 template::element::set_value $form_id mine_p $mine_p
-template::element::set_value $form_id report_start_date $report_start_date
-template::element::set_value $form_id report_days $report_days
+template::element::set_value $form_id start_date $start_date
+template::element::set_value $form_id timescale $timescale
+
+template::element::set_value $form_id report_show_users_p [im_opt_val report_show_users_p]
+template::element::set_value $form_id report_show_locations_p [im_opt_val report_show_locations_p]
+template::element::set_value $form_id report_show_resources_p [im_opt_val report_show_resources_p]
+template::element::set_value $form_id report_show_event_list_p [im_opt_val report_show_event_list_p]
+template::element::set_value $form_id report_show_all_users_p [im_opt_val report_show_all_users_p]
+
 
 im_dynfield::append_attributes_to_form \
     -object_type $object_type \
@@ -276,6 +349,8 @@ array set extra_sql_array [im_dynfield::search_sql_criteria_from_form \
 # Generate SQL Query
 # ---------------------------------------------------------------
 
+if {1 == $report_show_event_list_p} {
+
 set criteria [list]
 if { ![empty_string_p $event_status_id_org] && $event_status_id_org > 0 } {
     lappend criteria "e.event_status_id in ([join [im_sub_categories $event_status_id_org] ","])"
@@ -299,11 +374,11 @@ if { ![empty_string_p $customer_contact_id] && $customer_contact_id != 0 } {
     lappend criteria "e.event_customer_contact_id = :customer_contact_id"
 }
 
-if { ![empty_string_p $start_date] && $start_date != "" } {
-    lappend criteria "o.creation_date >= :start_date::timestamptz"
+if { ![empty_string_p $report_start_date] && $report_start_date != "" } {
+    lappend criteria "e.event_end_date >= :report_start_date::timestamptz"
 }
-if { ![empty_string_p $end_date] && $end_date != "" } {
-    lappend criteria "o.creation_date < :end_date::timestamptz"
+if { ![empty_string_p $report_end_date] && $report_end_date != "" } {
+    lappend criteria "e.event_start_date < :report_end_date::timestamptz"
 }
 if { ![empty_string_p $event_name] && $event_name != "" } {
     if {0 && ![string isalphanum $event_name]} {
@@ -327,7 +402,7 @@ switch $mine_p {
     "queue" { }
     "mine" {
 	lappend criteria "(
-		o.creation_user = :current_user_id 
+		e.event_id in (select object_id_two from acs_rels where object_id_one = :current_user_id)
 	)"
     }
     "default" { 
@@ -347,7 +422,7 @@ switch [string tolower $order_by] {
     "date" { set order_by_clause "order by e.event_start_date DESC" }
     "name" { set order_by_clause "order by lower(e.event_name), e.event_start_date" }
     "type" { set order_by_clause "order by e.event_type_id, e.event_start_date" }
-    "status" { set order_by_clause "order by e.event_status_id, e.start_date" }
+    "status" { set order_by_clause "order by e.event_status_id, e.event_start_date" }
 }
 
 # ---------------------------------------------------------------
@@ -417,7 +492,7 @@ set sql "
 			im_category_from_id(e.event_status_id) as event_status,
 			to_char(e.event_start_date, 'YYYY-MM-DD') as event_start_date_formatted,
 			to_char(e.event_end_date, 'YYYY-MM-DD') as event_end_date_formatted,
-			e.event_end_date - e.event_start_date as event_duration_days,
+			(e.event_end_date::date - e.event_start_date::date) + 1 as event_duration_days,
 			m.material_name,
 			acs_object__name(e.event_location_id) as event_location_name
 		FROM
@@ -455,112 +530,6 @@ if {[string equal $letter "ALL"]} {
     "]
     set selection [im_select_row_range $sql $start_idx $end_idx]
 }	
-
-
-# ----------------------------------------------------------
-# Do we have to show administration links?
-
-set admin_html "<ul>"
-
-if {[im_is_user_site_wide_or_intranet_admin $current_user_id]} {
-#    append admin_html "<li><a href=\"/intranet-events/admin/\">[lang::message::lookup "" intranet-events.Admin_Helpdesk "Admin Helpdesk"]</a>\n"
-}
-
-if {[im_permission $current_user_id "add_events"]} {
-    append admin_html "<li><a href=\"[export_vars -base "/intranet-events/new" {return_url}]\">[lang::message::lookup "" intranet-events.Add_a_new_event "New Event"]</a>\n"
-
-    set wf_oid_col_exists_p [im_column_exists wf_workflows object_type]
-    if {$wf_oid_col_exists_p} {
-	set wf_sql "
-		select	t.pretty_name as wf_name,
-			w.*
-		from	wf_workflows w,
-			acs_object_types t
-		where	w.workflow_key = t.object_type
-			and w.object_type = :object_type
-	"
-	db_foreach wfs $wf_sql {
-	    set new_from_wf_url [export_vars -base "/intranet/events/new" {workflow_key}]
-	    append admin_html "<li><a href=\"$new_from_wf_url\">[lang::message::lookup "" intranet-events.New_workflow "New %wf_name%"]</a>\n"
-	}
-    }
-}
-
-# Append user-defined menus
-append admin_html [im_menu_ul_list -no_uls 1 "events_admin" {}]
-
-# Close the admin_html section
-append admin_html "</ul>"
-
-
-
-
-# ----------------------------------------------------------
-# Set color scheme 
-# ----------------------------------------------------------
-
-set color_list [im_event_cube_color_list]
-set color_sql "
-	select	category_id,
-		category,
-		category_type,
-		aux_string2
-	from	im_categories
-	where	(enabled_p = 't' or enabled_p is null) and
-		category_type in ('Intranet Event Status', 'Intranet Absence Type')
-	order by 
-		category_type DESC,
-		category_id
-"
-append admin_html "<div class=filter-title>[lang::message::lookup "" intranet-timesheet2.Color_codes "Color Codes"]</div>\n"
-append admin_html "<table cellpadding='5' cellspacing='5'>\n"
-
-
-set index 0
-set last_category_type ""
-db_foreach event_color_codes $color_sql {
-    # Create intermediate headers for each category tye
-    if {$category_type != $last_category_type} {
-	set last_category_type $category_type
-	append admin_html "<tr><td class=rowwhite style='font-weight:bold'>$category_type</td></tr>\n"
-    }
-
-    # !!!
-    set col $aux_string2
-    if {"" == $aux_string2 } {
-	set col [lindex $color_list $index]
-	incr index
-    }
-
-    regsub -all " " $category "_" category_key
-    set category_l10n [lang::message::lookup "" intranet-core.$category_key $category]
-    if { [string length $col] == 6} {
-	# Transform RGB Hex-Values (e.g. #a3b2c4) into Dec-Values
-	set r_bg [expr 0x[string range $col 0 1]]
-	set g_bg [expr 0x[string range $col 2 3]]
-	set b_bg [expr 0x[string range $col 4 5]]
-    } elseif { [string length $col] == 3 } {
-	# Transform RGB Hex-Values (e.g. #a3b) into Dec-Values
-	set r_bg [expr 0x[string range $col 0 0]]
-	set g_bg [expr 0x[string range $col 1 1]]
-	set b_bg [expr 0x[string range $col 2 2]]
-    } else {
-	# color codes can't be parsed -> set a middle value
-	set r_bg 127
-	set g_bg 127
-	set b_bg 127
-    }
-
-    # calculate a brightness-value for the color
-    # if brightness > 127 the foreground color is black, if < 127 the foreground color is white
-    set brightness [expr $r_bg * 0.2126 + $g_bg * 0.7152 + $b_bg * 0.0722]
-    set col_fg "fff"
-    if {$brightness >= 127} {set col_fg "000"}
-    set category_l10n [lang::message::lookup "" intranet-core.$category_key $category]
-    append admin_html "<tr><td style='padding:3px; background-color:\#$col; color:\#$col_fg'>$category_l10n</td></tr>\n"
-}
-
-append admin_html "</table>\n"
 
 
 # ---------------------------------------------------------------
@@ -710,26 +679,139 @@ set table_submit_html "
 
 if {!$view_events_all_p} { set table_submit_html "" }
 
-
+}
 
 # ---------------------------------------------------------------
 # Calendar display for vacation days
 # ---------------------------------------------------------------
 
-set event_cube_html [im_event_cube \
+set event_cube_html ""
+if {1 == $report_show_users_p || 1 == $report_show_locations_p || 1 == $report_show_resources_p} {
+    set event_cube_html [im_event_cube \
 			 -report_user_selection $mine_p \
 			 -event_status_id $event_status_id_org \
 			 -event_type_id $event_type_id_org \
 			 -event_material_id $event_material_id_org \
 			 -event_location_id $event_location_id_org \
-			 -event_start_date $start_date \
-			 -event_end_date $end_date \
 			 -event_creator_id $event_creator_id \
 			 -event_name $event_name_org \
 			 -report_start_date $report_start_date \
-			 -report_days $report_days \
+			 -report_end_date $report_end_date \
 			 -report_user_group_id [im_profile_employees] \
+			 -report_show_users_p $report_show_users_p \
+			 -report_show_locations_p $report_show_locations_p \
+			 -report_show_resources_p $report_show_resources_p \
+			 -report_show_all_users_p $report_show_all_users_p \
 			]
+}
+
+
+# ----------------------------------------------------------
+# Do we have to show administration links?
+
+set admin_html "<ul>"
+
+if {[im_is_user_site_wide_or_intranet_admin $current_user_id]} {
+#    append admin_html "<li><a href=\"/intranet-events/admin/\">[lang::message::lookup "" intranet-events.Admin_Helpdesk "Admin Helpdesk"]</a>\n"
+}
+
+if {[im_permission $current_user_id "add_events"]} {
+    append admin_html "<li><a href=\"[export_vars -base "/intranet-events/new" {return_url}]\">[lang::message::lookup "" intranet-events.Add_a_new_event "New Event"]</a>\n"
+
+    set wf_oid_col_exists_p [im_column_exists wf_workflows object_type]
+    if {$wf_oid_col_exists_p} {
+	set wf_sql "
+		select	t.pretty_name as wf_name,
+			w.*
+		from	wf_workflows w,
+			acs_object_types t
+		where	w.workflow_key = t.object_type
+			and w.object_type = :object_type
+	"
+	db_foreach wfs $wf_sql {
+	    set new_from_wf_url [export_vars -base "/intranet/events/new" {workflow_key}]
+	    append admin_html "<li><a href=\"$new_from_wf_url\">[lang::message::lookup "" intranet-events.New_workflow "New %wf_name%"]</a>\n"
+	}
+    }
+}
+
+# Append user-defined menus
+append admin_html [im_menu_ul_list -no_uls 1 "events_admin" {}]
+
+# Close the admin_html section
+append admin_html "</ul>"
+
+
+
+
+# ----------------------------------------------------------
+# Set color scheme 
+# ----------------------------------------------------------
+
+set color_list [im_event_cube_color_list]
+set color_sql "
+	select	category_id,
+		category,
+		category_type,
+		aux_string2
+	from	im_categories
+	where	(enabled_p = 't' or enabled_p is null) and
+		category_type in ('Intranet Event Status', 'Intranet Absence Type')
+	order by 
+		category_type DESC,
+		category_id
+"
+append admin_html "<div class=filter-title>[lang::message::lookup "" intranet-timesheet2.Color_codes "Color Codes"]</div>\n"
+append admin_html "<table cellpadding='5' cellspacing='5'>\n"
+
+
+set index 0
+set last_category_type ""
+db_foreach event_color_codes $color_sql {
+    # Create intermediate headers for each category tye
+    if {$category_type != $last_category_type} {
+	set last_category_type $category_type
+	append admin_html "<tr><td class=rowwhite style='font-weight:bold'>$category_type</td></tr>\n"
+    }
+
+    # !!!
+    set col $aux_string2
+    if {"" == $aux_string2 } {
+	set col [lindex $color_list $index]
+	incr index
+    }
+
+    regsub -all " " $category "_" category_key
+    set category_l10n [lang::message::lookup "" intranet-core.$category_key $category]
+    if { [string length $col] == 6} {
+	# Transform RGB Hex-Values (e.g. #a3b2c4) into Dec-Values
+	set r_bg [expr 0x[string range $col 0 1]]
+	set g_bg [expr 0x[string range $col 2 3]]
+	set b_bg [expr 0x[string range $col 4 5]]
+    } elseif { [string length $col] == 3 } {
+	# Transform RGB Hex-Values (e.g. #a3b) into Dec-Values
+	set r_bg [expr 0x[string range $col 0 0]]
+	set g_bg [expr 0x[string range $col 1 1]]
+	set b_bg [expr 0x[string range $col 2 2]]
+    } else {
+	# color codes can't be parsed -> set a middle value
+	set r_bg 127
+	set g_bg 127
+	set b_bg 127
+    }
+
+    # calculate a brightness-value for the color
+    # if brightness > 127 the foreground color is black, if < 127 the foreground color is white
+    set brightness [expr $r_bg * 0.2126 + $g_bg * 0.7152 + $b_bg * 0.0722]
+    set col_fg "fff"
+    if {$brightness >= 127} {set col_fg "000"}
+    set category_l10n [lang::message::lookup "" intranet-core.$category_key $category]
+    append admin_html "<tr><td style='padding:3px; background-color:\#$col; color:\#$col_fg'>$category_l10n</td></tr>\n"
+}
+
+append admin_html "</table>\n"
+
+
 
 
 # ---------------------------------------------------------------

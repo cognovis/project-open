@@ -378,6 +378,10 @@ ad_proc im_event_cube {
     {-report_start_date "" }
     {-report_end_date ""}
     {-report_user_group_id "" }
+    {-report_show_users_p "" }
+    {-report_show_locations_p "" }
+    {-report_show_resources_p "" }
+    {-report_show_all_users_p ""}
 } {
     Returns a rendered cube with a graphical event display.
 } {
@@ -469,6 +473,8 @@ ad_proc im_event_cube {
     }
 
     # Select any user who has ever been member of an event
+    set user_list {}
+    if {1 == $report_show_users_p} {
     set user_list [db_list_of_lists user_list "
 	select	user_id,
 		user_name,
@@ -492,8 +498,12 @@ ad_proc im_event_cube {
 			im_events e
 		where	r.object_id_one = e.event_id and
 			r.object_id_two = u.user_id and
+			(
 			e.event_start_date <= :report_end_date::date and
-			e.event_end_date >= :report_start_date::date and
+			e.event_end_date >= :report_start_date::date
+			OR 1 = :report_show_all_users_p
+			)
+			and
 			u.user_id not in (
 				select	u.user_id
 				from	users u,
@@ -508,9 +518,10 @@ ad_proc im_event_cube {
 		) t
 	order by office_name, user_name
     "]
+    }
 
-#    ad_return_complaint 1 "$report_start_date - $report_end_date"
-
+    set location_list {}
+    if {1 == $report_show_locations_p} {
     set location_list [db_list_of_lists location_list "
 	select distinct
 		ci.conf_item_id as location_id,
@@ -522,6 +533,7 @@ ad_proc im_event_cube {
 		ci.conf_item_status_id not in ([im_conf_item_status_deleted])
 	order by ci.conf_item_name
     "]
+    }
 
     # ---------------------------------------------------------------
     # Events per user

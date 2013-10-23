@@ -228,8 +228,8 @@ set material_options [im_material_options \
 			  -restrict_to_type_id 0 \
 			  -restrict_to_uom_id 0 \
 			  -include_empty 1 \
-			  -show_material_codes_p 0 \
-			  -max_option_len 25 \
+			  -show_material_codes_p 2 \
+			  -max_option_len 50 \
 ]
 
 set location_options [im_conf_item_options \
@@ -297,8 +297,8 @@ if {!$edit_event_status_p} { set event_action_html "" }
 
 
 set event_elements [list]
-# lappend event_elements {event_type_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-events.Type Type]"} {custom {category_type "Intranet Event Type" translate_p 1 package_key "intranet-events"}}}
-lappend event_elements {event_type_id:text(hidden)}
+lappend event_elements {event_type_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-events.Type Type]"} {custom {category_type "Intranet Event Type" translate_p 1 package_key "intranet-events"}}}
+# lappend event_elements {event_type_id:text(hidden)}
 
 if {$edit_event_status_p} {
     lappend event_elements {event_status_id:text(im_category_tree) {label "[lang::message::lookup {} intranet-events.Status Status]"} {custom {category_type "Intranet Event Status" translate_p 1 package_key "intranet-events"}} }
