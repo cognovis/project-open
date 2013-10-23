@@ -372,13 +372,11 @@ ad_proc im_event_cube {
     {-event_type_id "" }
     {-event_material_id "" }
     {-event_location_id "" }
-    {-event_start_date "" }
-    {-event_end_date "" }
     {-event_creator_id "" }
     {-event_name "" }
     {-report_user_selection "all" }
     {-report_start_date "" }
-    {-report_days 21}
+    {-report_end_date ""}
     {-report_user_group_id "" }
 } {
     Returns a rendered cube with a graphical event display.
@@ -392,14 +390,12 @@ ad_proc im_event_cube {
     set name_order [parameter::get -package_id [apm_package_id_from_key intranet-core] -parameter "NameOrder" -default 1]
     set cell_width [parameter::get -package_id [apm_package_id_from_key intranet-events] -parameter "EventCubeCellWidth" -default 25]
 
-    if {"" == $report_start_date || "2000-01-01" == $report_start_date} {
-	set report_start_date [db_string start_date "select now()::date from dual"]
-    }
-
-    set report_end_date [db_string end_date "select :report_start_date::date + :report_days::integer"]
-
     if {-1 == $event_type_id} { set event_type_id "" }
-    set report_start_date_julian [db_string start_date_julian "select to_char(:report_start_date::date, 'J') from dual"]
+    set report_start_date_julian [im_date_ansi_to_julian $report_start_date]
+    set report_end_date_julian [im_date_ansi_to_julian $report_end_date]
+    set report_days [expr $report_end_date_julian - $report_start_date_julian]
+
+#    ad_return_complaint 1 "$report_days - $report_start_date - $report_end_date"
 
     # ---------------------------------------------------------------
     # Limit the number of users and days
@@ -430,7 +426,7 @@ ad_proc im_event_cube {
 	    # Nothing
 	}
 	"mine" {
-	    lappend criteria "o.creation_user = :current_user_id"
+	    lappend criteria "e.event_id in (select object_id_two from acs_rels where object_id_one = :current_user_id)"
 	}
     }
     set where_clause [join $criteria " and\n            "]
@@ -474,29 +470,46 @@ ad_proc im_event_cube {
 
     # Select any user who has ever been member of an event
     set user_list [db_list_of_lists user_list "
-	select distinct
-		u.user_id as user_id,
-		im_name_from_user_id(u.user_id, $name_order) as user_name,
-		acs_object__name(emp.department_id) as department
-	from	users u
-		LEFT OUTER JOIN im_employees emp ON u.user_id = emp.employee_id,
-		acs_rels r,
-		im_events e
-	where	r.object_id_one = e.event_id and
-		r.object_id_two = u.user_id and
-		u.user_id not in (
-			select	u.user_id
-			from	users u,
-				acs_rels r,
-				membership_rels mr
-			where	r.rel_id = mr.rel_id and
-				r.object_id_two = u.user_id and
-				r.object_id_one = -2 and
-				mr.member_state != 'approved'
-		)
-		$group_sql
-	order by department, user_name
+	select	user_id,
+		user_name,
+		department,
+		office_id,
+		acs_object__name(office_id) as office_name
+	from	(
+		select distinct
+			u.user_id as user_id,
+			im_name_from_user_id(u.user_id, $name_order) as user_name,
+			acs_object__name(emp.department_id) as department,
+			(select	coalesce(min(o.office_id), 1)
+				from	im_offices o,
+					acs_rels r
+				where	r.object_id_one = o.office_id and
+					r.object_id_two = u.user_id
+			) as office_id
+		from	users u
+			LEFT OUTER JOIN im_employees emp ON u.user_id = emp.employee_id,
+			acs_rels r,
+			im_events e
+		where	r.object_id_one = e.event_id and
+			r.object_id_two = u.user_id and
+			e.event_start_date <= :report_end_date::date and
+			e.event_end_date >= :report_start_date::date and
+			u.user_id not in (
+				select	u.user_id
+				from	users u,
+					acs_rels r,
+					membership_rels mr
+				where	r.rel_id = mr.rel_id and
+					r.object_id_two = u.user_id and
+					r.object_id_one = -2 and
+					mr.member_state != 'approved'
+			)
+			$group_sql
+		) t
+	order by office_name, user_name
     "]
+
+#    ad_return_complaint 1 "$report_start_date - $report_end_date"
 
     set location_list [db_list_of_lists location_list "
 	select distinct
@@ -536,6 +549,9 @@ ad_proc im_event_cube {
 		e.event_end_date >= :report_start_date::date
 		$where_clause
     "
+
+#    ad_return_complaint 1 [db_list adf "select distinct event_id from ($event_sql) t"]
+
     array set user_event_hash {}
     array set location_event_hash {}
     db_foreach events $event_sql {
@@ -626,7 +642,6 @@ ad_proc im_event_cube {
 
 	}
     }
-
 
     # ---------------------------------------------------------------
     # Tasks per user
@@ -733,9 +748,8 @@ ad_proc im_event_cube {
 	    # ns_log Notice "conflict checker: key=$key, absence_p=$absence_p, event_ids=$event_ids, busy_p=$busy_p"
 
 	    # Busy (absence or project assignment) + one event => conflict
-	    set user_event_key "$user_id-$event_id"
 	    if {$busy_p && [llength $event_ids] > 0} { 
-		set user_event_key "$user_id-$event_id"
+		set user_event_key "$user_id-$event_ids"
 		set conflict_hash($user_event_key) 1
 	    }
 	    # Two events => conflict
@@ -768,9 +782,8 @@ ad_proc im_event_cube {
 	    set busy_p [expr $absence_p || $percentage > 0]
 
 	    # Busy (absence or project assignment) + one event => conflict
-	    set location_event_key "$location_id-$event_id"
 	    if {$busy_p && [llength $event_ids] > 0} { 
-		set location_event_key "$location_id-$event_id"
+		set location_event_key "$location_id-$event_ids"
 		set conflict_hash($location_event_key) 1
 	    }
 	    # Two events => conflict
@@ -801,9 +814,9 @@ ad_proc im_event_cube {
     # Arrows to move time axis
     set arrow_days $report_days
     set arrow_left_report_start_date [db_string left_date "select :report_start_date::date - $arrow_days from dual"]
-    set arrow_right_report_start_date [db_string left_date "select :report_start_date::date + $arrow_days from dual"]
-    set arrow_left_url [export_vars -base "/intranet-events/index" [linsert $export_vars_list end [list report_start_date $arrow_left_report_start_date]]]
-    set arrow_right_url [export_vars -base "/intranet-events/index" [linsert $export_vars_list end [list report_start_date $arrow_right_report_start_date]]]
+    set arrow_right_report_start_date [db_string right_date "select :report_start_date::date + $arrow_days from dual"]
+    set arrow_left_url [export_vars -base "/intranet-events/index" [linsert $export_vars_list end [list start_date $arrow_left_report_start_date]]]
+    set arrow_right_url [export_vars -base "/intranet-events/index" [linsert $export_vars_list end [list start_date $arrow_right_report_start_date]]]
     set arrow_left "<a href=$arrow_left_url>[im_gif arrow_comp_left]</a>"
     set arrow_right "<a href=$arrow_right_url>[im_gif arrow_comp_right]</a>"
 
@@ -835,8 +848,17 @@ ad_proc im_event_cube {
 	set user_id [lindex $user_tuple 0]
 	set user_name [lindex $user_tuple 1]
 	set user_dept [lindex $user_tuple 2]
-	append table_body "<td><nobr>$user_dept</nobr></td>\n"
-	append table_body "<td><nobr><a href='[export_vars -base $user_url {user_id}]'>$user_name</a></nobr></td>\n"
+	set user_office_id [lindex $user_tuple 3]
+	set user_office_name [lindex $user_tuple 4]
+
+	set user_color_code "white"
+	if {[im_column_exists im_offices solidline_color_code]} {
+	    set user_color_code [util_memoize [list db_string office_color_code "select solidline_color_code from im_offices where office_id = '$user_office_id'" -default "lightcyan"]]
+	}
+
+	set office_url [export_vars -base "/intranet/offices/view" {return_url {office_id $user_office_id}}]
+	append table_body "<td><nobr><a href='$office_url'>$user_office_name</a></nobr></td>\n"
+	append table_body "<td bgcolor='$user_color_code'><nobr><a href='[export_vars -base $user_url {user_id}]'>$user_name</a></nobr></td>\n"
 
 	# Deal with the events starting before the actual reporting interval
 	set events [list]
@@ -924,7 +946,7 @@ ad_proc im_event_cube {
 	foreach eid $events {
 	    set event_values $event_info_hash($eid)
 
-	    set conflict_key "$location-$eid"
+	    set conflict_key "$location_id-$eid"
 	    set conflict_p [info exists conflict_hash($conflict_key)]
 	    append before_events_html [im_event_cube_render_event -event_values $event_values -report_start_date_julian $report_start_date_julian -conflict_p $conflict_p]
 	}
