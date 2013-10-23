@@ -20,8 +20,30 @@ set form_mode "display"
 # ******************************************************
 
 set order_item_options [db_list_of_lists order_items "
-	select	cust.company_name || ' - ' || c.cost_name || ' / ' || ii.sort_order || ' - ' || ii.item_name || ' (' || round(ii.item_units) || ')',
-		ii.item_id
+select
+	company_name || ' - ' || cost_name || ' / ' || sort_order || ' - ' || item_name || 
+		     ' (' || round(coalesce(item_units,0)) || ' | ' || 
+		     round(coalesce(rueckerfasst_units,0)) || ' | ' || 
+		     round(coalesce(other_events_units,0)) || ')',
+	item_id
+from
+	(select	*,
+		ii.sort_order as item_sort_order,
+                (       select  sum(item_units)
+                        from    im_costs rc,
+				im_invoice_items rii
+                        where   rc.cost_id = rii.invoice_id and
+				rc.cost_type_id = 3791 and
+				rii.nav_order_item_id = ii.item_id
+		) as rueckerfasst_units,
+		(	-- sum up the assignments of the order item in all other events
+			select	sum(oeoir.order_item_amount)
+			from	im_events oe,
+				im_event_order_item_rels oeoir
+			where	oeoir.order_item_id = ii.item_id and
+				oeoir.event_id = oe.event_id and
+				oe.event_id != :event_id
+		) as other_events_units
 	from	im_events e,
 		acs_rels ecr,
 		im_event_customer_rels iecr,
@@ -35,11 +57,12 @@ set order_item_options [db_list_of_lists order_items "
 		c.customer_id = cust.company_id and
 		ii.invoice_id = c.cost_id and
 		c.cost_type_id = 3703
-	order by
-		cust.company_name,
-		c.cost_name,
-		ii.sort_order,
-		ii.item_name
+	) t
+order by
+	company_name,
+	cost_name,
+	sort_order,
+	item_name
 "]
 
 # ******************************************************
@@ -52,6 +75,7 @@ set customer_l10n [lang::message::lookup "" intranet-events.Customer "Customer"]
 set ordered_units_l10n [lang::message::lookup "" intranet-events.Ordered_Units "Ordered Units"]
 set rueckerfasst_units_l10n [lang::message::lookup "" intranet-events.Rueckerfasst_Units "Rueckerfasst Units"]
 set other_events_units_l10n [lang::message::lookup "" intranet-events.Other_Event_Units "Other Event Units"]
+set item_sort_order_l10n [lang::message::lookup "" intranet-events.Item_Sort_Order "Item Sort Order"]
 
 list::create \
     -name order_item_list \
@@ -60,15 +84,16 @@ list::create \
     -orderby_name "order_item_orderby" \
     -no_data "No order items associated yet" \
     -elements {
-        item_id {
-
-	}
 	company_name { 
 	    label $customer_l10n
 	    link_url_col customer_url
 	}
 	cost_name { 
 	    label $order_l10n 
+	    link_url_col order_item_url
+	}
+	item_sort_order { 
+	    label $item_sort_order_l10n
 	    link_url_col order_item_url
 	}
 	item_name { 
@@ -112,6 +137,7 @@ list::create \
 
 db_multirow -extend {order_item_url customer_url delete_url} order_item_list_multirow get_order_items "
 	select	*,
+		ii.sort_order as item_sort_order,
                 (       select  sum(item_units)
                         from    im_costs rc,
 				im_invoice_items rii
