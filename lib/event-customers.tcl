@@ -23,6 +23,7 @@ list::create \
     -name customer_list \
     -multirow customer_list_multirow \
     -key company_id \
+    -orderby_name "customers_orderby" \
     -no_data "No customer associated yet" \
     -elements {
 	company_name { 

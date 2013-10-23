@@ -333,7 +333,7 @@ create table im_event_order_item_rels (
 	order_item_id		integer
 				constraint im_event_order_item_rels_order_item_fk
 				references im_invoice_items,
-	order_item_amount	integer default 1
+	order_item_amount	numeric(12,3) default 1.0
 	primary key(event_id, order_item_id)
 );
 
@@ -342,6 +342,7 @@ create table im_event_order_item_rels (
 create index im_event_order_item_rels_event_idx on im_event_order_item_rels(event_id);
 -- create index im_event_order_item_rels_order_item_idx on im_event_order_item_rels(order_item_id);
 
+alter table im_event_order_item_rels alter column order_item_amount type numeric(12,3);
 
 
 ------------------------------------------------------
@@ -623,9 +624,15 @@ SELECT	im_component_plugin__new (
 	'/intranet-events/new',		-- page_url
 	null,				-- view_name
 	50,				-- sort_order
-        'im_event_customer_component $event_id $form_mode $orderby $return_url',
+        'im_event_customer_component $event_id $form_mode $plugin_id $view_name $orderby $return_url',
 	'lang::message::lookup "" intranet-events.Event_Customers "Event Customers"'
 );
+
+update im_component_plugins 
+set component_tcl = 'im_event_customer_component $event_id $form_mode $plugin_id $view_name $orderby $return_url'
+where plugin_name = 'Event Customers';
+
+
 
 SELECT acs_permission__grant_permission(
         (select plugin_id from im_component_plugins where plugin_name = 'Event Customers' and package_name = 'intranet-events'),
@@ -652,9 +659,14 @@ SELECT	im_component_plugin__new (
 	'/intranet-events/new',		-- page_url
 	null,				-- view_name
 	50,				-- sort_order
-        'im_event_order_item_component $event_id $form_mode $orderby $return_url',
+        'im_event_order_item_component $event_id $form_mode $plugin_id $view_name $orderby $return_url',
 	'lang::message::lookup "" intranet-events.Event_Order_Items "Event Order Items"'
 );
+
+update im_component_plugins
+set component_tcl = 'im_event_order_item_component $event_id $form_mode $plugin_id $view_name $orderby $return_url'
+where plugin_name = 'Event Order Items';
+
 
 SELECT acs_permission__grant_permission(
         (select plugin_id from im_component_plugins where plugin_name = 'Event Order Items' and package_name = 'intranet-events'),
@@ -682,17 +694,19 @@ SELECT	im_component_plugin__new (
 	'/intranet-events/new',		-- page_url
 	null,				-- view_name
 	100,				-- sort_order
-        'im_event_participant_component $event_id $form_mode $orderby $return_url',
+        'im_event_participant_component $event_id $form_mode $plugin_id $view_name $orderby $return_url',
 	'lang::message::lookup "" intranet-events.Event_Participants "Event Participants"'
 );
+
+update im_component_plugins
+set component_tcl = 'im_event_participant_component $event_id $form_mode $plugin_id $view_name $orderby $return_url'
+where plugin_name = 'Event Participants';
 
 SELECT acs_permission__grant_permission(
         (select plugin_id from im_component_plugins where plugin_name = 'Event Participants' and package_name = 'intranet-events'),
         (select group_id from groups where group_name = 'Employees'),
         'read'
 );
-
-
 
 
 -- ------------------------------------------------------

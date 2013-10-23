@@ -67,8 +67,6 @@ set start_date_julian [im_date_ansi_to_julian $start_date]
 
 
 
-# Run sweeper
-im_event::task_sweeper
 
 # Unprivileged users can only see their own events
 set view_events_all_p [im_permission $current_user_id "view_events_all"]

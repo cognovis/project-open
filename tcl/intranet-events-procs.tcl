@@ -235,12 +235,14 @@ namespace eval im_event {
 # Event Customer Component
 # ---------------------------------------------------------------------
 
-ad_proc im_event_customer_component { event_id form_mode orderby return_url } {
+ad_proc im_event_customer_component { event_id form_mode plugin_id view_name orderby return_url } {
     Returns a formatted HTML showing the event customers, customer members and related order items
 } {
     set params [list \
                     [list event_id $event_id] \
                     [list form_mode $form_mode] \
+                    [list plugin_id $plugin_id] \
+                    [list view_name $view_name] \
                     [list orderby $orderby] \
                     [list return_url $return_url] \
     ]
@@ -251,12 +253,14 @@ ad_proc im_event_customer_component { event_id form_mode orderby return_url } {
 
 
 
-ad_proc im_event_order_item_component { event_id form_mode orderby return_url } {
+ad_proc im_event_order_item_component { event_id form_mode plugin_id view_name orderby return_url } {
     Returns a formatted HTML showing the event order_items
 } {
     set params [list \
                     [list event_id $event_id] \
                     [list form_mode $form_mode] \
+                    [list plugin_id $plugin_id] \
+                    [list view_name $view_name] \
                     [list orderby $orderby] \
                     [list return_url $return_url] \
     ]
@@ -266,12 +270,14 @@ ad_proc im_event_order_item_component { event_id form_mode orderby return_url } 
 }
 
 
-ad_proc im_event_participant_component { event_id form_mode orderby return_url } {
+ad_proc im_event_participant_component { event_id form_mode plugin_id view_name orderby return_url } {
     Returns a formatted HTML showing the event participants, participant members and related order items
 } {
     set params [list \
                     [list event_id $event_id] \
                     [list form_mode $form_mode] \
+                    [list plugin_id $plugin_id] \
+                    [list view_name $view_name] \
                     [list orderby $orderby] \
                     [list return_url $return_url] \
     ]
