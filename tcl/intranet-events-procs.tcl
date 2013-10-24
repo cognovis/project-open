@@ -405,8 +405,6 @@ ad_proc im_event_cube {
     set report_end_date_julian [im_date_ansi_to_julian $report_end_date]
     set report_days [expr $report_end_date_julian - $report_start_date_julian]
 
-#    ad_return_complaint 1 "$report_days - $report_start_date - $report_end_date"
-
     # ---------------------------------------------------------------
     # Limit the number of users and days
     # ---------------------------------------------------------------
@@ -460,13 +458,13 @@ ad_proc im_event_cube {
 		to_char(:report_start_date::date + :i::integer, 'dd') as date_day_of_month,
 		to_char(:report_start_date::date + :i::integer, 'Mon') as date_month,
 		to_char(:report_start_date::date + :i::integer, 'YYYY') as date_year,
-		to_char(:report_start_date::date + :i::integer, 'Dy') as date_weekday
+		to_char(:report_start_date::date + :i::integer, 'Dy') as date_weekday,
+		extract(week FROM :report_start_date::date + :i::integer) AS date_week
         "
 
-	set date_month [lang::message::lookup "" intranet-events.$date_month $date_month]
-
 	if {$date_weekday == "Sat" || $date_weekday == "Sun"} { set holiday_hash($date_date) $bank_holiday_color }
-	lappend day_list [list $date_date $date_day_of_month $date_month $date_year]
+	set date_month_l10n [lang::message::lookup "" intranet-events.Month_$date_month $date_month]
+	lappend day_list [list $date_date $date_day_of_month $date_month_l10n $date_year $date_weekday $date_week]
     }
 
     # ---------------------------------------------------------------
@@ -531,7 +529,9 @@ ad_proc im_event_cube {
     set location_list [db_list_of_lists location_list "
 	select distinct
 		ci.conf_item_id as location_id,
-		ci.conf_item_name as location_name
+		ci.conf_item_name as location_name,
+		ci.room_number_seats as location_number_seats,
+		coalesce(ci.description, '') || ' ' || coalesce(ci.note, '') as location_note
 	from	im_events e
 		LEFT OUTER JOIN im_conf_items ci ON (e.event_location_id = ci.conf_item_id)
 	where	e.event_location_id = ci.conf_item_id and
@@ -785,7 +785,8 @@ ad_proc im_event_cube {
     foreach location_tuple $location_list {
 	set location_id [lindex $location_tuple 0]
 	set location_name [lindex $location_tuple 1]
-	set location_dept [lindex $location_tuple 2]
+	set location_seats [lindex $location_tuple 2]
+	set location_note [lindex $location_tuple 3]
 
 	foreach day $day_list {
 	    set date_date [lindex $day 0]
@@ -823,8 +824,7 @@ ad_proc im_event_cube {
     set form_vars [ns_conn form]
     set export_vars_list [list]
     foreach form_var [ad_ns_set_keys $form_vars] {
-	if {"report_start_date" == $form_var} { continue }
-	if {"report_days" == $form_var} { continue }
+	if {"start_date" == $form_var} { continue }
         set form_val [ns_set get $form_vars $form_var]
 	lappend export_vars_list [list $form_var $form_val]
     }
@@ -852,6 +852,8 @@ ad_proc im_event_cube {
 	set date_day_of_month [lindex $day 1]
 	set date_month_of_year [lindex $day 2]
 	set date_year [lindex $day 3]
+	set date_weekday [lindex $day 4]
+	set date_week [lindex $day 5]
 	append table_header "<td class=rowtitle><div style=\"width: ${cell_width}px\">$date_month_of_year<br>$date_day_of_month</div></td>\n"
     }
     append table_header "<td class=rowtitle>$arrow_right</td>\n"
@@ -888,7 +890,12 @@ ad_proc im_event_cube {
 	    set event_values $event_info_hash($eid)
 	    set conflict_key "$user_id-$eid"
 	    set conflict_p [info exists conflict_hash($conflict_key)]
-	    append before_events_html [im_event_cube_render_event -event_values $event_values -report_start_date_julian $report_start_date_julian -conflict_p $conflict_p]
+	    append before_events_html [im_event_cube_render_event \
+					   -event_values $event_values \
+					   -report_start_date_julian $report_start_date_julian \
+					   -conflict_p $conflict_p \
+					   -location user_list \
+            ]
 	}
 
 	foreach day $day_list {
@@ -916,7 +923,11 @@ ad_proc im_event_cube {
 		    set event_values $event_info_hash($eid)
 		    set conflict_key "$user_id-$eid"
 		    set conflict_p [info exists conflict_hash($conflict_key)]
-		    append event_html [im_event_cube_render_event -event_values $event_values -conflict_p $conflict_p]
+		    append event_html [im_event_cube_render_event \
+					   -event_values $event_values \
+					   -conflict_p $conflict_p \
+					   -location user_list \
+		    ]
 		}
 	    }
 	    
@@ -953,7 +964,9 @@ ad_proc im_event_cube {
 	append table_body "<tr $bgcolor([expr $row_ctr % 2])>\n"
 	set location_id [lindex $location_tuple 0]
 	set location_name [lindex $location_tuple 1]
-	append table_body "<td colspan=2><nobr><a href='[export_vars -base $location_url {location_id}]'>$location_name</a></nobr></td>\n"
+	set location_seats [lindex $location_tuple 2]
+	set location_note [lindex $location_tuple 3]
+	append table_body "<td colspan=2><nobr><a href='[export_vars -base $location_url {location_id}]' title='$location_note'>$location_name ($location_seats)</a></nobr></td>\n"
 
 	# Deal with the events starting before the actual reporting interval
 	set events [list]
@@ -966,7 +979,12 @@ ad_proc im_event_cube {
 
 	    set conflict_key "$location_id-$eid"
 	    set conflict_p [info exists conflict_hash($conflict_key)]
-	    append before_events_html [im_event_cube_render_event -event_values $event_values -report_start_date_julian $report_start_date_julian -conflict_p $conflict_p]
+	    append before_events_html [im_event_cube_render_event \
+					   -event_values $event_values \
+					   -report_start_date_julian $report_start_date_julian \
+					   -conflict_p $conflict_p \
+					   -location location_list \
+            ]
 	}
 
 	foreach day $day_list {
@@ -985,7 +1003,11 @@ ad_proc im_event_cube {
 		    set event_values $event_info_hash($eid)
 		    set conflict_key "$location_id-$eid"
 		    set conflict_p [info exists conflict_hash($conflict_key)]
-		    append event_html [im_event_cube_render_event -event_values $event_values -conflict_p $conflict_p]
+		    append event_html [im_event_cube_render_event \
+					   -event_values $event_values \
+					   -conflict_p $conflict_p \
+					   -location location_list \
+                    ]
 		}
 	    }
 	    
@@ -1004,6 +1026,7 @@ ad_proc im_event_cube {
 ad_proc im_event_cube_render_event { 
     {-report_start_date_julian ""}
     {-conflict_p 0}
+    {-location ""}
     -event_values:required
 } {
     Renders a single event as HTML DIV on top of a table.
@@ -1047,15 +1070,22 @@ ad_proc im_event_cube_render_event {
     }
 
     # Calculate the event code
-    set kuerzel "$event_location_nr"
-    foreach p $consultants {
-	set initials ""
-	foreach n $p { append initials [string range $n 0 0] }
-	append kuerzel ";$initials"
+    set kuerzel ""
+    if {"location_list" != $location} { append kuerzel "$event_location_nr" }
+
+    if {"user_list" != $location} { 
+	foreach p $consultants {
+	    set initials ""
+	    foreach n $p { append initials [string range $n 0 0] }
+	    append kuerzel ";$initials"
+	}
     }
+
+    append kuerzel ";#[llength event_members_customers]"
+
+
     # One cell corresponds to some 3.5 letters...
     set kuerzel [string range $kuerzel 0 [expr int(($event_duration * 3.5) - 1)]]
-
 
 
     # Deal with "broken" events, that start before the first 

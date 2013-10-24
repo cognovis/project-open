@@ -63,9 +63,8 @@ if {[regexp {^(....)-(..)-(.)$} $start_date match y m d]} { set start_date "$y-$
 if {[regexp {^(....)-(.)-(..)$} $start_date match y m d]} { set start_date "$y-0$m-$d" }
 if {[regexp {^(....)-(.)-(.)$} $start_date match y m d]} { set start_date "$y-0$m-0$d" }
 
+
 set start_date_julian [im_date_ansi_to_julian $start_date]
-
-
 
 
 # Unprivileged users can only see their own events
@@ -104,12 +103,12 @@ switch $timescale {
         set report_end_date $start_date
     }
     "past" {
-        set report_start_date "2000-01-01"
+        set report_start_date [db_string future "select min(event_end_date)::date from im_events" -default "2013-01-01"]
         set report_end_date $start_date
     }
     "future" {
         set report_start_date $start_date
-        set report_end_date "2100-01-01"
+        set report_end_date [db_string future "select max(event_end_date)::date from im_events" -default "2020-01-01"]
     }
     "next_3m" {
         set report_start_date $start_date

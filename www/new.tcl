@@ -383,6 +383,9 @@ ad_form -extend -name event -on_request {
     # Send out notifications?
     # notification::new -type_id [notification::type::get_type_id -short_name event_notif] -object_id $event_id -response_id "" -notif_subject $event_name -notif_text $message
 
+    # Generate im_timesheet_task entries for each event
+    im_event::task_sweeper -event_id $event_id
+
     # Write Audit Trail
     im_project_audit -project_id $event_id -action after_create
 
@@ -391,6 +394,7 @@ ad_form -extend -name event -on_request {
 	doc_return 200 "application/json" "{\"success\": true}" 
 	ad_script_abort
     }
+
     ad_returnredirect [export_vars -base "/intranet-events/new" {event_id {form_mode display}}]
     ad_script_abort
 
@@ -407,6 +411,9 @@ ad_form -extend -name event -on_request {
 	-object_type "im_event" \
 	-object_id $event_id \
 	-form_id event
+
+    # Generate im_timesheet_task entries for each event
+    im_event::task_sweeper -event_id $event_id
 
     # Write Audit Trail
     im_project_audit -project_id $event_id -action after_update
@@ -449,10 +456,6 @@ ad_form -extend -name event -on_request {
 	"[lang::message::lookup {} intranet-events.Event_nr_already_exists {Event Nr already exists}]" 
     }
 }
-
-
-# Generate im_timesheet_task entries for each event
-im_event::task_sweeper -event_id [im_opt_val event_id]
 
 
 # ---------------------------------------------------------------
