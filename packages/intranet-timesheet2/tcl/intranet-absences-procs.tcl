@@ -510,7 +510,12 @@ ad_proc im_absence_cube {
 	    lappend criteria "a.owner_id in (select employee_id from im_employees where supervisor_id = :current_user_id)"
 	}  
 	"cost_center" {
-	    lappend criteria "a.owner_id in (select employee_id from im_employees where department_id = :cost_center_id)"
+	    set cost_center_list [im_cost_center_options -parent_id $cost_center_id]
+	    set cost_center_ids [list $cost_center_id]
+            foreach cost_center $cost_center_list {
+		lappend cost_center_ids [lindex $cost_center 1]
+            }
+	    lappend criteria "a.owner_id in (select employee_id from im_employees where department_id in ([template::util::tcl_to_sql_list $cost_center_ids]))"
 	}  
 	"user" {
 	    lappend criteria "a.owner_id=:user_id"
