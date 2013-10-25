@@ -33,6 +33,12 @@
 	    <%= [im_company_select customer_id $customer_id] %>
 	  </td>
 	</tr>
+        <tr>
+          <td class=form-label>UOM</td>
+          <td class=form-widget>
+	    @uom_html;noquote@
+          </td>
+        </tr>
 	<tr>
 	  <td class=form-label></td>
 	  <td class=form-widget><input type=submit value=Submit></td>
@@ -44,6 +50,7 @@
 		<li>Tracks actual hours worked per task against planned units per task</li>
 		<li>List of projects can be filetered by start/end date and customer</li>
 		<li>Hours for project members are only shown when logged btw. start and end date</li>
+		<li>Report only considers tasks defined with the following UOM's: hours, days and weeks</li>
 	</ul>
 	</td>
 </tr>
