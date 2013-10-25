@@ -39,6 +39,7 @@ SELECT im_category_new (1308, 'Trainer', 'Intranet Biz Object Role');
 update im_categories set category_gif = 'c' where category_id = 1307;
 update im_categories set category_gif = 't' where category_id = 1308;
 
+insert into im_biz_object_role_map values ('im_event',null,1300);
 insert into im_biz_object_role_map values ('im_event',null,1307);
 insert into im_biz_object_role_map values ('im_event',null,1308);
 
@@ -216,6 +217,62 @@ BEGIN
 	return 0;
 end;' language 'plpgsql';
 
+
+
+
+
+
+-----------------------------------------------------------
+-- Event Helper Functions
+-----------------------------------------------------------
+
+create or replace function im_event__participant_list(integer)
+returns varchar as $$
+DECLARE
+	p_event_id	alias for $1;
+	row		RECORD;
+	v_result	varchar;
+BEGIN
+	v_result := '';
+	FOR row IN
+		select	pe.first_names || ' ' || pe.last_name as user_name,
+			pe.person_id
+		from	persons pe,
+			acs_rels r
+		where	r.object_id_two = pe.person_id and
+			r.object_id_one = p_event_id
+	LOOP
+		IF '' != v_result THEN v_result := v_result || ' '; END IF;
+		v_result := v_result || '{' || '<a href=/intranet/users/view?user_id=' || row.person_id || '>' || row.user_name || '</a>}';
+	END LOOP;
+
+	return v_result;
+end;$$ language 'plpgsql';
+-- select im_event__participant_list(480591);
+
+
+create or replace function im_event__customer_list(integer)
+returns varchar as $$
+DECLARE
+	p_event_id	alias for $1;
+	row		RECORD;
+	v_result	varchar;
+BEGIN
+	v_result := '';
+	FOR row IN
+		select	company_id, company_name
+		from	im_companies c,
+			acs_rels r
+		where	r.object_id_two = c.company_id and
+			r.object_id_one = p_event_id
+	LOOP
+		IF '' != v_result THEN v_result := v_result || ' '; END IF;
+		v_result := v_result || '{' || '<a href=/intranet/companies/view?company_id=' || row.company_id || '>' || row.company_name || '</a>}';
+	END LOOP;
+
+	return v_result;
+end;$$ language 'plpgsql';
+-- select im_event__customer_list(480591);
 
 
 
@@ -478,6 +535,44 @@ drop function inline_0 ();
 
 
 
+create or replace function inline_0 ()
+returns integer as $body$
+declare
+	v_menu		integer;	
+	v_parent_menu	integer;
+	v_employees	integer;
+	v_count		integer;
+BEGIN
+	select group_id into v_employees from groups where group_name = 'Employees';
+
+	select count(*) into v_count from im_menus where label = 'event_summary';
+	IF v_count > 0 THEN return 1; END IF;
+
+	select menu_id into v_parent_menu from im_menus where label = 'events';
+
+	v_menu := im_menu__new (
+		null,				-- p_menu_id
+		'im_menu',			-- object_type
+		now(),				-- creation_date
+		null,				-- creation_user
+		null,				-- creation_ip
+		null,				-- context_id
+		'intranet-events',		-- package_name
+		'event_summary',		-- label
+		'Summary',			-- name
+		'/intranet-events/new?',	-- url
+		0,				-- sort_order
+		v_parent_menu,			-- parent_menu_id
+		null				-- p_visible_tcl
+	);
+
+	PERFORM acs_permission__grant_permission(v_menu, v_employees, 'read');
+
+	return 0;
+end;$body$ language 'plpgsql';
+select inline_0 ();
+drop function inline_0 ();
+
 
 
 
@@ -528,6 +623,12 @@ insert into im_view_columns (column_id, view_id, sort_order, column_name, column
 (97070,970,70,'Location','$event_location_name');
 
 insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(97075,970,75,'Customers','$event_customers_pretty');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
+(97080,970,80,'Participants','$event_participants_pretty');
+
+insert into im_view_columns (column_id, view_id, sort_order, column_name, column_render_tcl) values
 (97090,970,90,'Status','$event_status');
 
 
@@ -569,12 +670,32 @@ SELECT im_dynfield_attribute_new ('im_event', 'event_type_id', 'Type', 'event_ty
 SELECT im_dynfield_attribute_new ('im_event', 'event_status_id', 'Status', 'event_status', 'integer', 'f', 40, 't');
 -- SELECT im_dynfield_attribute_new ('im_event', 'event_location_id', 'Location', 'event_location', 'integer', 'f', 50, 't');
 SELECT im_dynfield_attribute_new ('im_event', 'event_material_id', 'Material', 'materials', 'integer', 'f', 100, 't');
-SELECT im_dynfield_attribute_new ('im_event', 'num_laptops', 'Num Laptops', 'integer', 'integer', 'f');
-SELECT im_dynfield_attribute_new ('im_event', 'num_beamers', 'Num Laptops', 'integer', 'integer', 'f');
 
 
-alter table im_events add column num_laptops integer;
-alter table im_events add column num_beamers integer;
+
+-- DynField for Timesheet Tasks to show the NAV OrderItem
+SELECT im_dynfield_widget__new (
+	null, 'im_dynfield_widget', now(), 0, '0.0.0.0', null,
+	'solidline_task_order_item', 'SolidLine Task Order Item', 'SolidLine Task Order Item',
+	10007, 'integer', 'generic_sql', 'integer',
+	'
+{custom {sql "
+select  item_id, item_name
+from    im_invoice_items ii,
+        im_costs c
+where   ii.invoice_id = c.cost_id and
+        c.customer_id in (
+             select  company_id
+             from    im_projects
+             where   project_id = :task_id
+        )
+"}}
+'
+);
+
+
+SELECT im_dynfield_attribute_new ('im_timesheet_task', 'nav_order_item_id', 'Order Item', 'solidline_task_order_item', 'integer', 'f', 100, 'f');
+
 
 
 
@@ -731,6 +852,30 @@ SELECT	im_component_plugin__new (
 
 SELECT acs_permission__grant_permission(
         (select plugin_id from im_component_plugins where plugin_name = 'Event Participants' and package_name = 'intranet-events'),
+        (select group_id from groups where group_name = 'Employees'),
+        'read'
+);
+
+
+SELECT	im_component_plugin__new (
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'New Company Contact',		-- plugin_name
+	'intranet-core',		-- package_name
+	'right',			-- location
+	'/intranet/companies/view',	-- page_url
+	null,				-- view_name
+	30,				-- sort_order
+        'im_user_biz_card_component -limit_to_company_id $company_id -return_url $return_url',
+	'lang::message::lookup "" intranet-core.New_Company_Contact "New Company Contact"'
+);
+
+SELECT acs_permission__grant_permission(
+        (select plugin_id from im_component_plugins where plugin_name = 'New Company Contact' and package_name = 'intranet-core'),
         (select group_id from groups where group_name = 'Employees'),
         'read'
 );

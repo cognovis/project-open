@@ -169,9 +169,7 @@ db_foreach column_list_sql $column_sql {
 	# Build the column header
 	regsub -all " " $column_name "_" col_txt
 	set col_txt [lang::message::lookup "" intranet-events.$col_txt $column_name]
-	set col_url [export_vars -base "index" {{order_by $column_name}}]
-
-	append col_url "&event_material_id=$event_material_id"
+	set col_url [export_vars -base "index" {event_id mine_p start_date timescale report_show_users_p report_show_locations_p report_show_resources_p report_show_event_list_p report_show_all_users_p event_name event_creator_id {order_by $column_name}}]
 
 	# Append the DynField values from the Filter as pass-through variables
 	# so that sorting won't alter the selected events
@@ -415,11 +413,17 @@ switch $mine_p {
 }
 
 set order_by_clause "order by e.event_id DESC"
+
+# ad_return_complaint 1 $order_by
 switch [string tolower $order_by] {
     "date" { set order_by_clause "order by e.event_start_date DESC" }
+    "start" { set order_by_clause "order by e.event_start_date DESC" }
     "name" { set order_by_clause "order by lower(e.event_name), e.event_start_date" }
     "type" { set order_by_clause "order by e.event_type_id, e.event_start_date" }
     "status" { set order_by_clause "order by e.event_status_id, e.event_start_date" }
+    "material" { set order_by_clause "order by acs_object__name(e.event_material_id), e.event_name" }
+    "duration" { set order_by_clause "order by (e.event_end_date - e.event_start_date) DESC, e.event_name" }
+    "location" { set order_by_clause "order by acs_object__name(e.event_location_id), e.event_name" }
 }
 
 # ---------------------------------------------------------------
@@ -491,6 +495,8 @@ set sql "
 			to_char(e.event_end_date, 'YYYY-MM-DD') as event_end_date_formatted,
 			(e.event_end_date::date - e.event_start_date::date) + 1 as event_duration_days,
 			m.material_name,
+			im_event__participant_list(e.event_id) as event_participant_list,
+			im_event__customer_list(e.event_id) as event_customer_list,
 			acs_object__name(e.event_location_id) as event_location_name
 		FROM
 			acs_objects o,
@@ -539,6 +545,9 @@ set bgcolor(1) " class=rowodd "
 set ctr 0
 set idx $start_idx
 db_foreach events_info_query $selection -bind $form_vars {
+
+    set event_participants_pretty [join $event_participant_list "<br>"]
+    set event_customers_pretty [join $event_customer_list "<br>"]
 
     # Bulk Action Checkbox
     set action_checkbox "<input type=checkbox name=tid value=$event_id id=event,$event_id>\n"

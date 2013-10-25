@@ -105,7 +105,7 @@ namespace eval im_event {
 		"
 	    }
 	    set task_nr "event_$event_nr"
-	    set task_name "Event $event_nr"
+	    set task_name "$event_name ($event_nr)"
 
 	    # -----------------------------------------------------
 	    # Create the timesheet task
@@ -143,13 +143,14 @@ namespace eval im_event {
 
 	    # -----------------------------------------------------
 	    # Copy event members to task
-	    set event_member_sql "
+	    sset event_member_sql "
 		select	object_id_two as user_id,
 			bom.object_role_id as role_id
 		from	acs_rels r,
 			im_biz_object_members bom
 		where	r.rel_id = bom.rel_id and
-			object_id_one = :event_id
+			object_id_one = :event_id and
+			object_id_two in (select member_id from group_distinct_members where group_id = [im_profile_employees])
 	    "
 	    array set event_member_hash {}
 	    db_foreach event_members $event_member_sql {

@@ -464,12 +464,13 @@ ad_form -extend -name event -on_request {
 
 # Setup the subnavbar
 set bind_vars [ns_set create]
-if {[info exists event_id]} { ns_set put $bind_vars event_id $event_id }
+ns_set put $bind_vars event_id [im_opt_val event_id]
+ns_set put $bind_vars form_mode [im_opt_val form_mode]
 
 
 if {![info exists event_id]} { set event_id "" }
 
-set event_parent_menu_id [db_string parent_menu "select menu_id from im_menus where label='event'" -default 0]
+set event_parent_menu_id [db_string parent_menu "select menu_id from im_menus where label='events'" -default 0]
 set sub_navbar [im_sub_navbar \
     -components \
     -current_plugin_id $plugin_id \
