@@ -286,6 +286,22 @@ ad_proc im_event_participant_component { event_id form_mode plugin_id view_name 
     return [string trim $result]
 }
 
+ad_proc im_event_resource_component { event_id form_mode plugin_id view_name orderby return_url } {
+    Returns a formatted HTML showing the event resources
+} {
+    set params [list \
+                    [list event_id $event_id] \
+                    [list form_mode $form_mode] \
+                    [list plugin_id $plugin_id] \
+                    [list view_name $view_name] \
+                    [list orderby $orderby] \
+                    [list return_url $return_url] \
+    ]
+
+    set result [ad_parse_template -params $params "/packages/intranet-events/lib/event-resources"]
+    return [string trim $result]
+}
+
 
 # ---------------------------------------------------------------------
 # Events Permissions
@@ -393,6 +409,7 @@ ad_proc im_event_cube {
 } {
     set user_url "/intranet/users/view"
     set location_url "/intranet-confdb/new"
+    set resource_url "/intranet-confdb/new"
     set date_format "YYYY-MM-DD"
     set current_user_id [ad_get_user_id]
     set bgcolor(0) " class=roweven "
@@ -479,66 +496,83 @@ ad_proc im_event_cube {
     # Select any user who has ever been member of an event
     set user_list {}
     if {1 == $report_show_users_p} {
-    set user_list [db_list_of_lists user_list "
-	select	user_id,
-		user_name,
-		department,
-		office_id,
-		acs_object__name(office_id) as office_name
-	from	(
-		select distinct
-			u.user_id as user_id,
-			im_name_from_user_id(u.user_id, $name_order) as user_name,
-			acs_object__name(emp.department_id) as department,
-			(select	coalesce(min(o.office_id), 1)
-				from	im_offices o,
-					acs_rels r
-				where	r.object_id_one = o.office_id and
-					r.object_id_two = u.user_id
-			) as office_id
-		from	users u
-			LEFT OUTER JOIN im_employees emp ON u.user_id = emp.employee_id,
-			acs_rels r,
-			im_events e
-		where	r.object_id_one = e.event_id and
-			r.object_id_two = u.user_id and
-			(
-			e.event_start_date <= :report_end_date::date and
-			e.event_end_date >= :report_start_date::date
-			OR 1 = :report_show_all_users_p
-			)
-			and
-			u.user_id not in (
-				select	u.user_id
-				from	users u,
-					acs_rels r,
-					membership_rels mr
-				where	r.rel_id = mr.rel_id and
-					r.object_id_two = u.user_id and
-					r.object_id_one = -2 and
-					mr.member_state != 'approved'
-			)
-			$group_sql
-		) t
-	order by office_name, user_name
-    "]
+	set user_list [db_list_of_lists user_list "
+		select	user_id,
+			user_name,
+			department,
+			office_id,
+			acs_object__name(office_id) as office_name
+		from	(
+			select distinct
+				u.user_id as user_id,
+				im_name_from_user_id(u.user_id, $name_order) as user_name,
+				acs_object__name(emp.department_id) as department,
+				(select	coalesce(min(o.office_id), 1)
+					from	im_offices o,
+						acs_rels r
+					where	r.object_id_one = o.office_id and
+						r.object_id_two = u.user_id
+				) as office_id
+			from	users u
+				LEFT OUTER JOIN im_employees emp ON u.user_id = emp.employee_id,
+				acs_rels r,
+				im_events e
+			where	r.object_id_one = e.event_id and
+				r.object_id_two = u.user_id and
+				(
+				e.event_start_date <= :report_end_date::date and
+				e.event_end_date >= :report_start_date::date
+				OR 1 = :report_show_all_users_p
+				)
+				and
+				u.user_id not in (
+					select	u.user_id
+					from	users u,
+						acs_rels r,
+						membership_rels mr
+					where	r.rel_id = mr.rel_id and
+						r.object_id_two = u.user_id and
+						r.object_id_one = -2 and
+						mr.member_state != 'approved'
+				)
+				$group_sql
+			) t
+		order by office_name, user_name
+	"]
     }
 
     set location_list {}
     if {1 == $report_show_locations_p} {
-    set location_list [db_list_of_lists location_list "
-	select distinct
-		ci.conf_item_id as location_id,
-		ci.conf_item_name as location_name,
-		ci.room_number_seats as location_number_seats,
-		coalesce(ci.description, '') || ' ' || coalesce(ci.note, '') as location_note
-	from	im_events e
-		LEFT OUTER JOIN im_conf_items ci ON (e.event_location_id = ci.conf_item_id)
-	where	e.event_location_id = ci.conf_item_id and
-		ci.conf_item_name is not null and
-		ci.conf_item_status_id not in ([im_conf_item_status_deleted])
-	order by ci.conf_item_name
-    "]
+	set location_list [db_list_of_lists location_list "
+		select distinct
+			ci.conf_item_id as location_id,
+			ci.conf_item_name as location_name,
+			ci.room_number_seats as location_number_seats,
+			coalesce(ci.description, '') || ' ' || coalesce(ci.note, '') as location_note
+		from	im_events e
+			LEFT OUTER JOIN im_conf_items ci ON (e.event_location_id = ci.conf_item_id)
+		where	e.event_location_id = ci.conf_item_id and
+			ci.conf_item_name is not null and
+			ci.conf_item_status_id not in ([im_conf_item_status_deleted])
+		order by ci.conf_item_name
+	"]
+    }
+
+    set resource_list {}
+    if {1 == $report_show_resources_p} {
+	set resource_list [db_list_of_lists resource_list "
+		select distinct
+			ci.conf_item_id,
+			ci.conf_item_name as resource_name,
+			coalesce(ci.description, '') || ' ' || coalesce(ci.note, '') as resource_note
+		from	im_events e,
+			acs_rels r,
+			im_conf_items ci
+		where	r.object_id_one = e.event_id and
+			r.object_id_two = ci.conf_item_id and
+			ci.conf_item_status_id not in ([im_conf_item_status_deleted])
+		order by ci.conf_item_name
+	"]
     }
 
     # ---------------------------------------------------------------
@@ -567,8 +601,6 @@ ad_proc im_event_cube {
 		e.event_end_date >= :report_start_date::date
 		$where_clause
     "
-
-#    ad_return_complaint 1 [db_list adf "select distinct event_id from ($event_sql) t"]
 
     array set user_event_hash {}
     array set location_event_hash {}
@@ -658,6 +690,43 @@ ad_proc im_event_cube {
 	    lappend events $event_id
 	    set location_event_before_reporting_interval_hash($event_location_id) $events
 
+	}
+    }
+
+
+
+    # ---------------------------------------------------------------
+    # Resources per user
+    # ---------------------------------------------------------------
+    set resource_sql "
+	select	*,
+		e.event_start_date::date as start_d,
+		to_char(e.event_start_date, 'J') as start_j,
+		CASE WHEN e.event_start_date < :report_start_date THEN 1 ELSE 0 END as resource_starts_before_report_p
+	from	im_conf_items ci,
+		acs_rels r,
+		im_events e
+	where	r.object_id_one = e.event_id and
+		r.object_id_two = ci.conf_item_id
+    "
+    array set resource_hash {}
+    db_foreach resources $resource_sql {
+
+	# Resource Hash
+	set key "$conf_item_id-$start_d"
+	set value ""
+	if {[info exists resource_hash($key)]} { set value $resource_hash($key) }
+	lappend value $event_id
+	set resource_hash($key) $value
+
+	# Remember the resources that starting before the report interval
+	if {$resource_starts_before_report_p} {
+	    set resources [list]
+	    if {[info exists resource_before_reporting_interval_hash($user_id)]} { 
+		set resources $resource_before_reporting_interval_hash($user_id)
+	    }
+	    lappend resources $resource_id
+	    set resource_before_reporting_interval_hash($user_id) $resources
 	}
     }
 
@@ -881,6 +950,7 @@ ad_proc im_event_cube {
 	append table_body "<td bgcolor='$user_color_code'><nobr><a href='[export_vars -base $user_url {user_id}]'>$user_name</a></nobr></td>\n"
 
 	# Deal with the events starting before the actual reporting interval
+	set line_events [list]
 	set events [list]
 	if {[info exists user_event_before_reporting_interval_hash($user_id)]} {
 	    set events $user_event_before_reporting_interval_hash($user_id)
@@ -896,8 +966,10 @@ ad_proc im_event_cube {
 					   -conflict_p $conflict_p \
 					   -location user_list \
             ]
+	    lappend line_events $eid
 	}
 
+	# Loop through the days for the user
 	foreach day $day_list {
 	    set date_date [lindex $day 0]
 	    set key "$user_id-$date_date"
@@ -928,12 +1000,25 @@ ad_proc im_event_cube {
 					   -conflict_p $conflict_p \
 					   -location user_list \
 		    ]
+		    lappend line_events $eid
 		}
 	    }
 	    
 	    append table_body [im_event_cube_render_cell -value $value -event_html $event_html]
 	    ns_log NOTICE "intranet-events-procs::im_event_cube_render_cell: $value"
 	}
+
+	# Show the list of events in this line
+	set ttt {
+	set line_event_entries {}
+	foreach eid $line_events {
+	    set event_values $event_info_hash($eid)
+	    set event_name [lindex $event_values 3]
+	    lappend line_event_entries "<a href=[export_vars -base "/intranet-events/new" {{event_id $eid} return_url {form_mode display}}]>$event_name</a>"
+	}
+	append table_body "<td><nobr>[join $line_event_entries ", "]</nobr></td>\n"
+	}
+
 	append table_body "</tr>\n"
 	incr row_ctr
     }
@@ -1018,6 +1103,82 @@ ad_proc im_event_cube {
     }
     append table_html $table_body
 
+
+
+    # ---------------------------------------------------------------
+    # Resources
+    # ---------------------------------------------------------------
+
+    set table_header "<tr class=rowtitle>\n"
+    append table_header "<td class=rowtitle colspan=2>$arrow_left [lang::message::lookup "" intranet-events.Resources Resources]</td>\n"
+    foreach day $day_list {
+	set date_date [lindex $day 0]
+	set date_day_of_month [lindex $day 1]
+	set date_month_of_year [lindex $day 2]
+	set date_year [lindex $day 3]
+	append table_header "<td class=rowtitle>$date_month_of_year<br>$date_day_of_month</td>\n"
+    }
+    append table_header "<td class=rowtitle>$arrow_right</td>\n"
+    append table_header "</tr>\n"
+    append table_html $table_header
+
+    
+    set row_ctr 0
+    set table_body ""
+    foreach resource_tuple $resource_list {
+	append table_body "<tr $bgcolor([expr $row_ctr % 2])>\n"
+	set resource_id [lindex $resource_tuple 0]
+	set resource_name [lindex $resource_tuple 1]
+	set resource_note [lindex $resource_tuple 2]
+	append table_body "<td colspan=2><nobr><a href='[export_vars -base $resource_url {resource_id}]' title='$resource_note'>$resource_name</a></nobr></td>\n"
+
+	# Deal with the events starting before the actual reporting interval
+	set events [list]
+	if {[info exists resource_event_before_reporting_interval_hash($resource_id)]} {
+	    set events $resource_event_before_reporting_interval_hash($resource_id)
+	}
+	set before_events_html ""
+	foreach eid $events {
+	    set event_values $event_info_hash($eid)
+	    set conflict_key "$resource_id-$eid"
+	    set conflict_p [info exists conflict_hash($conflict_key)]
+	    append before_events_html [im_event_cube_render_event \
+					   -event_values $event_values \
+					   -report_start_date_julian $report_start_date_julian \
+					   -conflict_p $conflict_p \
+					   -location resource_list \
+            ]
+	}
+
+	foreach day $day_list {
+	    set date_date [lindex $day 0]
+	    set key "$resource_id-$date_date"
+	    set value ""
+
+	    set event_html ""
+	    append event_html $before_events_html
+	    set before_events_html ""
+
+	    if {[info exists resource_hash($key)]} { 
+		set events $resource_hash($key)
+		foreach eid $events {
+		    set event_values $event_info_hash($eid)
+		    set conflict_key "$resource_id-$eid"
+		    set conflict_p [info exists conflict_hash($conflict_key)]
+		    append event_html [im_event_cube_render_event \
+					   -event_values $event_values \
+					   -conflict_p $conflict_p \
+					   -location resource_list \
+                    ]
+		}
+	    }
+	    
+	    append table_body [im_event_cube_render_cell -value $value -event_html $event_html]
+	}
+	append table_body "</tr>\n"
+	incr row_ctr
+    }
+    append table_html $table_body
 
     append table_html "</table>\n"
 }
@@ -1124,7 +1285,7 @@ ad_proc im_event_cube_render_event {
 <table cellspacing=0 cellpadding=0 border=2 bgcolor=#$bgcolor bordercolor=$bordercolor width='100%'>
 <tr>
 <td bgcolor=#$bgcolor>
-<nobr><a href=$event_url title='$event_title' target='_'>$kuerzel</a></nobr>
+<nobr><a href=$event_url title='$event_title' target='_blank'>$kuerzel</a></nobr>
 </td>
 </tr>
 </table>

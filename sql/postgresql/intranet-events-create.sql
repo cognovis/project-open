@@ -712,7 +712,6 @@ SELECT acs_permission__grant_permission(
 -- ------------------------------------------------------
 -- Show customers associated with event
 --
-
 SELECT	im_component_plugin__new (
 	null,				-- plugin_id
 	'im_component_plugin',		-- object_type
@@ -732,6 +731,33 @@ SELECT	im_component_plugin__new (
 
 SELECT acs_permission__grant_permission(
         (select plugin_id from im_component_plugins where plugin_name = 'Event Participants' and package_name = 'intranet-events'),
+        (select group_id from groups where group_name = 'Employees'),
+        'read'
+);
+
+
+-- ------------------------------------------------------
+-- Show customers associated with event
+--
+SELECT	im_component_plugin__new (
+	null,				-- plugin_id
+	'im_component_plugin',		-- object_type
+	now(),				-- creation_date
+	null,				-- creation_user
+	null,				-- creation_ip
+	null,				-- context_id
+	'Event Resources',		-- plugin_name
+	'intranet-events',		-- package_name
+	'left',				-- location
+	'/intranet-events/new',		-- page_url
+	null,				-- view_name
+	10,				-- sort_order
+        'im_event_resource_component $event_id $form_mode $plugin_id $view_name $orderby $return_url',
+	'lang::message::lookup "" intranet-events.Event_Resources "Event Resources"'
+);
+
+SELECT acs_permission__grant_permission(
+        (select plugin_id from im_component_plugins where plugin_name = 'Event Resources' and package_name = 'intranet-events'),
         (select group_id from groups where group_name = 'Employees'),
         'read'
 );

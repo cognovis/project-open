@@ -58,6 +58,8 @@ from
 		ii.invoice_id = c.cost_id and
 		c.cost_type_id = 3703
 	) t
+where	
+	rueckerfasst_units < item_units
 order by
 	company_name,
 	cost_name,
@@ -76,13 +78,14 @@ set ordered_units_l10n [lang::message::lookup "" intranet-events.Ordered_Units "
 set rueckerfasst_units_l10n [lang::message::lookup "" intranet-events.Rueckerfasst_Units "Rueckerfasst Units"]
 set other_events_units_l10n [lang::message::lookup "" intranet-events.Other_Event_Units "Other Event Units"]
 set item_sort_order_l10n [lang::message::lookup "" intranet-events.Item_Sort_Order "Item Sort Order"]
+set no_open_order_items_l10n [lang::message::lookup "" intranet-events.No_open_order_items_available "No open order items available"]
 
 list::create \
     -name order_item_list \
     -multirow order_item_list_multirow \
     -key invoice_item_id \
     -orderby_name "order_item_orderby" \
-    -no_data "No order items associated yet" \
+    -no_data $no_open_order_items_l10n \
     -elements {
 	company_name { 
 	    label $customer_l10n
