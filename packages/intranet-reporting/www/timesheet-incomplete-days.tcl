@@ -51,8 +51,8 @@ if {![string equal "t" $read_p] && ![im_is_user_site_wide_or_intranet_admin $cur
 # ------------------------------------------------------------
 
 # Preset dates 
-if { "" == $start_date } { set start_date [clock format [clock scan $start_date] -format %Y-%m-01] }
-if { "" == $end_date } { set end_date [clock format [clock add [clock add [clock scan $start_date] +1 month ] -1 day] -format %Y-%m-%d] }
+if { "" == $start_date } {set start_date [db_string get_today "select to_char(sysdate,'YYYY-MM-01') from dual"]}
+if { "" == $end_date } {set end_date [db_string current_month "select to_char(to_date(:start_date,'YYYY-MM-DD') + interval '1 month' - interval '1 day','YYYY-MM-DD') from dual"] }
 
 # Check that Start & End-Date have correct format
 if { $start_date != [dt_julian_to_ansi [dt_ansi_to_julian_single_arg $start_date]] } {
@@ -201,7 +201,7 @@ for { set i 0 } { $i < $duration_in_days } { incr i } {
 	append day_header "[lindex $date_elements 0]/[lindex $date_elements 1]/[lindex $date_elements 2]"
     }
     append day_header " "
-    set this_day [clock format [clock add [clock scan $this_day] 1 day] -format %Y-%m-%d]
+    set this_day [db_string current_month "select to_char(to_date('$this_day','YYYY-MM-DD') + interval '1 day','YYYY-MM-DD') from dual"]
 }
 
 set inner_sql [join $inner_sql_list ", "]
@@ -346,8 +346,8 @@ switch $output_format {
         <script>
         jQuery().ready(function(){
                 \$(function() {
-                \$( \"\#start_date\" ).datepicker({ dateFormat: \"yyyy-mm-dd\" });
-                \$( \"\#end_date\" ).datepicker({ dateFormat: \"yyyy-mm-dd\" });
+                \$( \"\#start_date\" ).datepicker({ dateFormat: \"yy-mm-dd\" });
+                \$( \"\#end_date\" ).datepicker({ dateFormat: \"yy-mm-dd\" });
                 });
 
         });
@@ -409,7 +409,7 @@ db_foreach sql $sql {
                 set cmd "set hours_total_$this_day_key \"OK\""
                 eval $cmd
 	}
-	set this_day [clock format [clock add [clock scan $this_day] 1 day] -format %Y-%m-%d]
+	set this_day [db_string current_month "select to_char(to_date('$this_day','YYYY-MM-DD') + interval '1 day','YYYY-MM-DD') from dual"]
     }
 
     if { !$found_missing_hours_p } { continue }
