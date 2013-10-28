@@ -143,14 +143,14 @@ namespace eval im_event {
 
 	    # -----------------------------------------------------
 	    # Copy event members to task
-	    sset event_member_sql "
+	    set event_member_sql "
 		select	object_id_two as user_id,
 			bom.object_role_id as role_id
 		from	acs_rels r,
 			im_biz_object_members bom
 		where	r.rel_id = bom.rel_id and
 			object_id_one = :event_id and
-			object_id_two in (select member_id from group_distinct_members where group_id = [im_profile_employees])
+			object_id_two in (select member_id from group_distinct_member_map where group_id = [im_profile_employees])
 	    "
 	    array set event_member_hash {}
 	    db_foreach event_members $event_member_sql {
@@ -706,9 +706,14 @@ ad_proc im_event_cube {
 		CASE WHEN e.event_start_date < :report_start_date THEN 1 ELSE 0 END as resource_starts_before_report_p
 	from	im_conf_items ci,
 		acs_rels r,
-		im_events e
-	where	r.object_id_one = e.event_id and
-		r.object_id_two = ci.conf_item_id
+		im_events e,
+		acs_objects o
+	where	o.object_id = e.event_id and
+		r.object_id_one = e.event_id and
+		r.object_id_two = ci.conf_item_id and
+		e.event_start_date <= :report_end_date::date and
+		e.event_end_date >= :report_start_date::date
+		$where_clause
     "
     array set resource_hash {}
     db_foreach resources $resource_sql {
@@ -722,12 +727,12 @@ ad_proc im_event_cube {
 
 	# Remember the resources that starting before the report interval
 	if {$resource_starts_before_report_p} {
-	    set resources [list]
-	    if {[info exists resource_before_reporting_interval_hash($user_id)]} { 
-		set resources $resource_before_reporting_interval_hash($user_id)
+	    set events [list]
+	    if {[info exists resource_before_reporting_interval_hash($conf_item_id)]} {
+		set events $resource_before_reporting_interval_hash($conf_item_id)
 	    }
-	    lappend resources $resource_id
-	    set resource_before_reporting_interval_hash($user_id) $resources
+	    lappend events $event_id
+	    set resource_before_reporting_interval_hash($conf_item_id) $events
 	}
     }
 
@@ -1135,8 +1140,8 @@ ad_proc im_event_cube {
 
 	# Deal with the events starting before the actual reporting interval
 	set events [list]
-	if {[info exists resource_event_before_reporting_interval_hash($resource_id)]} {
-	    set events $resource_event_before_reporting_interval_hash($resource_id)
+	if {[info exists resource_before_reporting_interval_hash($resource_id)]} {
+	    set events $resource_before_reporting_interval_hash($resource_id)
 	}
 	set before_events_html ""
 	foreach eid $events {

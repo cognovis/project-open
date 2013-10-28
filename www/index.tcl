@@ -63,9 +63,12 @@ if {[regexp {^(....)-(..)-(.)$} $start_date match y m d]} { set start_date "$y-$
 if {[regexp {^(....)-(.)-(..)$} $start_date match y m d]} { set start_date "$y-0$m-$d" }
 if {[regexp {^(....)-(.)-(.)$} $start_date match y m d]} { set start_date "$y-0$m-0$d" }
 
-
-set start_date_julian [im_date_ansi_to_julian $start_date]
-
+if {[catch {
+    set start_date_julian [im_date_ansi_to_julian $start_date]
+} err_msg]} {
+    ad_return_complaint 1 "<b>[lang::message::lookup "" intranet-events.Invalid_Date_Format "Invalid Data Format"]</b>:<br>
+    [lang::message::lookup "" intranet-events.Invalid_Date_Format_Message "Please enter the Start Date in format 'YYYY-MM-DD'"]"
+}
 
 # Unprivileged users can only see their own events
 set view_events_all_p [im_permission $current_user_id "view_events_all"]
