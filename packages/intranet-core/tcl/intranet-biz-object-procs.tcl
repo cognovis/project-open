@@ -59,23 +59,38 @@ ad_proc -public im_biz_object_url { object_id {url_type "view"} } {
 }
 
 
-ad_proc -public im_biz_object_member_p { user_id object_id } {
+ad_proc -public im_biz_object_member_p {
+    {-role_id ""}
+    user_id
+    object_id
+ } {
     Returns >0 if the user has some type of relationship with
     the specified object.
 } {
-    return [util_memoize [list im_biz_object_member_p_helper $user_id $object_id] 60]
+    return [util_memoize [list im_biz_object_member_p_helper $user_id $object_id $role_id] 60]
 }
 
-ad_proc -public im_biz_object_member_p_helper { user_id object_id } {
+ad_proc -public im_biz_object_member_p_helper { user_id object_id object_role_id} {
     Returns >0 if the user has some type of relationship with
     the specified object.
 } {
-    set sql "
+    if {"" == $object_role_id} {
+	set sql "
 	select count(*)
-	from acs_rels
-	where	object_id_one = :object_id
-		and object_id_two = :user_id
+	from acs_rels r
+	where	r.object_id_one = :object_id
+		and r.object_id_two = :user_id
+        "
+    } else {
+	set sql "
+	select count(*)
+	from acs_rels r, im_biz_object_members bom
+	where	r.object_id_one = :object_id
+		and r.object_id_two = :user_id
+                and r.rel_id = bom.rel_id
+                and bom.object_role_id = :object_role_id
     "
+    }
     set result [db_string im_biz_object_member_p $sql]
     return $result
 }
