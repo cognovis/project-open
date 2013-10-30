@@ -247,7 +247,7 @@ switch -glob $action {
 		# Store deadline in with the task
 		set update_sql "
 			update im_trans_tasks set 
-				end_date = :task_end_date::timestamptz
+				end_date = to_date(:task_end_date,:date_format)
 			where	project_id = :project_id
 				and task_id = :task_id"
 		if {[catch {
