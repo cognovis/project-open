@@ -154,7 +154,7 @@ if {$some_american_readers_p} {
 
 ad_form -extend -name $form_id -form {
 	{address_postal_code:text(text),optional {label "[_ intranet-core.ZIP]"} {html {size 6}}}
-	{address_country_code:text(select),optional {label "[_ intranet-core.Country]"} {options $country_options} }
+	{address_country_code:text(select) {label "[_ intranet-core.Country]"} {options $country_options} }
 	{site_concept:text(text),optional {label "[_ intranet-core.Web_Site]"} {html {size 60}}}
     }
 
