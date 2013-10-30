@@ -682,7 +682,7 @@ template::multirow foreach project_list {
     if { "" == $sum_reported_units } { set sum_reported_units 0 }
 
     set balance_rep_plan [expr $sum_planned_units - $sum_reported_units]
-    set balance_rep_bill [expr $sum_planned_units - $sum_billable_units]
+	set balance_rep_bill [expr $sum_billable_units - $sum_reported_units]
 
     # Formatting 
     set sum_planned_units [lc_numeric [im_numeric_add_trailing_zeros [expr $sum_planned_units+0] $rounding_precision] $format_string $locale]
