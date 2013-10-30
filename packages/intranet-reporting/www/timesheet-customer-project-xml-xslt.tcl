@@ -26,7 +26,7 @@ ad_page_contract {
 
 proc encodeXmlValue {value} {
     regsub -all {&} $value {&amp;} value
-    regsub -all {"} $value {&quot;} value
+    regsub -all {"} $value {&quot;} value; #"
     regsub -all {'} $value {&apos;} value
     regsub -all {<} $value {&lt;} value
     regsub -all {>} $value {&gt;} value
@@ -34,17 +34,34 @@ proc encodeXmlValue {value} {
 }
 
 proc im_reporting_render_odt_template {
-        uri_odt_template
-        uri_xml
-        notation
-} {
-    # ------------------------------------------------
+   uri_odt_template
+   uri_xml
+   notation
+} { 
+
+	# This function renders a content.xml of an ODT template file against an XML structure.
+	# The original XML structure might have transformed before using a XSLT file. 
+
+	# @param: uri_odt_template: 	URI of the ODT file that needs to be rendered against a XML file  
+	# @param: uri_xml: 			XML representation of a report
+	# Example: 
+	# <report>
+	#	<attributes>
+	#		<start_date>2012-10-01</start_date>
+	#		...
+	#	</attributes>
+	#	<user> ...</user>
+	#	<lines>...</lines>
+	# </report>
+
     # Create a temporary directory
     set odt_tmp_path [ns_tmpnam]
-    ns_log Notice "im_reporting_render_odt_template: odt_tmp_path=$odt_tmp_path"
+    ns_log Notice "im_reporting_render_odt_template: tmp_path=$odt_tmp_path"
     ns_mkdir $odt_tmp_path
 
-    # Make sure the right file suffix is used: ODT/ODS
+    # ------------------------------------------------
+    # Read the ODT template
+    # ------------------------------------------------
     set odt_zip "${odt_tmp_path}.[lindex [split $uri_odt_template "." ] [expr [llength [split $uri_odt_template "." ]]-1]]"
     set odt_content "${odt_tmp_path}/content.xml"
 
@@ -52,31 +69,32 @@ proc im_reporting_render_odt_template {
 	set xml_file "${odt_tmp_path}/xml_file.xml"
 
     # ------------------------------------------------
-    # Create a copy of the ODF template into the temporary dir
+    # Create a copy of the ODF template into the temporary directory
     ns_log Notice "im_reporting_render_odt_template: uri_odt_template='$uri_odt_template'"
     ns_cp $uri_odt_template $odt_zip
 
     # Unzip the odt into the temorary directory
 	if {[catch {
-                exec unzip -d $odt_tmp_path $odt_zip
+		exec unzip -d $odt_tmp_path $odt_zip
 	} err_msg]} {
 		ad_return_complaint 1  [lang::message::lookup "" intranet-reporting.UnableToUnzip "Unable to unzip ODT template. Please verify if you have choosen a file of type: ODT"]
-                return
+        return
 	}
 
     # Create a copy of the XML template into the temporary dir
     ns_log Notice "im_reporting_render_odt_template: uri_xml='$uri_xml'"
     ns_cp $uri_xml $xml_file
 
-    # ------------------------------------------------
-    # Read the 'Report Custom XML' and set hash array with vars provided (attributes)
+    # --------------------------------------------------------------------
+    # Handle 'Report XML': 
+	# Get nodes for attributes, company and user 
+	# Write lines & create tcl list of "lines" 
+    # --------------------------------------------------------------------
 
     set file [open $xml_file]
     fconfigure $file -encoding "utf-8"
     set xml_content [read $file]
     close $file
-
-	# ns_return 1 text/xml $xml_content
 
     set xml_doc [dom parse $xml_content]
     set root [$xml_doc documentElement]
@@ -84,33 +102,31 @@ proc im_reporting_render_odt_template {
     set xml_company_nodes [$root selectNodes "//company/*"]
     set xml_user_nodes [$root selectNodes "//user/*"]
 
-    # Let's first replace double '@'
-
-    # ------------------------------------------------
-    # Create list of lines
-
+    # Create list of "lines" (@@ records)
 	set line_list [list]
 	set xml_line_nodes [$root selectNodes "//lines/*"]
     foreach line_node $xml_line_nodes {
-        # lindex '0' is 'rec',
-		# ad_return_complaint 1 [list [lindex [$line_node asList] 1]]
 		lappend line_list [lindex [$line_node asList] 1]
     }
 
-        # How many columns in line table?
-	set no_cols [expr [llength [lindex $line_list 0]]/2]
+    # How many columns in line table?
+	# set no_cols [expr [llength [lindex $line_list 0]]/2]
 
     # ------------------------------------------------
-    # Read the content.xml file
+    # Read the content.xml file of the ODT template 
+    # ------------------------------------------------
+
     set file [open $odt_content]
     fconfigure $file -encoding "utf-8"
     set odt_template_content [read $file]
     close $file
 
-    # ------------------------------------------------
-    # Search the <row> ...<cell>..</cell>.. </row> line
+    # -------------------------------------------------------------------
+	# HANDLE @@ VARS 
+    # Search the <row> ...<cell>..</cell>.. </row> line in a table 
     # representing the part of the template that needs to
-    # be repeated for every template.
+    # be repeated for every record ("line").
+	# -------------------------------------------------------------------
 
     # Get the list of all "tables" in the document
     set odt_doc [dom parse $odt_template_content]
@@ -134,60 +150,130 @@ proc im_reporting_render_odt_template {
                 "
                 ad_script_abort
     }
-
-    # Seach for the 2nd table:table-row tag
+	
+    # Search for the 2nd table:table-row tag (the first one contains the header) 
     set odt_table_rows_nodes [$odt_template_table_node selectNodes "//table:table-row"]
-    set odt_template_row_node ""
-    set odt_template_row_count 0
+    set odt_template_double_vars_row_node ""
+	set odt_template_formular_row_node ""
+
     foreach row_node $odt_table_rows_nodes {
 		set row_as_list [$row_node asList]
-		if {[regexp {@@} $row_as_list match]} { set odt_template_row_node $row_node }
-        incr odt_template_row_count
+		ns_log NOTICE "timesheet-customer-project-xml-xslt:: row_as_list: $row_as_list"
+		ns_log NOTICE "timesheet-customer-project-xml-xslt:: --------------------------"
+		# Looking for the @@ row ... 
+		if {[regexp {@@} $row_as_list match]} { set odt_template_double_vars_row_node $row_node }
+		# Looking for a formular 
+		if { [string first "ooow:sum" [string tolower $row_as_list]] != -1 } {
+			ns_log NOTICE "timesheet-customer-project-xml-xslt:: Found formular"
+			set odt_template_formular_row_node $row_node 
+		}		
     }
 
-    if {"" == $odt_template_row_node} {
+    if {"" == $odt_template_double_vars_row_node} {
                 ad_return_complaint 1 "
                         <b>Didn't find row including '@@ vars'</b>:<br>
-                        We have found a valid OOoo template at '$uri_odt_template'.
-                        However, this template does not include a row with the value
-                        above.
-                "
+                        We have found a valid OOoo template at '$uri_odt_template'. However, this template does not include a table with a row taht contains @@ placeholders."
                 ad_script_abort
-    }
+    } 
 
-    # parentNode: <table:table ..>
-	set parent_node [$odt_template_row_node parentNode]
+	# -------------------------------------------------------------------
+	# 'odt_template_double_vars_row_node' now contains the row withe the @@ vars 
+    # -------------------------------------------------------------------
 
-    # Store the node so that we can clone it
-	set row_mold_list [$odt_template_row_node asList]
+    # Get the parentNode: <table:table ..>
+	set parent_node [$odt_template_double_vars_row_node parentNode]
 
-	set out ""
+    # Store the node as a list so that we can clone it
+	set row_mold_list [$odt_template_double_vars_row_node asList]
 
-    # First node to be cloned is the '@@'-row
+    # -------------------------------------------------------------------
+	# Now creating for each record found in the XML report a node and 
+	# store them in a list. Later we reserve the list to keep the order
+    # -------------------------------------------------------------------
+	set ctr_new_nodes_created 0
+	set list_new_nodes [list]
+
 	foreach line $line_list {
 		# Clone node content
-        set new_node_list $row_mold_list
+        set new_node $row_mold_list
 
         # Replace vars - expecting a well formed key/value list ...
         foreach {i j} $line {
-			append out "$row_mold_list ::: $i $j/[list $j] <br><br>"
-			regsub -all "@@$i@@" $new_node_list [list [string map {& \\&} $j]] new_node_list
+			# ns_log NOTICE "timesheet-customer-project-xml-xslt:: $row_mold_list ::: $i $j/[list $j] <br><br>"
+			regsub -all "@@$i@@" $new_node [list [string map {& \\&} $j]] new_node
         }
+		
         # Append new node at the end of parent node -> works for ODT but not for CALC
-        set new_node [$parent_node appendFromList $new_node_list]
+        # set new_node [$parent_node appendFromList $new_node_list]
+		lappend list_new_nodes $new_node
+
+		# Count lines 
+		incr ctr_new_nodes_created
 	}
+
+    # -------------------------------------------------------------------
+    # Now adjusting any formular 
+    # -------------------------------------------------------------------
+	set has_attr_form_p 0
+	if { "" != $odt_template_formular_row_node } {
+		foreach cell_node [$odt_template_formular_row_node childNodes] {
+			set has_attr_form_p [$cell_node hasAttribute "table:formula"]
+			if { $has_attr_form_p } {
+				# example of value expected: ooow:sum<b2:b2>
+				set formular [$cell_node getAttribute "table:formula"]
+				
+				# Get the coordinate-pair
+				regexp -nocase {<(.*?)>} $formular coordinate_pair
+				
+				# Get integer-part of second part of coordinate-pair (till)
+				regexp -nocase {[0-9]+} [lindex [split $coordinate_pair ":"] 1] coordinate_int_orig
+
+				# Update target cell coordinate
+				if {[catch {
+
+					# Calculate new target cell coordinate
+					set coordinate_int_new [expr $coordinate_int_orig + $ctr_new_nodes_created -1]
+					ns_log NOTICE "timesheet-customer-project-xml-xslt:: New value of coordinate_int: $coordinate_int_new"
+
+					set cmd "set target_coordinate \[string map \{$coordinate_int_orig $coordinate_int_new\} \"[lindex [split $coordinate_pair ":"] 1]\"\]"
+					eval $cmd
+
+					set formular "ooow:sum[lindex [split $coordinate_pair ":"] 0]:$target_coordinate"
+					$cell_node setAttribute "table:formula" $formular
+
+				} err_msg]} {				
+					ns_log NOTICE "timesheet-customer-project-xml-xslt:: Error updating forumular: $err_msg"
+				}
+			}
+		}
+	}
+
+	set formular_row_list [$odt_template_formular_row_node asList]
+
     # Remove the line with @@ placeholders
-	set foo [$odt_template_row_node delete]
+	$odt_template_double_vars_row_node delete
+	$odt_template_formular_row_node delete 
+
+	# reverse list to keep order 
+	lreverse $list_new_nodes
+
+	# Now add the newly created rows 
+	foreach row $list_new_nodes {
+		$parent_node appendFromList $row
+	}
+
+	$parent_node appendFromList $formular_row_list
 
     # ------------------------------------------------
+	# HANDLE @ VARS 
     # Now replace single '@' -> regular vars
+    # ------------------------------------------------
 
     # Render entire ODT to replace vars
 	set content_xml [$root asXML -indent none]
 	
 	# ToDo: Optimize
     foreach attribute_node $xml_attribute_nodes {
-		# lappend tt [$attribute_node selectNodes "."]
 		if { "" != [[$attribute_node selectNodes "."] text]  } {
 			regsub -all "@[$attribute_node nodeName]@" $content_xml "[[$attribute_node selectNodes "."] text]" content_xml
 		} else {
@@ -196,7 +282,6 @@ proc im_reporting_render_odt_template {
 	}	
 
     foreach company_node $xml_company_nodes {
-        # lappend tt [$company_node selectNodes "."]
         if { "" != [[$company_node selectNodes "."] text]  } {
             regsub -all "@[$company_node nodeName]@" $content_xml "[[$company_node selectNodes "."] text]" content_xml
         } else {
@@ -205,7 +290,6 @@ proc im_reporting_render_odt_template {
     }
 
     foreach user_node $xml_user_nodes {
-        # lappend tt [$user_node selectNodes "."]
         if { "" != [[$user_node selectNodes "."] text]  } {
             regsub -all "@[$user_node nodeName]@" $content_xml "[[$user_node selectNodes "."] text]" content_xml
         } else {
@@ -213,8 +297,6 @@ proc im_reporting_render_odt_template {
         }
     }
 	# /ToDo
-
-	# ns_return 1 text/html $out
 
     # Save the content to a file.
 	set file [open $odt_content w]
