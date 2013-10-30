@@ -1,4 +1,4 @@
-# /packages/intranet-reporting/www/logged-units-vs-planned_units.tcl
+# /packages/intranet-reporting/www/logged-units-vs-planned-units.tcl
 #
 # Copyright (C) 2003-2013 ]project-open[
 #
@@ -18,6 +18,7 @@ ad_page_contract {
     { opened_projects:multiple "" }
     { display_fields:multiple "direct_hours sum_reported_units sum_planned_units sum_billable_units" }
     { uom_id 0 }
+    { project_status_id -1 }
 }
 
 # ------------------------------------------------------------
@@ -26,6 +27,10 @@ ad_page_contract {
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
 # its permissions.
+
+if { -1 == $project_status_id } {
+    set project_status_id [im_project_status_open]
+}
 
 set menu_label "logged_units_vs_planned_units"
 set current_user_id [ad_maybe_redirect_for_registration]
@@ -149,10 +154,8 @@ if {"" == $end_date} {
 set customer_url "/intranet/companies/view?customer_id="
 set project_url "/intranet/projects/view?project_id="
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-reporting/logged-units-vs-planned_units" {start_date end_date} ]
+set this_url [export_vars -base "/intranet-reporting/logged-units-vs-planned-units" {start_date end_date} ]
 set current_url [im_url_with_query]
-
-set uom_html [im_category_select "Intranet UoM" uom_id $uom_id]
 
 # ------------------------------------------------------------
 # ------------------------------------------------------------
@@ -164,10 +167,12 @@ if {"" != $project_id && 0 != $project_id} {
 if {"" != $customer_id && 0 != $customer_id} {
     lappend criteria "p.company_id = :customer_id"
 }
+if {"" != $project_status_id && 0 != $project_status_id} {
+    lappend criteria "p.project_status_id = :project_status_id"
+}
+
 set where_clause [join $criteria "\n\tand "]
 if {"" != $where_clause} { set where_clause "and $where_clause" }
-
-
 
 # ------------------------------------------------------------
 # Calculate the transitive superprojs for projects, that is
@@ -243,8 +248,6 @@ while {[llength $incomplete_projects] > 0} {
 }
 
 
-
-
 # ------------------------------------------------------------
 # Calculate the transitive closures of sub-projects
 # That's easy, because we have already the transitive closure of
@@ -297,22 +300,27 @@ set hours_sql "
 array set users {}
 array set project_hours {}
 
-db_foreach hours $hours_sql {
-    set users($user_id) $name
+# It had been suggested to remove this information from the report 
+# It is available in a more user friendly form from other reports 
+# Let's keep the code in here. Data might be shown differently  
+# in another variant of this report to make the report more readable.
 
-    if { ![info exists projects($hours_project_id,$user_id)] } {
-	set projects($hours_project_id,$user_id) 0
-    }
-    set projects($hours_project_id,$user_id) [expr $projects($hours_project_id,$user_id) + $logged_hours]
+# db_foreach hours $hours_sql {
+#    set users($user_id) $name
+#
+#    if { ![info exists projects($hours_project_id,$user_id)] } {
+#	set projects($hours_project_id,$user_id) 0
+#    }
+#    set projects($hours_project_id,$user_id) [expr $projects($hours_project_id,$user_id) + $logged_hours]
 
-    foreach parent_id $project_parents($hours_project_id) {
-	if { ![info exists projects($parent_id,$user_id)] } {
-	    set projects($parent_id,$user_id) 0
-	}
-	set projects($parent_id,$user_id) [expr $projects($parent_id,$user_id) + $logged_hours]
-    }
-
-}
+#    foreach parent_id $project_parents($hours_project_id) {
+#	if { ![info exists projects($parent_id,$user_id)] } {
+#	    set projects($parent_id,$user_id) 0
+#	}
+#	set projects($parent_id,$user_id) [expr $projects($parent_id,$user_id) + $logged_hours]
+#    }
+#
+# }
 
 
 # ------------------------------------------------------------
@@ -408,12 +416,21 @@ if {[lsearch $display_fields "sum_billable_units"] >= 0} {
     }
 }
 
-lappend elements balance
+lappend elements balance_rep_plan
 lappend elements {
        label "Balance<br/>Reported Units/Planned Units"
-       display_template {<if @project_list.balance@ le 0><b><div style='color:red'>@project_list.balance@</div></b></if><else><b><div>@project_list.balance@</div></b></else>}
+       display_template {<if @project_list.balance_rep_plan@ lt 0><b><div style='color:red'>@project_list.balance_rep_plan@</div></b></if><else><b><div>@project_list.balance_rep_plan@</div></b></else>}
        html "align center"
 }
+
+lappend elements balance_rep_bill
+lappend elements {
+       label "Balance<br/>Reported Units/Billable Units"
+    display_template {<if @project_list.balance_rep_bill@ lt 0><b><div style='color:red'>@project_list.balance_rep_bill@</div></b></if><else><b><div>@project_list.balance_rep_bill@</div></b></else>}
+       html "align center"
+}
+
+
 
 # Extend the "elements" list definition by the number of users who logged hours
 foreach user_id [array names users] {
@@ -541,7 +558,8 @@ db_multirow -extend {level_spacer open_gif} project_list project_list "
                         )
                         and uom_id = 328
                 ) as sum_billable_weeks, 
-		0 as balance,
+		0 as balance_rep_plan,
+		0 as balance_rep_bill,
 		0 as sum_planned_units,
 		0 as sum_billable_units,
 		0 as sum_reported_units
@@ -614,14 +632,14 @@ template::multirow foreach project_list {
 
     if { "" == $reported_hours_cache } { set reported_hours_cache 0 }    
 
-    foreach user_id [array names users] {
-	if { [info exists projects($child_id,$user_id)] } {
-	    set hours [expr $projects($child_id,$user_id)]
-	} else {
-	    set hours ""
-	}
-	template::multirow set project_list $i "user_$user_id" $hours
-    }
+    # foreach user_id [array names users] {
+    #	if { [info exists projects($child_id,$user_id)] } {
+    #	    set hours [expr $projects($child_id,$user_id)]
+    #	} else {
+    #	    set hours ""
+    #	}
+    #	template::multirow set project_list $i "user_$user_id" $hours
+    # }
 
     # Days to hours 
     if { "" != $sum_planned_days } {
@@ -663,13 +681,16 @@ template::multirow foreach project_list {
     if { "" == $sum_planned_units } { set sum_planned_units 0 }
     if { "" == $sum_reported_units } { set sum_reported_units 0 }
 
-    set balance [expr $sum_planned_units - $sum_reported_units]
+    set balance_rep_plan [expr $sum_planned_units - $sum_reported_units]
+    set balance_rep_bill [expr $sum_planned_units - $sum_billable_units]
 
     # Formatting 
     set sum_planned_units [lc_numeric [im_numeric_add_trailing_zeros [expr $sum_planned_units+0] $rounding_precision] $format_string $locale]
     set sum_billable_units [lc_numeric [im_numeric_add_trailing_zeros [expr $sum_billable_units+0] $rounding_precision] $format_string $locale]
     set sum_reported_units [lc_numeric [im_numeric_add_trailing_zeros [expr $sum_reported_units+0] $rounding_precision] $format_string $locale]
-    set balance [lc_numeric [im_numeric_add_trailing_zeros [expr $balance+0] $rounding_precision] $format_string $locale]
+    set balance_rep_plan [lc_numeric [im_numeric_add_trailing_zeros [expr $balance_rep_plan+0] $rounding_precision] $format_string $locale]
+    set balance_rep_bill [lc_numeric [im_numeric_add_trailing_zeros [expr $balance_rep_bill+0] $rounding_precision] $format_string $locale]
+
     set reported_hours_cache [lc_numeric [im_numeric_add_trailing_zeros [expr $reported_hours_cache+0] $rounding_precision] $format_string $locale]
     
     incr i

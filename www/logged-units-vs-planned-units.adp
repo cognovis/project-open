@@ -15,6 +15,7 @@
 <tr valign=top>
 	<td>
 	<table border=0 cellspacing=1 cellpadding=1>
+	<!--
 	<tr>
 	  <td class=form-label>Start Date</td>
 	  <td class=form-widget>
@@ -27,6 +28,13 @@
 	    <input type=textfield name=end_date value=@end_date@>
 	  </td>
 	</tr>
+	--> 
+        <tr>
+          <td class=form-label>Main Project Status</td>
+          <td class=form-widget>
+            <%= [im_category_select -include_empty_p 1 "Intranet Project Status" project_status_id $project_status_id] %>
+          </td>
+        </tr>
 	<tr>
 	  <td class=form-label>Customer</td>
 	  <td class=form-widget>
@@ -36,7 +44,7 @@
         <tr>
           <td class=form-label>UOM</td>
           <td class=form-widget>
-	    @uom_html;noquote@
+	    <%= [im_category_select "Intranet UoM" uom_id $uom_id] %>
           </td>
         </tr>
 	<tr>
@@ -48,14 +56,12 @@
 	<td>
 	<ul>
 		<li>Tracks actual hours worked per task against planned units per task</li>
-		<li>List of projects can be filetered by start/end date and customer</li>
-		<li>Hours for project members are only shown when logged btw. start and end date</li>
+		<!--<li>Hours for project members are only shown when logged btw. start and end date</li>-->
 		<li>Report only considers tasks defined with the following UOM's: hours, days and weeks</li>
 	</ul>
 	</td>
 </tr>
 </table>
 </form>
-
 
 <listtemplate name="project_list"></listtemplate>
