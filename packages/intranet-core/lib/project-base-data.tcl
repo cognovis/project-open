@@ -64,7 +64,8 @@ db_multirow -extend {attrib_var value} project_info dynfield_attribs_sql "
     }
 
     if {$widget eq "richtext"} {
-	if { [ad_html_text_convertable_p -from [lindex $value 1] -to "text/html"] } {
+	regsub -all {\"} $value {'} value
+	if { [ad_html_text_convertable_p -from "[lindex $value 1]" -to "text/html"] } {
 	    set value [template::util::richtext::get_property html_value "[set $attribute_name]"]
 	}
     }
