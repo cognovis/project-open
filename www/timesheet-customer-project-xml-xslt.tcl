@@ -19,9 +19,9 @@ ad_page_contract {
     { cost_center_id:integer 0}
     { invoice_id:integer 0}
     { invoiced_status "" }
-	{ xslt_template_id 0 }
-	{ odt_template_id 0 }
-	{ print_hour_p:multiple ""}
+    { xslt_template_id 0 }
+    { odt_template_id 0 }
+    { print_hour_p:multiple ""}
 }
 
 proc encodeXmlValue {value} {
@@ -39,20 +39,20 @@ proc im_reporting_render_odt_template {
    notation
 } { 
 
-	# This function renders a content.xml of an ODT template file against an XML structure.
-	# The original XML structure might have transformed before using a XSLT file. 
-
-	# @param: uri_odt_template: 	URI of the ODT file that needs to be rendered against a XML file  
-	# @param: uri_xml: 			XML representation of a report
-	# Example: 
-	# <report>
-	#	<attributes>
-	#		<start_date>2012-10-01</start_date>
-	#		...
-	#	</attributes>
-	#	<user> ...</user>
-	#	<lines>...</lines>
-	# </report>
+    # This function renders a content.xml of an ODT template file against an XML structure.
+    # The original XML structure might have transformed before using a XSLT file. 
+    
+    # @param: uri_odt_template: 	URI of the ODT file that needs to be rendered against a XML file  
+    # @param: uri_xml: 			XML representation of a report
+    # Example: 
+    # <report>
+    #	<attributes>
+    #		<start_date>2012-10-01</start_date>
+    #		...
+    #	</attributes>
+    #	<user> ...</user>
+    #	<lines>...</lines>
+    # </report>
 
     # Create a temporary directory
     set odt_tmp_path [ns_tmpnam]
@@ -66,7 +66,7 @@ proc im_reporting_render_odt_template {
     set odt_content "${odt_tmp_path}/content.xml"
 
     # XML
-	set xml_file "${odt_tmp_path}/xml_file.xml"
+    set xml_file "${odt_tmp_path}/xml_file.xml"
 
     # ------------------------------------------------
     # Create a copy of the ODF template into the temporary directory
@@ -74,12 +74,12 @@ proc im_reporting_render_odt_template {
     ns_cp $uri_odt_template $odt_zip
 
     # Unzip the odt into the temorary directory
-	if {[catch {
-		exec unzip -d $odt_tmp_path $odt_zip
-	} err_msg]} {
-		ad_return_complaint 1  [lang::message::lookup "" intranet-reporting.UnableToUnzip "Unable to unzip ODT template. Please verify if you have choosen a file of type: ODT"]
+    if {[catch {
+	exec unzip -d $odt_tmp_path $odt_zip
+    } err_msg]} {
+	ad_return_complaint 1  [lang::message::lookup "" intranet-reporting.UnableToUnzip "Unable to unzip ODT template. Please verify if you have choosen a file of type: ODT"]
         return
-	}
+    }
 
     # Create a copy of the XML template into the temporary dir
     ns_log Notice "im_reporting_render_odt_template: uri_xml='$uri_xml'"
@@ -87,8 +87,8 @@ proc im_reporting_render_odt_template {
 
     # --------------------------------------------------------------------
     # Handle 'Report XML': 
-	# Get nodes for attributes, company and user 
-	# Write lines & create tcl list of "lines" 
+    # Get nodes for attributes, company and user 
+    # Write lines & create tcl list of "lines" 
     # --------------------------------------------------------------------
 
     set file [open $xml_file]
@@ -110,7 +110,7 @@ proc im_reporting_render_odt_template {
     }
 
     # How many columns in line table?
-	# set no_cols [expr [llength [lindex $line_list 0]]/2]
+    # set no_cols [expr [llength [lindex $line_list 0]]/2]
 
     # ------------------------------------------------
     # Read the content.xml file of the ODT template 
@@ -122,11 +122,11 @@ proc im_reporting_render_odt_template {
     close $file
 
     # -------------------------------------------------------------------
-	# HANDLE @@ VARS 
+    # HANDLE @@ VARS 
     # Search the <row> ...<cell>..</cell>.. </row> line in a table 
     # representing the part of the template that needs to
     # be repeated for every record ("line").
-	# -------------------------------------------------------------------
+    # -------------------------------------------------------------------
 
     # Get the list of all "tables" in the document
     set odt_doc [dom parse $odt_template_content]
@@ -136,151 +136,150 @@ proc im_reporting_render_odt_template {
     # Search for the table that contains "@@"
     set odt_template_table_node ""
     foreach table_node $odt_table_nodes {
-		set table_as_list [$table_node asList]
-		if {[regexp {@@} $table_as_list match]} { set odt_template_table_node $table_node }
+	set table_as_list [$table_node asList]
+	if {[regexp {@@} $table_as_list match]} { set odt_template_table_node $table_node }
     }
 
     # Deal with the the situation that we didn't find the line
     if {"" == $odt_template_table_node} {
-                ad_return_complaint 1 "
+	ad_return_complaint 1 "
                         <b>Didn't find table including '@@ vars'</b>:<br>
                         We have found a valid OOoo template at '$uri_odt_template'.
                         However, this template does not include a table with the value
                         above.
                 "
-                ad_script_abort
+	ad_script_abort
     }
 	
     # Search for the 2nd table:table-row tag (the first one contains the header) 
     set odt_table_rows_nodes [$odt_template_table_node selectNodes "//table:table-row"]
     set odt_template_double_vars_row_node ""
-	set odt_template_formular_row_node ""
+    set odt_template_formular_row_node ""
 
     foreach row_node $odt_table_rows_nodes {
-		set row_as_list [$row_node asList]
-		ns_log NOTICE "timesheet-customer-project-xml-xslt:: row_as_list: $row_as_list"
-		ns_log NOTICE "timesheet-customer-project-xml-xslt:: --------------------------"
-		# Looking for the @@ row ... 
-		if {[regexp {@@} $row_as_list match]} { set odt_template_double_vars_row_node $row_node }
-		# Looking for a formular 
-		if { [string first "ooow:sum" [string tolower $row_as_list]] != -1 } {
-			ns_log NOTICE "timesheet-customer-project-xml-xslt:: Found formular"
-			set odt_template_formular_row_node $row_node 
-		}		
+	set row_as_list [$row_node asList]
+	ns_log NOTICE "timesheet-customer-project-xml-xslt:: row_as_list: $row_as_list"
+	ns_log NOTICE "timesheet-customer-project-xml-xslt:: --------------------------"
+	# Looking for the @@ row ... 
+	if {[regexp {@@} $row_as_list match]} { set odt_template_double_vars_row_node $row_node }
+	# Looking for a formular 
+	if { [string first "ooow:sum" [string tolower $row_as_list]] != -1 } {
+	    ns_log NOTICE "timesheet-customer-project-xml-xslt:: Found formular"
+	    set odt_template_formular_row_node $row_node 
+	}		
     }
 
     if {"" == $odt_template_double_vars_row_node} {
-                ad_return_complaint 1 "
+	ad_return_complaint 1 "
                         <b>Didn't find row including '@@ vars'</b>:<br>
                         We have found a valid OOoo template at '$uri_odt_template'. However, this template does not include a table with a row taht contains @@ placeholders."
-                ad_script_abort
+	ad_script_abort
     } 
 
-	# -------------------------------------------------------------------
-	# 'odt_template_double_vars_row_node' now contains the row withe the @@ vars 
+    # -------------------------------------------------------------------
+    # 'odt_template_double_vars_row_node' now contains the row withe the @@ vars 
     # -------------------------------------------------------------------
 
     # Get the parentNode: <table:table ..>
-	set parent_node [$odt_template_double_vars_row_node parentNode]
+    set parent_node [$odt_template_double_vars_row_node parentNode]
 
     # Store the node as a list so that we can clone it
-	set row_mold_list [$odt_template_double_vars_row_node asList]
+    set row_mold_list [$odt_template_double_vars_row_node asList]
 
     # -------------------------------------------------------------------
-	# Now creating for each record found in the XML report a node and 
-	# store them in a list. Later we reserve the list to keep the order
+    # Now creating for each record found in the XML report a node and 
+    # store them in a list. Later we reserve the list to keep the order
     # -------------------------------------------------------------------
-	set ctr_new_nodes_created 0
-	set list_new_nodes [list]
-
-	foreach line $line_list {
-		# Clone node content
+    set ctr_new_nodes_created 0
+    set list_new_nodes [list]
+    
+    foreach line $line_list {
+	# Clone node content
         set new_node $row_mold_list
-
+	
         # Replace vars - expecting a well formed key/value list ...
         foreach {i j} $line {
-			# ns_log NOTICE "timesheet-customer-project-xml-xslt:: $row_mold_list ::: $i $j/[list $j] <br><br>"
-			regsub -all "@@$i@@" $new_node [list [string map {& \\&} $j]] new_node
+	    # ns_log NOTICE "timesheet-customer-project-xml-xslt:: $row_mold_list ::: $i $j/[list $j] <br><br>"
+	    regsub -all "@@$i@@" $new_node [list [string map {& \\&} $j]] new_node
         }
 		
         # Append new node at the end of parent node -> works for ODT but not for CALC
         # set new_node [$parent_node appendFromList $new_node_list]
-		lappend list_new_nodes $new_node
-
-		# Count lines 
-		incr ctr_new_nodes_created
+	lappend list_new_nodes $new_node
+	
+	# Count lines 
+	incr ctr_new_nodes_created
 	}
 
     # -------------------------------------------------------------------
     # Now adjusting any formular 
     # -------------------------------------------------------------------
-	set has_attr_form_p 0
-	if { "" != $odt_template_formular_row_node } {
-		foreach cell_node [$odt_template_formular_row_node childNodes] {
-			set has_attr_form_p [$cell_node hasAttribute "table:formula"]
-			if { $has_attr_form_p } {
-				# example of value expected: ooow:sum<b2:b2>
-				set formular [$cell_node getAttribute "table:formula"]
-				
-				# Get the coordinate-pair
-				regexp -nocase {<(.*?)>} $formular coordinate_pair
-				
-				# Get integer-part of second part of coordinate-pair (till)
-				regexp -nocase {[0-9]+} [lindex [split $coordinate_pair ":"] 1] coordinate_int_orig
-
-				# Update target cell coordinate
-				if {[catch {
-
-					# Calculate new target cell coordinate
-					set coordinate_int_new [expr $coordinate_int_orig + $ctr_new_nodes_created -1]
-					ns_log NOTICE "timesheet-customer-project-xml-xslt:: New value of coordinate_int: $coordinate_int_new"
-
-					set cmd "set target_coordinate \[string map \{$coordinate_int_orig $coordinate_int_new\} \"[lindex [split $coordinate_pair ":"] 1]\"\]"
-					eval $cmd
-
-					set formular "ooow:sum[lindex [split $coordinate_pair ":"] 0]:$target_coordinate"
-					$cell_node setAttribute "table:formula" $formular
-
-				} err_msg]} {				
-					ns_log NOTICE "timesheet-customer-project-xml-xslt:: Error updating forumular: $err_msg"
-				}
-			}
+    set has_attr_form_p 0
+    if { "" != $odt_template_formular_row_node } {
+	foreach cell_node [$odt_template_formular_row_node childNodes] {
+	    set has_attr_form_p [$cell_node hasAttribute "table:formula"]
+	    if { $has_attr_form_p } {
+		# example of value expected: ooow:sum<b2:b2>
+		set formular [$cell_node getAttribute "table:formula"]
+		
+		# Get the coordinate-pair
+		regexp -nocase {<(.*?)>} $formular coordinate_pair
+		
+		# Get integer-part of second part of coordinate-pair (till)
+		regexp -nocase {[0-9]+} [lindex [split $coordinate_pair ":"] 1] coordinate_int_orig
+		
+		# Update target cell coordinate
+		if {[catch {
+		    # Calculate new target cell coordinate
+		    set coordinate_int_new [expr $coordinate_int_orig + $ctr_new_nodes_created -1]
+		    ns_log NOTICE "timesheet-customer-project-xml-xslt:: New value of coordinate_int: $coordinate_int_new"
+		    
+		    set cmd "set target_coordinate \[string map \{$coordinate_int_orig $coordinate_int_new\} \"[lindex [split $coordinate_pair ":"] 1]\"\]"
+		    eval $cmd
+		    
+		    set formular "ooow:sum[lindex [split $coordinate_pair ":"] 0]:$target_coordinate"
+		    $cell_node setAttribute "table:formula" $formular
+		    
+		} err_msg]} {				
+		    ns_log NOTICE "timesheet-customer-project-xml-xslt:: Error updating forumular: $err_msg"
 		}
+	    }
 	}
-
-	set formular_row_list [$odt_template_formular_row_node asList]
-
+    }
+    
+    set formular_row_list [$odt_template_formular_row_node asList]
+    
     # Remove the line with @@ placeholders
-	$odt_template_double_vars_row_node delete
-	$odt_template_formular_row_node delete 
-
-	# reverse list to keep order 
-	lreverse $list_new_nodes
-
-	# Now add the newly created rows 
-	foreach row $list_new_nodes {
-		$parent_node appendFromList $row
-	}
-
-	$parent_node appendFromList $formular_row_list
+    $odt_template_double_vars_row_node delete
+    $odt_template_formular_row_node delete 
+    
+    # reverse list to keep order 
+    lreverse $list_new_nodes
+    
+    # Now add the newly created rows 
+    foreach row $list_new_nodes {
+	$parent_node appendFromList $row
+    }
+    
+    $parent_node appendFromList $formular_row_list
 
     # ------------------------------------------------
-	# HANDLE @ VARS 
+    # HANDLE @ VARS 
     # Now replace single '@' -> regular vars
     # ------------------------------------------------
 
     # Render entire ODT to replace vars
-	set content_xml [$root asXML -indent none]
+    set content_xml [$root asXML -indent none]
 	
-	# ToDo: Optimize
+    # ToDo: Optimize
     foreach attribute_node $xml_attribute_nodes {
-		if { "" != [[$attribute_node selectNodes "."] text]  } {
-			regsub -all "@[$attribute_node nodeName]@" $content_xml "[[$attribute_node selectNodes "."] text]" content_xml
-		} else {
-			regsub -all "@[$attribute_node nodeName]@" $content_xml "" content_xml
-		}
-	}	
-
+	if { "" != [[$attribute_node selectNodes "."] text]  } {
+	    regsub -all "@[$attribute_node nodeName]@" $content_xml "[[$attribute_node selectNodes "."] text]" content_xml
+	} else {
+	    regsub -all "@[$attribute_node nodeName]@" $content_xml "" content_xml
+	}
+    }	
+    
     foreach company_node $xml_company_nodes {
         if { "" != [[$company_node selectNodes "."] text]  } {
             regsub -all "@[$company_node nodeName]@" $content_xml "[[$company_node selectNodes "."] text]" content_xml
@@ -296,10 +295,10 @@ proc im_reporting_render_odt_template {
             regsub -all "@[$user_node nodeName]@" $content_xml "" content_xml
         }
     }
-	# /ToDo
+    # /ToDo
 
     # Save the content to a file.
-	set file [open $odt_content w]
+    set file [open $odt_content w]
     fconfigure $file -encoding "utf-8"
     puts $file $content_xml
     flush $file
@@ -317,7 +316,7 @@ proc im_reporting_render_odt_template {
 # Label: Provides the security context for this report
 # because it identifies unquely the report's Menu and
 # its permissions.
-set menu_label "reporting-timesheet-customer-project"
+set menu_label "reporting-timesheet-customer-project-xml-xslt"
 set current_user_id [ad_maybe_redirect_for_registration]
 set use_project_name_p [parameter::get_from_package_key -package_key intranet-reporting -parameter "UseProjectNameInsteadOfProjectNr" -default 0]
 set xml_output ""
@@ -354,6 +353,10 @@ if {0 != $task_id && "" != $task_id && 0 != $project_id && "" != $project_id && 
 
 set number_format "999,990.99"
 set invoice_template_base_path [ad_parameter -package_id [im_package_invoices_id] InvoiceTemplatePathUnix "" "/tmp/templates/"]
+set path_saxon  [parameter::get -package_id [apm_package_id_from_key intranet-openoffice] -parameter "PathSaxonParser" -default ""]
+if { "" == $path_saxon  } {
+    ad_return_complaint 1  [lang::message::lookup "" intranet-openoffice.PathToSaxonParserNotFound "Path to Saxon Parser not defined. Please check Parameter 'PathSaxonParser' of package 'intranet-openoffice'"]
+}
 
 # ------------------------------------------------------------
 # Validation 
@@ -381,10 +384,9 @@ if {"" != $end_date && ![regexp {^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]$}
     Expected format: 'YYYY-MM-DD'"
 }
 
-set page_title "Timesheet Report"
+set page_title "Timesheet Report with XML/XSLT and ODT Support \[BETA\]"
 set context_bar [im_context_bar $page_title]
 set context ""
-
 
 # ------------------------------------------------------------
 # Defaults
@@ -1102,25 +1104,25 @@ im_report_render_row \
 
 switch $output_format {
     html { 
-		ns_write "</table>[im_box_footer]</div></form>"
-		# Todo: Verify how to include div id "monitor_frame" to make following js obsolete 
-		ns_write "<script language='javascript' type='text/javascript'>document.getElementById('slave_content').style.visibility='visible';"
-		ns_write "document.getElementById('fullwidth-list').style.visibility='visible'; </script>"
-		ns_write "[im_footer]\n"
-	}
+	ns_write "</table>[im_box_footer]</div></form>"
+	# Todo: Verify how to include div id "monitor_frame" to make following js obsolete 
+	ns_write "<script language='javascript' type='text/javascript'>document.getElementById('slave_content').style.visibility='visible';"
+	ns_write "document.getElementById('fullwidth-list').style.visibility='visible'; </script>"
+	ns_write "[im_footer]\n"
+    }
     printer { ns_write "</table>\n</div>\n"}
     cvs { }
-	xml {
+    xml {
         if { "" != $xslt_template_id  } {
             set uri_xslt "$invoice_template_base_path/[im_category_from_id $xslt_template_id]"
             ns_log NOTICE "timesheet-customer-project-v2 :: uri_xslt: $uri_xslt"
 
-			# Create tmp file for Reports Default XML
-			set uri_report_default_xml [ns_tmpnam]
-			set fo [open $uri_report_default_xml {RDWR CREAT}]
-			puts $fo "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>[$root asXML]"
-			close $fo
-
+	    # Create tmp file for Reports Default XML
+	    set uri_report_default_xml [ns_tmpnam]
+	    set fo [open $uri_report_default_xml {RDWR CREAT}]
+	    puts $fo "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>[$root asXML]"
+	    close $fo
+	    
             # Create tmp file for Report Custom XML
             set uri_report_custom_xml [ns_tmpnam]
             set fo [open $uri_report_custom_xml {RDWR CREAT}]
@@ -1128,53 +1130,48 @@ switch $output_format {
             close $fo
 
             # Perform transition
-            exec java -jar /usr/lib/libreoffice/basis3.4/program/classes/saxon9.jar -s:$uri_report_default_xml -xsl:$uri_xslt -o:$uri_report_custom_xml
-			ns_returnfile 200 text/xml $uri_report_custom_xml
+            exec java -jar $path_saxon -s:$uri_report_default_xml -xsl:$uri_xslt -o:$uri_report_custom_xml ns_returnfile 200 text/xml $uri_report_custom_xml
 
-        } else {
+	} else {
             # In case no transition file has been assigned we return the default XML file
-			ns_return 200 text/xml [$root asXML]
+	    ns_return 200 text/xml [$root asXML]
         }
+    }
+    template {
+	# Create tmp file for Reports Default XML 
+	set uri_report_default_xml [ns_tmpnam]
+	set fo [open $uri_report_default_xml {RDWR CREAT}]
+	puts $fo "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>[$root asXML]"
+	close $fo		
+	
+	# Get URI of XSLT choosen by user  
+	if { "" != $xslt_template_id  } {
+	    set uri_xslt "$invoice_template_base_path/[im_category_from_id $xslt_template_id]"
+	    ns_log NOTICE "timesheet-customer-project-v2 :: uri_xslt: $uri_xslt"
+	    
+	    # Create tmp file for Report Custom XML 
+	    set uri_report_custom_xml [ns_tmpnam]
+	    set fo [open $uri_report_custom_xml {RDWR CREAT}]
+	    puts $fo " "
+	    close $fo
+	    exec java -jar $path_saxon -s:$uri_report_default_xml -xsl:$uri_xslt -o:${uri_report_custom_xml}
+	} else {
+	    # In case no transition file has been assigned we continue working with the default XML file 
+	    set uri_report_custom_xml $uri_report_default_xml
 	}
-	template {
-		# Create tmp file for Reports Default XML 
-		set uri_report_default_xml [ns_tmpnam]
-		set fo [open $uri_report_default_xml {RDWR CREAT}]
-		puts $fo "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>[$root asXML]"
-		close $fo		
-		
-		# Get URI of XSLT choosen by user  
-		if { "" != $xslt_template_id  } {
-			set uri_xslt "$invoice_template_base_path/[im_category_from_id $xslt_template_id]"
-			ns_log NOTICE "timesheet-customer-project-v2 :: uri_xslt: $uri_xslt"
-
-			# Create tmp file for Report Custom XML 
-			set uri_report_custom_xml [ns_tmpnam]
-			set fo [open $uri_report_custom_xml {RDWR CREAT}]
-			puts $fo " "
-			close $fo
-
-			# Perform transition 
-			exec java -jar /usr/lib/libreoffice/basis3.4/program/classes/saxon9.jar -s:$uri_report_default_xml -xsl:$uri_xslt -o:$uri_report_custom_xml
-
-		} else {
-			# In case no transition file has been assigned we continue working with the default XML file 
-			set uri_report_custom_xml $uri_report_default_xml
-		}
-
-		ns_log NOTICE "timesheet-customer-project-v2 :: uri_report_xml: $uri_report_custom_xml"
-
-		# Render Template
-		set odt_zip [im_reporting_render_odt_template "${invoice_template_base_path}/[im_category_from_id $odt_template_id]" $uri_report_custom_xml ""]
-
-		# Return file 
-		set outputheaders [ns_conn outputheaders]
-		set suffix [lindex [split $odt_zip "." ] [expr [llength [split $odt_zip "." ]]-1]]
-		ns_set cput $outputheaders "Content-Disposition" "attachment; filename=timesheet-customer-project.$suffix"
-		ns_returnfile 200 application/odt $odt_zip
-
-	}
-	default {
-		ad_return_complaint 1 "Error: No template defined"
-	}
+	
+	ns_log NOTICE "timesheet-customer-project-v2 :: uri_report_xml: $uri_report_custom_xml"
+	
+	# Render Template
+	set odt_zip [im_reporting_render_odt_template "${invoice_template_base_path}/[im_category_from_id $odt_template_id]" $uri_report_custom_xml ""]
+	
+	# Return file 
+	set outputheaders [ns_conn outputheaders]
+	set suffix [lindex [split $odt_zip "." ] [expr [llength [split $odt_zip "." ]]-1]]
+	ns_set cput $outputheaders "Content-Disposition" "attachment; filename=timesheet-customer-project.$suffix"
+	ns_returnfile 200 application/odt $odt_zip
+    }
+    default {
+	ad_return_complaint 1 "Error: No template defined"
+    }
 }
