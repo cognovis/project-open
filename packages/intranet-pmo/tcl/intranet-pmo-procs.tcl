@@ -275,7 +275,7 @@ ad_proc -public -callback intranet_fs::after_project_folder_create -impl pmo_def
 } {
     if {0} {
     db_1row project_info "select project_type_id,project_status_id from im_projects where project_id = :project_id"
-    set project_types [im_category_children -super_category_id [im_project_type_consulting]]
+    set project_types [im_sub_categories [im_project_type_consulting]]
     lappend project_types [im_project_type_consulting]
     if {[lsearch $project_types $project_type_id] > -1 } {
 	# This is a PMO Project. Find out the status and copy the folders
