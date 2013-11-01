@@ -13,6 +13,7 @@ ad_page_contract {
     event_id:integer
     return_url
     { participant_status_id:array,integer,optional }
+    { bom_note ""}
 }
 
 # ---------------------------------------------------------------
@@ -29,8 +30,9 @@ if {!$write} {
 foreach participant_id [array names participant_status_id] {
     set status_id $participant_status_id($participant_id)
     db_dml update_order_amount "
-		update im_biz_object_members
-		set member_status_id = :status_id
+		update im_biz_object_members set 
+			member_status_id = :status_id,
+			note = :bom_note
 		where rel_id in (
 			   	select	rel_id
 				from	acs_rels

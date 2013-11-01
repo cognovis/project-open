@@ -73,6 +73,7 @@ set first_names_l10n [lang::message::lookup "" intranet-core.First_Names "First 
 set last_name_l10n [lang::message::lookup "" intranet-core.Last_Name "Last Name"]
 set email_l10n [lang::message::lookup "" intranet-core.Email Email]
 set company_l10n [lang::message::lookup "" intranet-core.Company Company]
+set comment_l10n [lang::message::lookup "" intranet-core.Comment Comment]
 
 list::create \
     -name participant_list \
@@ -106,6 +107,12 @@ list::create \
 		</select>
 	    }
 	}
+	bom_note { 
+	    label "$comment_l10n" 
+	    display_template {
+		<input type=text size=30 name=bom_note value='@participant_list_multirow.note_quoted@'>
+	    }
+	}
 	participant_delete {
 	    label ""
 	    display_template {
@@ -125,10 +132,11 @@ list::create \
     }
 
 
-db_multirow -extend {participant_url company_name company_url delete_url reserved_enabled confirmed_enabled} participant_list_multirow get_participants "
+db_multirow -extend {participant_url company_name company_url delete_url reserved_enabled confirmed_enabled note_quoted} participant_list_multirow get_participants "
 	select	*,
 		u.user_id as participant_id,
 		im_category_from_id(bom.member_status_id) as participant_status,
+		bom.note as bom_note,
 		(select min(company_id) from im_companies, acs_rels where object_id_one = company_id and object_id_two = u.user_id) as company_id
 	from	persons pe,
 		parties pa,
@@ -155,4 +163,6 @@ db_multirow -extend {participant_url company_name company_url delete_url reserve
     set confirmed_enabled ""
     if {[im_event_participant_status_reserved] == $member_status_id} { set reserved_enabled "selected" }
     if {[im_event_participant_status_confirmed] == $member_status_id} { set confirmed_enabled "selected" }
+
+    set note_quoted [string map {"'" ""} $bom_note]
 }

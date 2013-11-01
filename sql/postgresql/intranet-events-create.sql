@@ -46,10 +46,13 @@ insert into im_biz_object_role_map values ('im_event',null,1308);
 
 -- Define how to link to Event pages from the Forum or the
 -- Search Engine
+delete from im_biz_object_urls where object_type = 'im_event';
 insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_event','view','/intranet-events/events/new?form_mode=display&event_id=');
+'im_event','view','/intranet-events/new?form_mode=display&event_id=');
 insert into im_biz_object_urls (object_type, url_type, url) values (
-'im_event','edit','/intranet-events/events/new?event_id=');
+'im_event','edit','/intranet-events/new?event_id=');
+
+
 
 
 -- Insert a design page
@@ -68,6 +71,9 @@ insert into im_dynfield_layout_pages (
 alter table im_biz_object_members 
 add column member_status_id integer default 82210
 constraint im_biz_object_members_status_fk references im_categories;
+
+alter table im_biz_object_members 
+add column note text;
 
 
 
@@ -276,6 +282,53 @@ end;$$ language 'plpgsql';
 
 
 
+
+
+
+-----------------------------------------------------------
+-- Full-Text Search for Events
+-----------------------------------------------------------
+
+
+insert into im_search_object_types values (10, 'im_event', 0.6);
+
+
+create or replace function im_events_tsearch ()
+returns trigger as $$
+declare
+	v_string	varchar;
+begin
+	select	coalesce(e.event_name, '') || ' ' ||
+		coalesce(e.event_nr, '') || ' ' ||
+		coalesce(e.event_description, '') || ' ' ||
+		coalesce(m.material_name, '') || ' ' ||
+		coalesce(m.material_nr, '') || ' ' ||
+		coalesce(ci.conf_item_name, '') || ' ' ||
+		coalesce(ci.conf_item_nr, '')
+	into    v_string
+	from    im_events e
+		LEFT OUTER JOIN im_materials m ON (e.event_material_id = m.material_id)
+		LEFT OUTER JOIN im_conf_items ci ON (e.event_location_id = ci.conf_item_id)
+	where   e.event_id = new.event_id;
+
+	RAISE INFO 'im_events_tsearch: %', v_string;
+	perform im_search_update(new.event_id, 'im_event', new.event_id, v_string);
+
+	return new;
+end;$$ language 'plpgsql';
+
+
+CREATE TRIGGER im_events_tsearch_tr
+AFTER INSERT or UPDATE
+ON im_events
+FOR EACH ROW
+EXECUTE PROCEDURE im_events_tsearch();
+
+
+
+
+
+
 -- ------------------------------------------------------------
 -- Event - Customer Relationship
 -- ------------------------------------------------------------
@@ -446,6 +499,9 @@ SELECT im_category_new (82004, 'Reserved', 'Intranet Event Status');
 update im_categories set aux_string2 = 'FFFF00' where category_id = 82004;
 SELECT im_category_new (82006, 'Booked', 'Intranet Event Status');
 update im_categories set aux_string2 = '00FF00' where category_id = 82006;
+SELECT im_category_new (82099, 'Deleted', 'Intranet Event Status');
+update im_categories set aux_string2 = '000000' where category_id = 82099;
+
 
 SELECT im_category_new (82100, 'Training Event', 'Intranet Event Type');
 update im_categories set category = 'Training Event' where category_id = 82100;

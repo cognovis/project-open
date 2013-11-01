@@ -19,6 +19,7 @@ ad_proc -public im_event_status_unplanned {} { return 82000 }
 ad_proc -public im_event_status_planned {} { return 82002 }
 ad_proc -public im_event_status_reserved {} { return 82004 }
 ad_proc -public im_event_status_booked {} { return 82006 }
+ad_proc -public im_event_status_deleted {} { return 82099 }
 
 # Status for each event participant
 ad_proc -public im_event_participant_status_confirmed {} { return 82200 }
