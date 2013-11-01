@@ -14,7 +14,7 @@
 @include_task_html;noquote@
 
   <!-- Invoice Data and Receipient Tables -->
-  <table cellpadding=0 cellspacing=0 bordercolor=#6699CC border=0 width=100%>
+  <table cellpadding=0 cellspacing=0 bordercolor=#6699CC border=0>
     <tr valign=top> 
       <td>
 
@@ -79,8 +79,7 @@
 
       </td>
       <td></td>
-      <td align=right>
-
+      <td align=left>
         <table border=0 cellspacing=2 cellpadding=0 >
         <tr>
 	  <td align=center valign=top class=rowtitle colspan=2>
@@ -117,9 +116,9 @@
 
     </tr>
   </table>
-
+<br/><br/>
   <!-- the list of tasks (invoicable items) -->
-  <div align=right>
+  <div align=left>
   <table cellpadding=2 cellspacing=2 border=0>
     <%= [im_timesheet_invoicing_project_hierarchy \
 			 -select_project $select_project \
@@ -136,7 +135,7 @@
   <!-- the list of task sums, distinguised by type and UOM -->
   <table width=100%>
     <tr>
-      <td align=right><table border=0 cellspacing=2 cellpadding=1>
+      <td align=left><table border=0 cellspacing=2 cellpadding=1>
         @task_sum_html;noquote@
 
 
