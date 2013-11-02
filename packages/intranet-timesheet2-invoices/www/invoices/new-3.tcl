@@ -144,6 +144,8 @@ set contact_ids [db_list contact_ids "
 
 if {[llength $contact_ids] > 0} {
     set company_contact_id [lindex $contact_ids 0]
+} else {
+    set company_contact_id ""
 }
 if {"" == $company_contact_id} { set company_contact_id $accounting_contact_id }
 if {"" == $company_contact_id} { set company_contact_id $primary_contact_id }
@@ -245,7 +247,9 @@ append task_sum_html "
 #
 set price_colspan 11
 set reference_price_html "
-        <tr><td align=middle class=rowtitle colspan=$price_colspan>[_ intranet-timesheet2-invoices.Reference_Prices]</td></tr>
+        <tr>
+		<td align=middle class=rowtitle colspan=$price_colspan>[_ intranet-timesheet2-invoices.Reference_Prices]</td>
+	</tr>
         <tr>
           <td class=rowtitle>[_ intranet-timesheet2-invoices.Company]</td>
           <td class=rowtitle>[_ intranet-timesheet2-invoices.UoM]</td>
