@@ -861,6 +861,22 @@ SELECT im_menu__new (
 	null,							-- creation_ip
 	null,							-- context_id
 	'intranet-dynfield',					-- package_name
+	'dynfield_otype_events',				-- label
+	'Event',						-- name
+	'/intranet-dynfield/object-type?object_type=im_event',	-- url
+	118,							-- sort_order
+	(select menu_id from im_menus where label = 'dynfield_otype'),	-- parent_menu_id
+	null							-- p_visible_tcl
+);
+
+SELECT im_menu__new (
+	null,							-- p_menu_id
+	'im_menu',						-- object_type
+	now(),							-- creation_date
+	null,							-- creation_user
+	null,							-- creation_ip
+	null,							-- context_id
+	'intranet-dynfield',					-- package_name
 	'dynfield_otype_expenses',				-- label
 	'Expense',						-- name
 	'/intranet-dynfield/object-type?object_type=im_expense', -- url
@@ -1629,8 +1645,9 @@ BEGIN
 	select table_name into v_table_name
 	from acs_object_types where object_type = p_object_type;
 
-	RETURN im_dynfield_attribute_new($1,$2,$3,$4,$5,$6,null,''f'',v_table_name);
+	RETURN im_dynfield_attribute_new($1,$2,$3,$4,$5,$6,null,$8,v_table_name);
 END;' language 'plpgsql';
+
 
 -- Shortcut function
 CREATE OR REPLACE FUNCTION im_dynfield_attribute_new (

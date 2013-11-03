@@ -1,6 +1,6 @@
 # /packages/intranet-invoices/www/view.tcl
 #
-# Copyright (C) 2003 - 2009 ]project-open[
+# Copyright (C) 2003 - 2013 ]project-open[
 #
 # All rights reserved. Please check
 # http://www.project-open.com/license/ for details.
@@ -22,6 +22,7 @@ ad_page_contract {
            and then redirect to the mail sending page.
 
     @author frank.bergmann@project-open.com
+    @author klaus.hofeditz@project-open.com
 } {
     { invoice_id:integer 0}
     { object_id:integer 0}
@@ -36,6 +37,26 @@ ad_page_contract {
     { user_id ""}
     { auto_login ""}
     { expiry_date ""}
+}
+
+# Note: 
+# output_format = "pdf" used to work with im_html2pdf, an option that probably hadn't been used a lot
+# When we started experimenting using OO headless to create pdfs, parameter pdf_p had been added 
+# As of 10/2013 many clients use OO/LibreOffice for PDF creation successfully 
+# It's up to Frank to decide if we keep the im_html2pdf option. 
+# Based on his decision the code should be cleaned up
+
+# ---------------------------------------------------------------
+# Helper Procs
+# ---------------------------------------------------------------
+
+proc encodeXmlValue {value} {
+    regsub -all {&} $value {&amp;} value
+    regsub -all {"} $value {&quot;} value; # "
+    # regsub -all {'} $value {&apos;} value
+    regsub -all {<} $value {&lt;} value
+    regsub -all {>} $value {&gt;} value
+    return $value
 }
 
 # ---------------------------------------------------------------
@@ -61,6 +82,9 @@ set gen_vars ""
 set blurb ""
 set notify_vars ""
 set url ""
+
+# We have to avoid that already escaped vars in the item section will be escaped again 
+set vars_escaped [list]
 
 # Security is defered after getting the invoice information
 # from the database, because the customer's users should
@@ -226,6 +250,7 @@ set related_projects_sql "
                 im_name_from_id(project_lead_id) as project_manager,
 		p.project_nr,
 		p.parent_id,
+		p.description,
 		trim(both p.company_project_nr) as customer_project_nr
 	from
 	        acs_rels r,
@@ -238,6 +263,7 @@ set related_projects_sql "
 set related_projects {}
 set related_project_nrs {}
 set related_project_names {}
+set related_project_descriptions ""
 set related_customer_project_nrs {}
 
 set num_related_projects 0
@@ -248,6 +274,12 @@ db_foreach related_projects $related_projects_sql {
     }
     if {"" != $project_name} { 
 	lappend related_project_names $project_name 
+    }
+    
+    if {"" != $description && 0 == $num_related_projects} {
+        append related_project_descriptions $description
+    } else {
+	append related_project_descriptions ", $description"
     }
 
     # Check of the "customer project nr" of the superproject, as the PMs
@@ -638,7 +670,6 @@ if {"odt" == $template_type} {
 
     # Convert the tDom tree into XML for rendering
     set odt_row_template_xml [$odt_template_row_node asXML]
-    
 }
 
 
@@ -959,19 +990,38 @@ if { 0 == $item_list_type } {
 	          <td $bgcolor([expr $ctr % 2]) align=right>$amount_pretty&nbsp;$currency</td>
 		</tr>"
 	
+	    # Insert a new XML table row into OpenOffice document
+	    if {"odt" == $template_type} {
+		ns_log NOTICE "intranet-invoices-www-view:: Now escaping vars for rows newly added. Row# $ctr"
+		set lines [split $odt_row_template_xml \n]
+		foreach line $lines {
+		    set var_to_be_escaped ""
+		    regexp -nocase {@(.*?)@} $line var_to_be_escaped
+		    regsub -all "@" $var_to_be_escaped "" var_to_be_escaped
+		    regsub -all ";noquote" $var_to_be_escaped "" var_to_be_escaped
+		    lappend vars_escaped $var_to_be_escaped
+		    if { "" != $var_to_be_escaped  } {
+			set value [eval "set value \"$$var_to_be_escaped\""]
+			ns_log NOTICE "intranet-invoices-www-view:: Escape vars for rows added - Value: $value"
+			set cmd "set $var_to_be_escaped \"[encodeXmlValue $value]\""
+			ns_log NOTICE "intranet-invoices-www-view:: Escape vars for rows added - cmd: $cmd"
+			eval $cmd
+		    }
+		}
+		
+		set item_uom [lang::message::lookup $locale intranet-core.$item_uom $item_uom]
+		# Replace placeholders in the OpenOffice template row with values
+		eval [template::adp_compile -string $odt_row_template_xml]
+		set odt_row_xml $__adp_output
 	
-	# Insert a new XML table row into OpenOffice document
-	if {"odt" == $template_type} {
-	    set item_uom [lang::message::lookup $locale intranet-core.$item_uom $item_uom]
-	    # Replace placeholders in the OpenOffice template row with values
-	    eval [template::adp_compile -string $odt_row_template_xml]
-	    set odt_row_xml [intranet_oo::convert -content $__adp_output]
-	    
-	    # Parse the new row and insert into OOoo document
-	    set row_doc [dom parse $odt_row_xml]
-	    set new_row [$row_doc documentElement]
-	    $odt_template_table_node insertBefore $new_row $odt_template_row_node
-	    
+		# Parse the new row and insert into OOoo document
+		set row_doc [dom parse $odt_row_xml]
+		set new_row [$row_doc documentElement]
+		$odt_template_table_node insertBefore $new_row $odt_template_row_node
+	
+	    }
+	
+	    incr ctr
 	}
 	
 	incr ctr
@@ -1739,11 +1789,11 @@ if {0 != $render_template_id || "" != $send_to_user_as} {
 	# ------------------------------------------------
         # setup and constants
 	
-	if {$internal_path != "internal"} {
-	    set internal_tax_id "208 171 00202"
-	} else {
-	    set internal_tax_id "208 120 20138"
-	}
+	# if {$internal_path != "internal"} {
+	#    set internal_tax_id "208 171 00202"
+	# } else {
+	#    set internal_tax_id "208 120 20138"
+	# }
 
 	# ------------------------------------------------
 	# Delete the original template row, which is duplicate
@@ -1752,13 +1802,37 @@ if {0 != $render_template_id || "" != $send_to_user_as} {
 	# ------------------------------------------------
         # Process the content.xml file
 
-	set odt_template_content [$root asXML -indent none]
+	set odt_template_content [$root asXML -indent 1]
+
+	# Escaping other vars used, skip vars already escaped for multiple lines  
+	ns_log NOTICE "intranet-invoices-www-view:: Now escaping all other vars used in template"
+	set lines [split $odt_template_content \n]
+	foreach line $lines {
+            ns_log NOTICE "intranet-invoices-www-view:: Line: $line"
+            set var_to_be_escaped ""
+	    regexp -nocase {@(.*?)@} $line var_to_be_escaped    
+            regsub -all "@" $var_to_be_escaped "" var_to_be_escaped
+	    regsub -all ";noquote" $var_to_be_escaped "" var_to_be_escaped
+            ns_log NOTICE "intranet-invoices-www-view:: var_to_be_escaped: $var_to_be_escaped"
+	    if { -1 == [lsearch $vars_escaped $var_to_be_escaped] } {
+		if { "" != $var_to_be_escaped  } {
+		    if { [info exists $var_to_be_escaped] } {
+			set value [eval "set value \"$$var_to_be_escaped\""]
+			ns_log NOTICE "intranet-invoices-www-view:: Other vars - Value: $value"
+			set cmd "set $var_to_be_escaped \"[encodeXmlValue $value]\""
+			eval $cmd
+		    }
+		}
+	    } else {
+		ns_log NOTICE "intranet-invoices-www-view:: Other vars: Skipping $var_to_be_escaped "
+	    }
+	}
 
 	# Perform replacements
-
 	regsub -all "&lt;%" $odt_template_content "<%" odt_template_content
 	regsub -all "%&gt;" $odt_template_content "%>" odt_template_content
 
+	# Rendering 
         eval [template::adp_compile -string $odt_template_content]
         set content $__adp_output
 	

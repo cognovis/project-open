@@ -445,6 +445,11 @@ ad_proc im_report_display_footer {
 } {
     Display the footer stack of a single row in a project-open report. 
 } {
+
+	if { ![parameter::get -package_id [apm_package_id_from_key intranet-reporting] -parameter "ShowTotalsAndSubtotalsCSV" -default 1] && "csv"==$output_format} {
+		return
+	}
+
     if {$debug} { ns_log Notice "display_footer:" }
     array set last_value_array $last_value_array_list
     array set footer_array $footer_array_list
@@ -739,29 +744,21 @@ ad_proc im_report_write_http_headers {
 } {
     set content_type [im_report_content_type -output_format $output_format]
     set http_encoding [im_report_http_encoding -output_format $output_format]
-
     append content_type "; charset=$http_encoding"
 
     # Set content disposition for CSV exports
     if { $output_format == "csv" && $report_name != ""} {
-	set report_key [string tolower $report_name]
-	regsub -all {[^a-zA-z0-9_]} $report_key "_" report_key
-	regsub -all {_+} $report_key "_" report_key
-	set all_the_headers "HTTP/1.0 200 OK
-MIME-Version: 1.0
-Content-Type: $content_type
-Content-Disposition: attachment; filename=${report_key}.csv\r\n"
+		set report_key [string tolower $report_name]
+		regsub -all {[^a-zA-z0-9_]} $report_key "_" report_key
+		regsub -all {_+} $report_key "_" report_key
+		set all_the_headers "HTTP/1.0 200 OK\nMIME-Version: 1.0\nContent-Type: $content_type\nContent-Disposition: attachment; filename=${report_key}.csv\r\n"
     } elseif { $output_format == "txt" && $report_name != "" } {
         set report_key [string tolower $report_name]
         regsub -all {[^a-zA-z0-9_]} $report_key "_" report_key
         regsub -all {_+} $report_key "_" report_key
-        set all_the_headers "HTTP/1.0 200 OK
-MIME-Version: 1.0
-Content-Disposition: attachment; filename=${report_key}.txt\r\n"
+        set all_the_headers "HTTP/1.0 200 OK\nMIME-Version: 1.0\nContent-Disposition: attachment; filename=${report_key}.txt\r\n"
     } else {
-	set all_the_headers "HTTP/1.0 200 OK
-MIME-Version: 1.0
-Content-Type: $content_type\r\n"
+		set all_the_headers "HTTP/1.0 200 OK\nMIME-Version: 1.0\nContent-Type: $content_type\r\n"
     }
     
     util_WriteWithExtraOutputHeaders $all_the_headers
@@ -992,4 +989,3 @@ ad_proc -public im_reporting_form_update_ajax {
 
     template::head::add_javascript -src "/intranet-reporting/js/ajax_update_select_box.js?$par_str" -order "999"
 }
-

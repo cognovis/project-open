@@ -54,8 +54,8 @@ set deref_options [list \
 	[list "Traffic Light (im_traffic_light_from_id) - Returns a red, yellow or green GIF for traffic light status of projects." "im_traffic_light_from_id"] \
 	[list "Cost Center Name (im_cost_center_name_from_id) - Returns the cost center's name." "im_cost_center_name_from_id"] \
 	[list "Numeric (im_numeric_from_id) - Returns a float value." "im_numeric_from_id"] \
+	[list "Boolean (im_boolean_from_id) - Returns a true/false value." "im_boolean_from_id"] \
 ]
-
 
 ad_form \
     -name widget \

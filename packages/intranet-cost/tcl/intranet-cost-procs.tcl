@@ -286,18 +286,30 @@ ad_proc -public im_cost_type_write_permissions_helper {
 # Options & Selects
 # -----------------------------------------------------------
 
-ad_proc -public im_cost_uom_options { 
+ad_proc -public im_cost_uom_options {
+    {-locale ""}
+    {-translate_p 1}
     {include_empty 1} 
 } {
     Cost UoM (Unit of Measure) options
 } {
-    set options [db_list_of_lists cost_type_options "
+    if {"" == $locale && $translate_p} { set locale [lang::user::locale -user_id [ad_get_user_id]] }
+
+    set options_sql "
         select	category, category_id
         from	im_categories
 	where	category_type = 'Intranet UoM' and
 		(enabled_p is null OR enabled_p = 't')
-    "]
-    if {$include_empty} { set options [linsert $options 0 { "" "" }] }
+    "
+    set options [list]
+    if {$include_empty} { set options [list "" ""] }
+    db_foreach uom_options $options_sql {
+	set category_l10n $category
+	if {$translate_p} {
+	    set category_l10n [lang::message::lookup $locale intranet-core.[lang::util::suggest_key $category] $category]
+	}
+	lappend options [list $category_l10n $category_id]
+    }
     return $options
 }
 

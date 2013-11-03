@@ -29,16 +29,15 @@ db_transaction {
     db_dml delete_page_attributes {
 	delete from im_dynfield_layout
         where page_url = :page_url
-        and object_type = :object_type
     }
     db_dml delete_page_layout {
 	delete from im_dynfield_layout_pages
 	where page_url = :page_url
-	and object_type = :object_type
     }
 } on_error {
-    ad_return_complaint 1 "This page could not be deleted"
+    ad_return_complaint 1 "<b>This page could not be deleted</b>:<br><pre>$errmsg</pre>"
     ns_log Warning "\[TCL\]dynfield/www/layout-del.tcl --------> $errmsg"
 }
 
 ad_returnredirect [export_vars -base layout-manager {object_type}]
+

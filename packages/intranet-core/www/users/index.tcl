@@ -468,6 +468,7 @@ if {"" == $extra_order_by} {
     switch $order_by {
 	"Name" { set extra_order_by "order by name" }
 	"Email" { set extra_order_by "order by upper(u.email), name" }
+	"Department" { set extra_order_by "order by upper(acs_object__name(e.department_id)), name" }
 	"AIM" { set extra_order_by "order by upper(aim_screen_name), name" }
 	"Cell Phone" { set extra_order_by "order by upper(cell_phone), name" }
 	"Home Phone" { set extra_order_by "order by upper(home_phone), name" }
@@ -702,7 +703,6 @@ set table_continuation_html ""
 # ---------------------------------------------------------------
 
 set sub_navbar [im_user_navbar $letter "/intranet/users/index" $next_page_url $previous_page_url [list user_group_name] $menu_select_label]
-
 
 # Compile and execute the formtemplate if advanced filtering is enabled.
 eval [template::adp_compile -string {<formtemplate id="$form_id" style="tiny-plain"></formtemplate>}]

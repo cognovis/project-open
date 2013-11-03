@@ -53,11 +53,11 @@ foreach project_id [array names project_hash] {
     set line "
  	<tr valign=middle>
 	<td><a href=[export_vars -base "/intranet/projects/view" {project_id {view_name finance}}]>$project_name</a></td>
-	<td align=right>$est_profit<br>$profit</td>
-	<td align=right>$costs($project_id-3702)<br>$costs($project_id-3700)</td> <!-- quote / invoice -->
-	<td align=right>$costs($project_id-3706)<br>$costs($project_id-3704)</td> <!-- po / bill -->
-	<td align=right>$costs($project_id-3726)<br>$costs($project_id-3718)</td> <!-- ts budget / ts costs -->
-	<td align=right>$costs($project_id-3728)<br>$costs($project_id-3722)</td> <!-- expense budget / expenses -->
+	<td align=right>$est_profit<br>[lc_numeric $profit "%.2f" [lang::user::locale]]</td>
+	<td align=right>$costs($project_id-3702)<br>[lc_numeric $costs($project_id-3700) "%.2f" [lang::user::locale]]</td> <!-- quote / invoice -->
+	<td align=right>$costs($project_id-3706)<br>[lc_numeric $costs($project_id-3704) "%.2f" [lang::user::locale]]</td> <!-- po / bill -->
+	<td align=right>$costs($project_id-3726)<br>[lc_numeric $costs($project_id-3718) "%.2f" [lang::user::locale]]</td> <!-- ts budget / ts costs -->
+	<td align=right>$costs($project_id-3728)<br>[lc_numeric $costs($project_id-3722) "%.2f" [lang::user::locale]]</td> <!-- expense budget / expenses -->
 	</tr>
     "
     append lines $line

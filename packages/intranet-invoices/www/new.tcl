@@ -19,7 +19,9 @@ ad_page_contract {
            Indicates that "Create Invoice" button was
            used to start creating an invoice from a Quote or a
            Provider Bill from a Purchase Order
-
+    @param par_im_next_invoice_nr 
+    	   Content that can be passed onto im_next_invoice_nr and from there to a 
+           custom routine generating the invoice_nr 
     @author frank.bergmann@project-open.com
 } {
     { include_task:multiple "" }
@@ -32,6 +34,7 @@ ad_page_contract {
     { invoice_currency ""}
     { create_invoice_from_template ""}
     { return_url "/intranet-invoices/list"}
+    { par_im_next_invoice_nr "" }
     del_invoice:optional
 }
 
@@ -268,7 +271,7 @@ if {$invoice_id} {
     set context_bar [im_context_bar [list /intranet/invoices/ "[_ intranet-invoices.Finance]"] $page_title]
 
     set invoice_id [im_new_object_id]
-    set invoice_nr [im_next_invoice_nr -cost_type_id $cost_type_id -cost_center_id $cost_center_id]
+    set invoice_nr [im_next_invoice_nr -cost_type_id $cost_type_id -cost_center_id $cost_center_id -par_im_next_invoice_nr $par_im_next_invoice_nr]
     set cost_status_id [im_cost_status_created]
     set effective_date $todays_date
     set delivery_date $effective_date
@@ -551,30 +554,35 @@ for {set i 0} {$i < 3} {incr i} {
 # Pass along the number of projects related to this document
 # ---------------------------------------------------------------
 
-# fraber 080515: @CTP: the project_id comes from im_invoice_ITEMS,
-# and causes trouble (adding an additional project to the list of
-# related projects). Did this code (own_project_related) make ever
-# sense?
-
-set own_project_related ""
-if {0 != $project_id} { set own_project_related "UNION select :project_id as project_id" }
-
+# To clarify with Frank: 
+# We only want to get the rels related to a project 
 set related_project_sql "
-	select	object_id_one as project_id
-	from	acs_rels r
-	where	r.object_id_two = :invoice_id
-	$own_project_related
+	select	
+		object_id_one as rel_project_id
+	from	
+		acs_rels r,
+		acs_objects o
+	where	
+		r.object_id_two = :invoice_id and 
+		r.object_id_one = o.object_id and 
+		o.object_type = 'im_project'
 "
 
 set select_project_html ""
 db_foreach related_project $related_project_sql {
-	append select_project_html "<input type=hidden name=select_project value=$project_id>\n"
+	append select_project_html "<input type=hidden name=select_project value=$rel_project_id>\n"
 }
+
+# To clarify with Frank 
+# No select_project is passed on to new-2 when document is to be created and therfore no relationship can't be found 
+if { "" == $select_project_html && "" != $project_id && 0 != $project_id } {
+    append select_project_html "<input type=hidden name=select_project value=$project_id>\n"
+}
+
 
 set sub_navbar [im_costs_navbar "none" "/intranet/invoices/index" "" "" [list]] 
 
 db_release_unused_handles
-
 
 # ---------------------------------------------------------------
 # Set Dynfields

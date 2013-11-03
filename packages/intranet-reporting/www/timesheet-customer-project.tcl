@@ -475,7 +475,6 @@ ad_form -extend -name $form_id -form {
 eval [template::adp_compile -string {<formtemplate id="$form_id" style="tiny-plain-po"></formtemplate>}]
 set filter_html $__adp_output
 
-
 # Create a ns_set with all local variables in order
 # to pass it to the SQL query
 set form_vars [ns_set create]
@@ -496,7 +495,7 @@ callback im_timesheet_report_before_render -view_name "timesheet_csv" \
     -view_type $output_format -sql $sql -table_header $page_title -variable_set $form_vars
 
 # Write out HTTP header, considering CSV/MS-Excel formatting
-im_report_write_http_headers -output_format $output_format
+im_report_write_http_headers -output_format $output_format -report_name "timesheet-customer-project"
 
 
 switch $output_format {

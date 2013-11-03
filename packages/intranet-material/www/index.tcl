@@ -17,8 +17,7 @@ ad_page_contract {
     { material_status_id 0 }
     { material_type_id 0 }
     { start_idx:integer 0 }
-    { how_many 0 }
-    { max_entries_per_page 0 }
+    { how_many 1000 }
 }
 
 # ad_return_complaint 1 $material_type_id
@@ -55,9 +54,7 @@ if {[string equal $view_name "material_list_tasks"]} {
 # Material Topic Types come from a category list, but we need
 # some manual extensions...
 #
-set material_types [im_memoize_list select_material_types \
-   "select * from im_material_types order by material_type_id"]
-set material_types [linsert $material_types 0 1 "Tasks / Incidents]"]
+set material_types [im_memoize_list select_material_types "select * from im_material_types order by material_type_id"]
 set material_types [linsert $material_types 0 0 "All"]
 
 
@@ -122,7 +119,7 @@ set material_content [im_material_list_component \
 	-export_var_list	$export_var_list \
 	-view_name 		$view_name \
 	-order_by		$order_by \
-	-max_entries_per_page	$max_entries_per_page \
+	-max_entries_per_page	$how_many \
 	-restrict_to_type_id	$material_type_id \
 	-restrict_to_status_id	$material_status_id \
 ]
