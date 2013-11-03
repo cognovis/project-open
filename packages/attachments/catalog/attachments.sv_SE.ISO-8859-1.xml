@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="attachments" locale="sv_SE" charset="ISO-8859-1">
+
+  <msg key="Action">Åtgärd</msg>
+  <msg key="Add_File">Lägg till fil</msg>
+  <msg key="Add_folder_Link">Lägg till mapplänk</msg>
+  <msg key="Add_pretty_name">Lägg till %pretty_name%</msg>
+  <msg key="Attach">Bifoga</msg>
+  <msg key="attach_new">Bifoga en &lt;b&gt;ny&lt;/b&gt;:</msg>
+  <msg key="Attach_URL">Bifoga URL</msg>
+  <msg key="Choose">Välj</msg>
+  <msg key="Description">Beskrivning:</msg>
+  <msg key="File">Fil</msg>
+  <msg key="Last_Modified">Senast modifierad</msg>
+  <msg key="lt_Add_Attachment_Folder">Lägg till bifogad mapplänk</msg>
+  <msg key="lt_Attach_a_File_to_pret">Bifoga en fil till %pretty_object_name%</msg>
+  <msg key="lt_contentscontent_size_">%contents.content_size% item</msg>
+  <msg key="lt_contentscontent_size__1">%contents.content_size% byte</msg>
+  <msg key="lt_Created_by_the_attach">Skapad av paketet som hanterar bifogade filer</msg>
+  <msg key="lt_dont_know_how_to_deal">Kan inte hantera bifogade filer av typen %content_type%</msg>
+  <msg key="lt_Error_Attachment_root">Fel: Den bifogade filens rotmapp och filsystemets rotmapp skiljer sig åt.</msg>
+  <msg key="lt_Error_empty_folder_id">Fel: folder_id är tom.</msg>
+  <msg key="lt_Folder_folder_name_is">Mappen %folder_name% är tom</msg>
+  <msg key="lt_Found_file-storage_fo">Fann &quot;file-storage&quot;-mapp XXX folder_name XXX ... Vill du länka till den?</msg>
+  <msg key="lt_No_file-storage_folde">Ingen &quot;file-storage&quot;-mapp att länka till funnen. Vill du skapa en?</msg>
+  <msg key="lt_No_such_attachment_fo">Ingen sådan bifogad fil för det här objektet</msg>
+  <msg key="lt_The_specified_parent_">Den angivna huvudmappen är inte giltig.</msg>
+  <msg key="lt_To_attach_a_file_alre">För att bifoga en fil som redan finns i en mapp; öppna mappen genom att klicka på mappens namn och klicka sedan på &quot;Välj&quot;-länken bredvid filen. För att ladda upp en ny fil till en mapp; öppna mappen genom att klicka på mappens namn och klicka sedan på den önskade &quot;Bifoga en ny fil/URL&quot;-länken.</msg>
+  <msg key="lt_Upload_New_Attachment">Bifoga en ny fil</msg>
+  <msg key="lt_Use_the_Browse_button">Använd &quot;Bläddra&quot;-knappen och leta upp din fil. Klicka sedan på &quot;Öppna&quot;.</msg>
+  <msg key="lt_You_are_attaching_a_d">Du bifogar ett dokument till %pretty_object_name%.</msg>
+  <msg key="lt_You_probably_clicked_">Du klickade förmodligen på &quot;Lägg till&quot;-knappen mer än en gång. Kontrollera att filen har laddats upp till &lt;a href=&quot;%folder_url%&quot;&gt;önskad mapp&lt;/a&gt;. Använd annars din webbläsares &quot;Tillbaka&quot;-knapp för att försöka igen.</msg>
+  <msg key="lt_Your_file_is_larger_t">Din fil är större än vad som tillåts (%max_number_of_bytes% bytes)</msg>
+  <msg key="Name">Namn</msg>
+  <msg key="No_such_type">Ingen sådan typ</msg>
+  <msg key="Object">Objekt</msg>
+  <msg key="Size">Storlek</msg>
+  <msg key="Title">Titel:</msg>
+  <msg key="Top">Topp</msg>
+  <msg key="Type">Typ</msg>
+  <msg key="URL">URL</msg>
+  <msg key="URL_1">URL:</msg>
+  <msg key="Version_filename_">Versionens filnamn:</msg>
+  <msg key="you_are_attaching_document_to_object">Du bifogar ett nytt dokument till %pretty_object_name%.</msg>
+  <msg key="you_are_attaching_url_to_object">Du bifogar en ny URL till %pretty_object_name%.</msg>
+</message_catalog>

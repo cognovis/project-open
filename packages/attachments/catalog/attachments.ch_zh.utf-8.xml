@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="attachments" locale="ch_zh" charset="utf-8">
+
+  <msg key="Action">操作</msg>
+  <msg key="Add_File">增加文件</msg>
+  <msg key="Add_folder_Link">增加文件夹链接</msg>
+  <msg key="Add_pretty_name">增加%pretty_name%</msg>
+  <msg key="Attach">添加</msg>
+  <msg key="attach_new">添加&lt;b&gt;新&lt;/b&gt;:</msg>
+  <msg key="Attach_URL">添加URL</msg>
+  <msg key="Choose">选择</msg>
+  <msg key="Description">描述</msg>
+  <msg key="File">文件</msg>
+  <msg key="Last_Modified">最后更新的</msg>
+  <msg key="lt_Add_Attachment_Folder">增加附件文件夹链接</msg>
+  <msg key="lt_Attach_a_File_to_pret">给%pretty_object_name%添加文件</msg>
+  <msg key="lt_contentscontent_size_">%contents.content_size%条</msg>
+  <msg key="lt_contentscontent_size__1">%contents.content_size%字节</msg>
+  <msg key="lt_Created_by_the_attach">由附件创建</msg>
+  <msg key="lt_dont_know_how_to_deal">不知如何处理附件类型%content_type%</msg>
+  <msg key="lt_Error_Attachment_root">错误：附件根文件夹和文件存储根文件夹不同！</msg>
+  <msg key="lt_Error_empty_folder_id">错误：空folder_id!</msg>
+  <msg key="lt_Folder_folder_name_is">文件夹%folder_name%空</msg>
+  <msg key="lt_Found_file-storage_fo">找到文件存储文件夹XXXfolder_nameXXX...，要链接它吗？</msg>
+  <msg key="lt_No_file-storage_folde">没有找到要链接的文件存储文件夹，创建一个文件夹吗？</msg>
+  <msg key="lt_No_such_attachment_fo">该项没有附件</msg>
+  <msg key="lt_The_specified_parent_">指定父文件夹无效。</msg>
+  <msg key="lt_To_attach_a_file_alre">要附加一个已在文件夹中的文件，单击文件夹名打开该文件夹，然后单击文件旁边的&amp;quot;[选择]&amp;quot;。要向文件夹上传一个新文件，单击文件夹名打开该文件夹，然后单击&amp;quot;添加一个新的：文件URL&amp;quot;。</msg>
+  <msg key="lt_Upload_New_Attachment">上传新附件</msg>
+  <msg key="lt_Use_the_Browse_button">用“浏览……”按钮查找文件，然后单击“打开”。</msg>
+  <msg key="lt_You_are_attaching_a_d">正在将文档附加到%pretty_object_name%。</msg>
+  <msg key="lt_You_probably_clicked_">可能已多次点击“增加”钮，检查文件是否已经装入&lt;a href=&quot;%folder_url%&quot;&gt;文件夹&lt;/a&gt;，或者用“后退”钮返回，重新进入此版本文件。 </msg>
+  <msg key="lt_Your_file_is_larger_t">文件大于系统规定的最大文件大小（%max_number_of_bytes%字节）</msg>
+  <msg key="Name">名称</msg>
+  <msg key="No_such_type">无此类型</msg>
+  <msg key="Object">项</msg>
+  <msg key="Size">大小</msg>
+  <msg key="Title">标题</msg>
+  <msg key="Top">顶</msg>
+  <msg key="Type">类型</msg>
+  <msg key="URL">URL</msg>
+  <msg key="URL_1">URL：</msg>
+  <msg key="Version_filename_">版本文件名：</msg>
+  <msg key="you_are_attaching_document_to_object">正在给%pretty_object_name%附加新文件。</msg>
+  <msg key="you_are_attaching_url_to_object">正在给%pretty_object_name%附加新URL。</msg>
+</message_catalog>

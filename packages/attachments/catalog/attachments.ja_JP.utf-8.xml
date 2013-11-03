@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="attachments" locale="ja_JP" charset="utf-8">
+
+  <msg key="Attach">添付</msg>
+  <msg key="Attach_URL">URL 添付</msg>
+  <msg key="Description">説明</msg>
+  <msg key="Last_Modified">最終更新</msg>
+  <msg key="Title">タイトル</msg>
+  <msg key="URL">URL</msg>
+  <msg key="URL_1">URL:</msg>
+</message_catalog>

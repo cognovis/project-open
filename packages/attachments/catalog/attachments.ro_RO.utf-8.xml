@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="attachments" locale="ro_RO" charset="utf-8">
+
+  <msg key="Action">Acţiune</msg>
+  <msg key="Add_File">Adaugă Fişier</msg>
+  <msg key="Add_folder_Link">Adaugă link la directorul de fişier</msg>
+  <msg key="Add_pretty_name">Adaugă %pretty_name%</msg>
+  <msg key="Attach">Ataşează</msg>
+  <msg key="attach_new">Adaugă un &lt;b&gt;nou&lt;/b&gt;: </msg>
+  <msg key="Attach_URL">Adaugă URL</msg>
+  <msg key="Choose">Alege</msg>
+  <msg key="Description">Descriere:</msg>
+  <msg key="File">Fişier</msg>
+  <msg key="Last_Modified">Ultima Modificare</msg>
+  <msg key="lt_Add_Attachment_Folder">Adaugă </msg>
+  <msg key="lt_Attach_a_File_to_pret">Ataşează un Fişier la %pretty_object_name% </msg>
+  <msg key="lt_contentscontent_size_">obiectul %contents.content_size% </msg>
+  <msg key="lt_contentscontent_size__1">%contents.content_size% byte</msg>
+  <msg key="lt_Created_by_the_attach">Creat de către programul attachments</msg>
+  <msg key="lt_dont_know_how_to_deal">Nu ştiu ce să fac cu acest tip de fişier: %content_type% </msg>
+  <msg key="lt_Error_Attachment_root">Eroare: Directorul rădăcină pentru fişiere ataşate şi directorul rădăcină sunt diferite !</msg>
+  <msg key="lt_Error_empty_folder_id">Eroare: folder_id este gol !</msg>
+  <msg key="lt_Folder_folder_name_is">Directorul %folder_name% este gol</msg>
+  <msg key="lt_Found_file-storage_fo">Am găsit director de fişiere XXX folder_name XXX ... vrei să ai un link la el ?</msg>
+  <msg key="lt_No_file-storage_folde">Nu am găsit nici un director de fişiere, pentru a creea un link la el. Vrei sa creezi unul?</msg>
+  <msg key="lt_No_such_attachment_fo">Nu există acest fel de fişiere ataşate pentru acest obiect</msg>
+  <msg key="lt_The_specified_parent_">Directorul părinte menţionat nu este valabil</msg>
+  <msg key="lt_To_attach_a_file_alre">Pentru a ataşa un fişier aflat deja într-un director, deschideţi directorul dând click pe numele directorului, apoi daţi click pe linkul &amp;quot;[ Choose ]&amp;quot; adiacent fişierului. Pentru a încărca fişierul într-un director, deschideţi directorul dând click pe numele său apoi daţi click pe linkul respectiv &amp;quot;Attach a new: File | URL&amp;quot; </msg>
+  <msg key="lt_Upload_New_Attachment">Încarcă un Fişier Nou</msg>
+  <msg key="lt_Use_the_Browse_button">Utilizează butonul &quot;Browse...&quot; pentru a localiza fişierul şi apoi daţi click pe &quot;Open&quot;. </msg>
+  <msg key="lt_You_are_attaching_a_d">Ataşaţi un document la %pretty_object_name%. </msg>
+  <msg key="lt_You_probably_clicked_">Probabil că aţi dat click pe butonul Adaugă mai mult decăt o singură dată. Verificaţi dacă fişierul a fost încărcat în mod corespunzător pe &lt;a href=&quot;%folder_url%&quot;&gt; directorul &lt;/a&gt; dorit, sau puteţi utiliza butonul Înapoi/Back pentru a vă întoarce şi reintroduce respectivul fişier</msg>
+  <msg key="lt_Your_file_is_larger_t">Fişierul dumneavoastră este mai mare decât mărimea maximă permisă pe acest sistem (%max_number_of_bytes% bytes) </msg>
+  <msg key="Name">Nume</msg>
+  <msg key="No_such_type">Nu există acest tip</msg>
+  <msg key="Object">Obiect</msg>
+  <msg key="Size">Mărime</msg>
+  <msg key="Title">Titlu</msg>
+  <msg key="Top">Sus</msg>
+  <msg key="Type">Tip</msg>
+  <msg key="URL">URL</msg>
+  <msg key="URL_1">URL:</msg>
+  <msg key="Version_filename_">Fişierul versiune:</msg>
+  <msg key="you_are_attaching_document_to_object">Ataşaţi un nou document la %pretty_object_name%. </msg>
+  <msg key="you_are_attaching_url_to_object">Ataşaţi un nou url la %pretty_object_name%. </msg>
+</message_catalog>

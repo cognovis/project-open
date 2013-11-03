@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="attachments" locale="ast_ES" charset="ISO-8859-1">
+
+  <msg key="Action">Acción</msg>
+  <msg key="Add_File">Añadir Archivu</msg>
+  <msg key="Add_folder_Link">Añadir enllaz a directoriu</msg>
+  <msg key="Add_pretty_name">Añadir &quot;%pretty_name%&quot;</msg>
+  <msg key="Attach">Adxuntu</msg>
+  <msg key="attach_new">Axuntar a &lt;b&gt;nuevu&lt;/b&gt;:</msg>
+  <msg key="Attach_URL">Axuntar URL</msg>
+  <msg key="Choose">Escoyer</msg>
+  <msg key="Description">Descripción:</msg>
+  <msg key="File">Archivu</msg>
+  <msg key="Last_Modified">Última Modificación</msg>
+  <msg key="lt_Add_Attachment_Folder">Axuntar enllaz al Directoriu d'Adxuntos</msg>
+  <msg key="lt_Attach_a_File_to_pret">Adxuntar un Archivu a &quot;%pretty_object_name%&quot;</msg>
+  <msg key="lt_contentscontent_size_">&quot;%contents.content_size%&quot; item</msg>
+  <msg key="lt_contentscontent_size__1">&quot;%contents.content_size%&quot; byte</msg>
+  <msg key="lt_Created_by_the_attach">Creáu pol paquete d'adxuntos</msg>
+  <msg key="lt_dont_know_how_to_deal">nun sé que facer con adxuntos d'esti calter</msg>
+  <msg key="lt_Error_Attachment_root">Error: ¡el directoriu raíz del adxuntu y el directoriu raíz del sistema d'archivos son diferentes!</msg>
+  <msg key="lt_Error_empty_folder_id">Eror: ¡indentificador de directoriu vaciu!</msg>
+  <msg key="lt_Folder_folder_name_is">Directoriu &quot;%folder_name%&quot; vaciu</msg>
+  <msg key="lt_Found_file-storage_fo">Alcontróse'l directoriu XXX col nome XXX ... ¿quies facer un enllaz?</msg>
+  <msg key="lt_No_file-storage_folde">Nun s'alcontraron los directorios d'almacenamientu de ficheros a los qu'enllazar. Quies crealu?</msg>
+  <msg key="lt_No_such_attachment_fo">Nun hai adxuntu pa esti obxectu</msg>
+  <msg key="lt_The_specified_parent_">Eldirectoriu padre especificáu nun ye válidu</msg>
+  <msg key="lt_To_attach_a_file_alre">P'axuntar un archivu del directoriu, abre'l directoriu calcando nel nome del directoriu, depués calca nel enllaz &amp;quot;[ Escoyer ]&amp;quot; al llau del nome del archivu. Pa xubir un nuevu archivu al directoriu, abre'l directoriu calcando nel so nome, y depués calca nel enllace &amp;quot;Adxuntar un nuevu: Archivu | URL&amp;quot;</msg>
+  <msg key="lt_Upload_New_Attachment">Xubir Archivu Adxuntu Nuevu</msg>
+  <msg key="lt_Use_the_Browse_button">Usa'l botón &quot;Restolar...&quot; p'alcontrar l'archivu, depués calca en &quot;Abrir&quot;.</msg>
+  <msg key="lt_You_are_attaching_a_d">Tas adxuntando un documentu a &quot;%pretty_object_name%&quot;.</msg>
+  <msg key="lt_You_probably_clicked_">Quiciabes calcasti nel botón d'Adxuntar más d'una vez. Comprueba que l'archivu se cargó correctamente nel &lt;a href=&quot;%folder_url%&quot;&gt;directoriu&lt;/a&gt; que quies, o puedes usar el botón de Tornar pa volver a adxuntar l'archivu.</msg>
+  <msg key="lt_Your_file_is_larger_t">L'archivu ye mayor de lo que permite'l sistema (&quot;%max_number_of_bytes%&quot; bytes)</msg>
+  <msg key="Name">Nome</msg>
+  <msg key="No_such_type">Nun esiste esi tipo</msg>
+  <msg key="Object">Obxectu</msg>
+  <msg key="Size">Tamañu</msg>
+  <msg key="Title">Título</msg>
+  <msg key="Top">Arriba</msg>
+  <msg key="Type">Tipo</msg>
+  <msg key="URL">URL</msg>
+  <msg key="URL_1">URL:</msg>
+  <msg key="Version_filename_">Nome del archivu de la versión:</msg>
+</message_catalog>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="attachments" locale="ru_RU" charset="utf-8">
+
+  <msg key="Action">Действие</msg>
+  <msg key="Add_File">Добавить файл</msg>
+  <msg key="Add_folder_Link">Добавить ссылку на папку</msg>
+  <msg key="Add_pretty_name">Добавить %pretty_name%</msg>
+  <msg key="Attach">Прикрепить</msg>
+  <msg key="attach_new">Прикрепить &lt;b&gt;новый&lt;/b&gt;:</msg>
+  <msg key="Attach_URL">Прикрепить URL</msg>
+  <msg key="Choose">Выбрать</msg>
+  <msg key="Description">Описание:</msg>
+  <msg key="File">Файл</msg>
+  <msg key="Last_Modified">Дата изм.</msg>
+  <msg key="lt_Attach_a_File_to_pret">Прикрепить файл к %pretty_object_name%</msg>
+  <msg key="lt_contentscontent_size__1">%contents.content_size% байт</msg>
+  <msg key="lt_Error_empty_folder_id">Ошибка: пустой folder_id!</msg>
+  <msg key="lt_Folder_folder_name_is">Папка %folder_name% пуста</msg>
+  <msg key="lt_Upload_New_Attachment">Загрузить новое вложение</msg>
+  <msg key="lt_Use_the_Browse_button">Нажав на кнопку &quot;Browse...&quot;, выберите файл, затем нажмите &quot;Open&quot; (&quot;Открыть&quot;).</msg>
+  <msg key="lt_Your_file_is_larger_t">Размер вашего файла больше разрешённого в этой системе (%max_number_of_bytes% байт)</msg>
+  <msg key="Name">Имя</msg>
+  <msg key="No_such_type">Тип отсутствует</msg>
+  <msg key="Object">Объект</msg>
+  <msg key="Size">Размер</msg>
+  <msg key="Title">Название:</msg>
+  <msg key="Top">Верх страницы</msg>
+  <msg key="Type">Тип</msg>
+  <msg key="URL">URL</msg>
+  <msg key="URL_1">URL:</msg>
+  <msg key="Version_filename_">Версия файла:</msg>
+</message_catalog>

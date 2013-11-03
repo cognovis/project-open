@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="attachments" locale="es_GT" charset="ISO-8859-1">
+
+  <msg key="Action">Acción</msg>
+  <msg key="Add_File">Agregar Archivo</msg>
+  <msg key="Add_folder_Link">Agregar Enlace a carpeta</msg>
+  <msg key="Add_pretty_name">Agregar %pretty_name% </msg>
+  <msg key="Attach">Adjuntar</msg>
+  <msg key="attach_new">Adjuntar un &lt;b&gt;nuevo&lt;/b&gt;:</msg>
+  <msg key="Attach_URL">Adjuntar URL</msg>
+  <msg key="Choose">Elegir</msg>
+  <msg key="Description">Descripción:</msg>
+  <msg key="File">Archivo</msg>
+  <msg key="Last_Modified">Última modificación</msg>
+  <msg key="lt_Add_Attachment_Folder">Agregar Enlace a una carpeta adjunta</msg>
+  <msg key="lt_Attach_a_File_to_pret">Adjuntar un archivo a %pretty_object_name%</msg>
+  <msg key="lt_contentscontent_size_">elemento %contents.content_size%</msg>
+  <msg key="lt_contentscontent_size__1">%contents.content_size% byte </msg>
+  <msg key="lt_Created_by_the_attach">Creado por el paquete Attachments</msg>
+  <msg key="lt_dont_know_how_to_deal">no se sabe como manejar este tipo de archivo</msg>
+  <msg key="lt_Error_Attachment_root">Error: la carpeta raíz de adjuntos es diferente de la carpeta raíz del sistema de archivos</msg>
+  <msg key="lt_Error_empty_folder_id">Error: ¡Identificador de carpeta vacío!</msg>
+  <msg key="lt_Folder_folder_name_is">La carpeta %folder_name% esta vacía</msg>
+  <msg key="lt_Found_file-storage_fo">Se ha encontrado la carpeta XXX con nombre XXX... ¿desea crear un enlace a ella?</msg>
+  <msg key="lt_No_file-storage_folde">No se han encontrado carpetas a las que enlazar. ¿Desea crear una carpeta?</msg>
+  <msg key="lt_No_such_attachment_fo">No existe tal archivo adjunto para este objeto</msg>
+  <msg key="lt_The_specified_parent_">La carpeta padre especificada no es válida.</msg>
+  <msg key="lt_To_attach_a_file_alre">Para adjuntar un archivo a una carpeta, haga click en el nombre de la carpeta, después un click en donde dice &amp;quot; Seleccionar ]&amp;quot; al lado del nombre del archivo. Para subir un nuevo archivo a una carpeta en particular, haga un click en el nombre de la carpeta en la que quiere poner su archivo y precione el botón de &amp;quot;Añadir nuevo: Archivo | URL&amp;quot;. </msg>
+  <msg key="lt_Upload_New_Attachment">Subir un nuevo archivo adjunto</msg>
+  <msg key="lt_Use_the_Browse_button">Haga click en el botón &quot;Explorar&quot; para localizar el archivo. Una vez localizado, haga click en &quot;Abrir&quot;.</msg>
+  <msg key="lt_You_are_attaching_a_d">Ud. está adjuntando un documento para %pretty_object_name%.</msg>
+  <msg key="lt_You_probably_clicked_">Es probable que haya hecho click en el botón Agregar más de una vez. Compruebe que el archivo haya sido correctamente agregado a la &lt;a href=&quot;%folder_url%&quot;&gt;carpeta&lt;/a&gt; elegida, o bien, utilice el botón Atrás de su navegador y repita la operación.</msg>
+  <msg key="lt_Your_file_is_larger_t">El archivo que está tratando de subir supera el tamaño máximo permitido (%max_number_of_bytes% bytes).</msg>
+  <msg key="Name">Nombre</msg>
+  <msg key="No_such_type">No existe tal tipo</msg>
+  <msg key="Object">Objeto</msg>
+  <msg key="Size">Tamaño</msg>
+  <msg key="Title">Título:</msg>
+  <msg key="Top">Arriba</msg>
+  <msg key="Type">Tipo</msg>
+  <msg key="URL">URL</msg>
+  <msg key="URL_1">URL:</msg>
+  <msg key="Version_filename_">Título de la versión:</msg>
+  <msg key="you_are_attaching_document_to_object">Esta adjuntando un nuevo documento a %pretty_object_name%. </msg>
+  <msg key="you_are_attaching_url_to_object">Esta adjuntando un nuevo url a %pretty_object_name%. </msg>
+</message_catalog>

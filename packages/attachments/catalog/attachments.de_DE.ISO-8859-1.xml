@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="attachments" locale="de_DE" charset="ISO-8859-1">
+
+  <msg key="Action">Aktion</msg>
+  <msg key="Add_File">Datei hinzufügen</msg>
+  <msg key="Add_folder_Link">Ordnerlink hinzufügen</msg>
+  <msg key="Add_pretty_name">%pretty_name% hinzufügen</msg>
+  <msg key="Attach">Anhängen</msg>
+  <msg key="attach_new">Anfügen: &lt;b&gt;Neue&lt;/b&gt; </msg>
+  <msg key="Attach_URL">URL anhängen</msg>
+  <msg key="Choose">Auswählen</msg>
+  <msg key="Description">Beschreibung:</msg>
+  <msg key="File">Datei</msg>
+  <msg key="Last_Modified">Zuletzt geändert</msg>
+  <msg key="lt_Add_Attachment_Folder">Link zu einem angehängten Ordner hinzufügen</msg>
+  <msg key="lt_Attach_a_File_to_pret">Datei anhängen an %pretty_object_name%</msg>
+  <msg key="lt_contentscontent_size_">%contents.content_size%-Element</msg>
+  <msg key="lt_contentscontent_size__1">%contents.content_size% Bytes</msg>
+  <msg key="lt_Created_by_the_attach">Erstellt vom Programmpaket 'Anhänge'</msg>
+  <msg key="lt_dont_know_how_to_deal">Der Anhang vom Typ %content_type% kann nicht verarbeitet werden.</msg>
+  <msg key="lt_Error_Attachment_root">Fehler: Wurzelverzeichnis von Anhängen stimmt nicht mit Wurzelverzeichnis von Dateien überein</msg>
+  <msg key="lt_Error_empty_folder_id">Fehler: Ordner-ID nicht vorhanden</msg>
+  <msg key="lt_Folder_folder_name_is">Der Ordner &quot;%folder_name%&quot; ist leer.</msg>
+  <msg key="lt_Found_file-storage_fo">Es wurde der Ordner XXX folder_name XXX gefunden. Wollen Sie einen Link dorthin einrichten?</msg>
+  <msg key="lt_No_file-storage_folde">Es wurde kein Dateiordner gefunden, zu dem Sie einen Link einrichten können. Möchten Sie einen neuen Ordner erstellen?</msg>
+  <msg key="lt_No_such_attachment_fo">Dieses Objekt verfügt nicht über den angegebenen Anhang.</msg>
+  <msg key="lt_The_specified_parent_">Der angegebene übergeordnete Ordner ist ungültig.</msg>
+  <msg key="lt_To_attach_a_file_alre">Um eine Datei anzuhängen, die bereits in einem Ordner vorhanden ist, öffnen Sie den Ordner und klicken Sie auf den Link &amp;quot;[ Auswählen ]&amp;quot; neben der Datei. Um eine neue Datei in einen Ordner hochzuladen, öffnen Sie den Ordner und klicken Sie auf den Link &amp;quot;Neue Datei/URL anhängen&amp;quot;.
+
+</msg>
+  <msg key="lt_Upload_New_Attachment">Neuen Anhang hochladen</msg>
+  <msg key="lt_Use_the_Browse_button">Klicken Sie auf 'Durchsuchen...', wählen Sie die gewünschte Datei aus und klicken Sie auf 'Öffnen'.</msg>
+  <msg key="lt_You_are_attaching_a_d">Sie hängen ein Dokument an %pretty_object_name% an.</msg>
+  <msg key="lt_You_probably_clicked_">Wahrscheinlich haben Sie mehrmals auf die Schaltfläche 'Hochladen' geklickt. Überprüfen Sie, ob die Datei in den gewünschten &lt;a href=&quot;%folder_url%&quot;&gt;Ordner&lt;/a&gt; geladen wurde, oder gehen Sie mit Hilfe Ihres Browsers zurück und geben Sie die Versionsdatei erneut ein. </msg>
+  <msg key="lt_Your_file_is_larger_t">Ihre Datei überschreitet die innerhalb des Systems zulässige Maximalgröße (%max_number_of_bytes% Bytes).</msg>
+  <msg key="Name">Name</msg>
+  <msg key="No_such_type">Typ nicht vorhanden</msg>
+  <msg key="Object">Objekt</msg>
+  <msg key="Size">Größe</msg>
+  <msg key="Title">Name das Dokuments:</msg>
+  <msg key="Top">Anfang</msg>
+  <msg key="Type">Typ</msg>
+  <msg key="URL">URL</msg>
+  <msg key="URL_1">URL:</msg>
+  <msg key="Version_filename_">Dateiname der Version:</msg>
+  <msg key="you_are_attaching_document_to_object">Sie fügen ein neues Dokument an %pretty_object_name% an.</msg>
+  <msg key="you_are_attaching_url_to_object">Sie fügen eine neue URL an %pretty_object_name% an.</msg>
+</message_catalog>
