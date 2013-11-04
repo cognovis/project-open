@@ -966,7 +966,7 @@ if { 0 == $item_list_type } {
 	          <td $bgcolor([expr $ctr % 2])>$item_material</td>
 	    "
 	}	    
-
+	
 	if {$show_qty_rate_p} {
 	    append invoice_item_html "
 	          <td $bgcolor([expr $ctr % 2]) align=right>$item_units_pretty</td>
@@ -990,43 +990,41 @@ if { 0 == $item_list_type } {
 	          <td $bgcolor([expr $ctr % 2]) align=right>$amount_pretty&nbsp;$currency</td>
 		</tr>"
 	
-	    # Insert a new XML table row into OpenOffice document
-	    if {"odt" == $template_type} {
-		ns_log NOTICE "intranet-invoices-www-view:: Now escaping vars for rows newly added. Row# $ctr"
-		set lines [split $odt_row_template_xml \n]
-		foreach line $lines {
-		    set var_to_be_escaped ""
-		    regexp -nocase {@(.*?)@} $line var_to_be_escaped
-		    regsub -all "@" $var_to_be_escaped "" var_to_be_escaped
-		    regsub -all ";noquote" $var_to_be_escaped "" var_to_be_escaped
-		    lappend vars_escaped $var_to_be_escaped
-		    if { "" != $var_to_be_escaped  } {
-			set value [eval "set value \"$$var_to_be_escaped\""]
-			ns_log NOTICE "intranet-invoices-www-view:: Escape vars for rows added - Value: $value"
-			set cmd "set $var_to_be_escaped \"[encodeXmlValue $value]\""
-			ns_log NOTICE "intranet-invoices-www-view:: Escape vars for rows added - cmd: $cmd"
-			eval $cmd
-		    }
+	# Insert a new XML table row into OpenOffice document
+	if {"odt" == $template_type} {
+	    ns_log NOTICE "intranet-invoices-www-view:: Now escaping vars for rows newly added. Row# $ctr"
+	    set lines [split $odt_row_template_xml \n]
+	    foreach line $lines {
+		set var_to_be_escaped ""
+		regexp -nocase {@(.*?)@} $line var_to_be_escaped
+		regsub -all "@" $var_to_be_escaped "" var_to_be_escaped
+		regsub -all ";noquote" $var_to_be_escaped "" var_to_be_escaped
+		lappend vars_escaped $var_to_be_escaped
+		if { "" != $var_to_be_escaped  } {
+		    set value [eval "set value \"$$var_to_be_escaped\""]
+		    ns_log NOTICE "intranet-invoices-www-view:: Escape vars for rows added - Value: $value"
+		    set cmd "set $var_to_be_escaped \"[encodeXmlValue $value]\""
+		    ns_log NOTICE "intranet-invoices-www-view:: Escape vars for rows added - cmd: $cmd"
+		    eval $cmd
 		}
-		
-		set item_uom [lang::message::lookup $locale intranet-core.$item_uom $item_uom]
-		# Replace placeholders in the OpenOffice template row with values
-		eval [template::adp_compile -string $odt_row_template_xml]
-		set odt_row_xml $__adp_output
-	
-		# Parse the new row and insert into OOoo document
-		set row_doc [dom parse $odt_row_xml]
-		set new_row [$row_doc documentElement]
-		$odt_template_table_node insertBefore $new_row $odt_template_row_node
-	
 	    }
-	
-	    incr ctr
+	    
+	    set item_uom [lang::message::lookup $locale intranet-core.$item_uom $item_uom]
+	    # Replace placeholders in the OpenOffice template row with values
+	    eval [template::adp_compile -string $odt_row_template_xml]
+	    set odt_row_xml $__adp_output
+	    
+	    # Parse the new row and insert into OOoo document
+	    set row_doc [dom parse $odt_row_xml]
+	    set new_row [$row_doc documentElement]
+	    $odt_template_table_node insertBefore $new_row $odt_template_row_node
+	    
 	}
 	
 	incr ctr
     }
     
+    incr ctr
 } elseif { 100 == $item_list_type } {
 	# item_list_type: Translation Project Hirarchy   
     	set invoice_items_sql "
