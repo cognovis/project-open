@@ -40,7 +40,7 @@ ad_proc -public intranet_oo::convert {
     regsub -all -nocase "&nbsp;" $content " " content
     regsub -all -nocase "</p>" $content "<text:line-break/>" content
     regsub -all -nocase "a href=" $content "text:a xlink:type=\"simple\" xlink:href=" content
-    regsub -all -nocase "/a" $content "/text:a" content
+    regsub -all -nocase "</a>" $content "</text:a>" content
     regsub -all -nocase "<ul>" $content "<text:list text:style-name=\"L1\">" content
     regsub -all -nocase "</ul>" $content "</text:list>" content
     regsub -all -nocase "<li>" $content "<text:list-item><text:p text:style-name=\"Standard\">" content

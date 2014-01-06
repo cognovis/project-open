@@ -1008,7 +1008,7 @@ set
 	cost_nr		= :invoice_id,
 	provider_id	= :provider_id,
 	cost_status_id	= :cost_status_id,
-	cost_type_id	= :target_cost_type_id,
+	cost_type_id	= :new_cost_type_id,
 	cost_center_id	= :cost_center_id,
 	template_id	= :new_template_id,
 	effective_date	= now(),
@@ -1116,7 +1116,7 @@ where
     # ---------------------------------------------------------------
     
     # Audit the creation of the invoice
-    im_audit -object_type "im_invoice" -object_id $invoice_id -action after_create -status_id $cost_status_id -type_id $cost_type_id
+    im_audit -object_type "im_invoice" -object_id $invoice_id -action after_create -status_id $cost_status_id -type_id $new_cost_type_id
 
     return $invoice_id
 }
